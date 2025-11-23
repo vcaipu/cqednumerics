@@ -1,4 +1,3 @@
-import numpy as np
 import numpy.typing as npt
 
 import skfem as fem
@@ -53,7 +52,7 @@ class FEMSystem:
         self.all_dofs = jnp.arange(self.basis.N)
         self.dofs = len(self.all_dofs)
         self.boundary_dofs = self.basis.get_dofs().flatten() # Empty call automatically gets boundary DOFs
-        self.interior_dofs = np.setdiff1d(self.all_dofs, self.boundary_dofs)
+        self.interior_dofs = jnp.setdiff1d(self.all_dofs, self.boundary_dofs)
 
         # Step 2: Get Weights
         weights = jnp.array(self.basis.dx) # Only for quadrature points, not necessarily the nodes
@@ -62,7 +61,7 @@ class FEMSystem:
 
         # Step 3: Get Interpolation Matrices, phi_val and phi_grad
         X_ref,W_ref = self.basis.quadrature
-        n_local_dofs = element.refdom.nnodes # 3 for Triangle
+        n_local_dofs = element.doflocs.shape[0] # 3 for Triangle
         val_list = []
         grad_list = []
         # Loop over local nodes to get basis functions
@@ -70,8 +69,8 @@ class FEMSystem:
             dfield = element.gbasis(self.basis.mapping, X_ref, i)[0]
             val_list.append(dfield.value) # (elements,quadratures), value of ith basis function, at quadrature point, in this element
             grad_list.append(dfield.grad) # (dimensions,elements,quadratures), value of the derivative in a direction, of the ith basis function, at quadrature point, in this element
-        phi_val = jnp.array(np.stack(val_list)).transpose(1, 2, 0) # eth index is interpolation matrix for element e
-        phi_grad = jnp.array(np.stack(grad_list)).transpose(2, 1, 3, 0) #eth index, array at dth index, is interpolation matrix for element e 
+        phi_val = jnp.array(jnp.stack(val_list)).transpose(1, 2, 0) # eth index is interpolation matrix for element e
+        phi_grad = jnp.array(jnp.stack(grad_list)).transpose(2, 1, 3, 0) #eth index, array at dth index, is interpolation matrix for element e 
         self.phi_val,self.phi_grad = phi_val,phi_grad
 
         # Step 4: Get Miscellanous Things
@@ -98,23 +97,61 @@ class FEMSystem:
         u_full = jnp.zeros(self.dofs)
         u_full = u_full.at[self.interior_dofs].set(interior_vals)
         return u_full
-
-    # With boundary conditions
-    def _get_at_nodes(self,func):
-
-        # For each row, get only interior DOFs. 2D will have two rows for x,y, 3D will have 3 rows for x,y,z
+    
+    def _get_at_interior_dofs(self,func):
+       # For each row, get only interior DOFs. 2D will have two rows for x,y, 3D will have 3 rows for x,y,z
         filtered_doflocs = self.doflocs[:,self.interior_dofs]
 
         # Pass each row as an argument, by "*"
-        interior_vals = func(*filtered_doflocs)
+        interior_vals = func(*filtered_doflocs) 
+        return interior_vals
 
+    # With boundary conditions
+    def _get_at_dofs(self,func):
+        interior_vals = self._get_at_interior_dofs(func)
         full_vals = self._complete_arr(interior_vals) # values at nodes 
         return full_vals
     
     def _get_u_from_interior(self,u_interior):
-        u_final = np.ones((self.dofs))*self.boundary_condition
-        u_final[self.interior_dofs] = u_interior
+        u_final = jnp.ones((self.dofs)) * self.boundary_condition
+        # Use .at[].set() for functional update, this is the "JAX" way
+        u_final = u_final.at[self.interior_dofs].set(u_interior)
         return u_final
+    
+    def _plot_u_2d(self,u,plot_title):
+        ax = plot(self.basis, u, shading='gouraud')
+
+        if ax.collections:
+            plt.colorbar(ax.collections[0])
+        
+        plt.colorbar(ax.collections[0])
+        plt.title(plot_title)
+        plt.show()
+
+    def _plot_u_2d_in_3d(self,u,plot_title):
+        x_nodes,y_nodes = self.doflocs
+        triangles = self.basis.mesh.t.T
+        z_values = u
+
+        # 2. Create 3D Plot
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+
+        # Plot the surface
+        surf = ax.plot_trisurf(x_nodes, y_nodes, z_values, 
+                            triangles=triangles, 
+                            cmap='viridis', 
+                            edgecolor='none',
+                            linewidth=0,
+                            antialiased=False)
+        # 3. Add labels and colorbar
+        ax.set_title(plot_title)
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('u(x,y)')
+        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
+
+        plt.show() 
     
     '''
     Arguments:
@@ -158,11 +195,11 @@ class FEMSystem:
         
         # Filter points based on slice
         if slice_axis == 'z':
-            mask = np.abs(z - slice_val) < tol
+            mask = jnp.abs(z - slice_val) < tol
         elif slice_axis == 'y':
-            mask = np.abs(y - slice_val) < tol
+            mask = jnp.abs(y - slice_val) < tol
         else: # x
-            mask = np.abs(x - slice_val) < tol
+            mask = jnp.abs(x - slice_val) < tol
             
         # Apply mask
         xs, ys, zs = x[mask], y[mask], z[mask]
@@ -178,6 +215,18 @@ class FEMSystem:
         ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.set_zlim(0, 1)
         ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.set_zlabel('Z')
         plt.show()
+    
+    '''
+    Arguments:
+    - func(x,y): function to plot
+    '''
+    def plot_func_2d(self,func,plot_title=""):
+        u_final = self._get_at_dofs(func)
+        self._plot_u_2d(u_final,plot_title)
+    
+    def plot_func_2d_in3d(self,func,plot_title=""):
+        u_final = self._get_at_dofs(func)
+        self._plot_u_2d_in_3d(u_final,plot_title)
 
 
     '''
@@ -187,39 +236,11 @@ class FEMSystem:
     '''
     def plot_at_interior_2d(self,u_interior,plot_title=""):
         u_final = self._get_u_from_interior(u_interior)
-        ax = plot(self.basis, u_final, shading='gouraud')
-
-        if ax.collections:
-            plt.colorbar(ax.collections[0])
-        
-        plt.colorbar(ax.collections[0])
-        plt.title(plot_title)
-        plt.show()
+        self._plot_u_2d(u_final,plot_title)
     
     def plot_at_interior_2d_in3d(self,u_interior,plot_title=""):
-        x_nodes,y_nodes = self.doflocs
-        triangles = self.basis.mesh.t.T
-        z_values = self._get_u_from_interior(u_interior)
-
-        # 2. Create 3D Plot
-        fig = plt.figure(figsize=(10, 8))
-        ax = fig.add_subplot(111, projection='3d')
-
-        # Plot the surface
-        surf = ax.plot_trisurf(x_nodes, y_nodes, z_values, 
-                            triangles=triangles, 
-                            cmap='viridis', 
-                            edgecolor='none',
-                            linewidth=0,
-                            antialiased=False)
-        # 3. Add labels and colorbar
-        ax.set_title('3D Solution Surface')
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('u(x,y)')
-        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
-
-        plt.show()
+        u_final = self._get_u_from_interior(u_interior)
+        self._plot_u_2d_in_3d(u_final,plot_title)
 
     def plot_interior_at_quad_3d(self,u_interior,plot_title="Values at Quadratures, for a 3D Function"):
         u_global = self._get_u_from_interior(u_interior)
@@ -232,21 +253,21 @@ class FEMSystem:
 
         self.plot_at_quad_3d_sliced(u_quad,plot_title=plot_title,slice_axis=slice_axis,slice_val=slice_val,tol=tol)
 
-    
+        
     '''
     Arguments: 
     - func(x,y): function to plot, with boundary conditions at self.boundary_condition
     - plot_title: plot title
     '''
     def plot_values_2d(self,func,plot_title="Values at Quadratures, for a 2D Function"):
-        u_global = self._get_at_nodes(func)
+        u_global = self._get_at_dofs(func)
 
         # Get at quadratures and plot
         u_quad = self._interpolate_values(u_global)
         self.plot_at_quad_2d(u_quad,plot_title)
 
     def plot_grad_squared_2d(self,func,plot_title="Grad Squared at Quadratures, for a 2D Function"):
-        u_global = self._get_at_nodes(func)
+        u_global = self._get_at_dofs(func)
 
         # Get at quadratures and plot
         grad_quadx,grad_quady = self._interpolate_grad(u_global)
@@ -255,7 +276,7 @@ class FEMSystem:
 
     
     def plot_values_3d(self,func,plot_title="Values at Quadratures, for a 3D Function"):
-        u_global = self._get_at_nodes(func)
+        u_global = self._get_at_dofs(func)
 
         # Get at quadratures and plot
         u_quad = self._interpolate_values(u_global)
@@ -269,12 +290,27 @@ class FEMSystem:
     - tol: tolerance around the slice_val to be plotted
     '''
     def plot_values_3d_sliced(self,func,slice_val,slice_axis="z",plot_title="Values at Quadratures, for a 3D Function Slice",tol=0.05):
-        u_global = self._get_at_nodes(func)
+        u_global = self._get_at_dofs(func)
 
         # Get at quadratures and plot
         u_quad = self._interpolate_values(u_global)
         self.plot_at_quad_3d_sliced(u_quad,plot_title=plot_title,slice_axis=slice_axis,slice_val=slice_val,tol=tol)
 
+    '''
+    Arguments:
+    - func(x_vec): analytical function to compare to
+    - u_global: solved for u_global to compare to analytical function
+    '''
+    def compare_at_quads(self,func,u_global):
+        u_quad = self._interpolate_values(u_global)
+        x_quad = self._interpolate_values(self.node_coords_global)
+        coords_q_T = x_quad.transpose(2, 0, 1)
+ 
+        f_quad = func(coords_q_T)
+
+        diff_sq = (u_quad - f_quad) ** 2
+        return diff_sq
+        
     '''
     Arguments:
     - func(u,grad_u,x): where grad_u and x are multidimensional vectors. MUST return a scalar
@@ -361,4 +397,12 @@ class FEMSystem:
         u_norm = self.integrate(lambda u,a,b: u**2,u_full)
         u_full /= jnp.sqrt(u_norm)
         return u_full
+    
+    def apply_bc(self,u_interior):
+        u_full = jnp.ones(self.dofs) * self.boundary_condition
+        u_full = u_full.at[self.interior_dofs].set(u_interior)
+        return u_full
+    
+    def get_initial_ones_interior(self):
+        return jnp.ones(len(self.interior_dofs))
     

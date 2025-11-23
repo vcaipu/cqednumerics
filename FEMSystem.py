@@ -52,7 +52,7 @@ class FEMSystem:
         self.boundary_condition = boundary_condition
         self.all_dofs = jnp.arange(self.basis.N)
         self.dofs = len(self.all_dofs)
-        self.boundary_dofs = self.basis.get_dofs().flatten()
+        self.boundary_dofs = self.basis.get_dofs().flatten() # Empty call automatically gets boundary DOFs
         self.interior_dofs = np.setdiff1d(self.all_dofs, self.boundary_dofs)
 
         # Step 2: Get Weights
@@ -79,8 +79,6 @@ class FEMSystem:
         self.node_coords_global = jnp.array(mesh.doflocs.T)
         self.doflocs = self.basis.doflocs
         self.X_ref,self.W_ref = X_ref,W_ref
-
-
     
     '''
     Arguments:
@@ -103,9 +101,13 @@ class FEMSystem:
 
     # With boundary conditions
     def _get_at_nodes(self,func):
-        x,y = self.doflocs[0],self.doflocs[1]
-        x,y = x[self.interior_dofs], y[self.interior_dofs] #truncate array to just interior DOF indices
-        interior_vals = func(x,y) 
+
+        # For each row, get only interior DOFs. 2D will have two rows for x,y, 3D will have 3 rows for x,y,z
+        filtered_doflocs = self.doflocs[:,self.interior_dofs]
+
+        # Pass each row as an argument, by "*"
+        interior_vals = func(*filtered_doflocs)
+
         full_vals = self._complete_arr(interior_vals) # values at nodes 
         return full_vals
     
@@ -131,6 +133,52 @@ class FEMSystem:
         plt.title(plot_title)
         plt.axis('equal')
         plt.show()
+    
+    def plot_at_quad_3d(self,vals,plot_title=""):
+        coords = self.basis.mapping.F(self.X_ref) 
+        flat_coords = coords.reshape(3, -1)
+
+        fig = plt.figure(figsize=(8, 8))
+        ax = fig.add_subplot(111, projection='3d')
+
+        flat_vals = vals.flatten()
+        sc = ax.scatter(flat_coords[0], flat_coords[1], flat_coords[2], c=flat_vals, s=5, cmap='viridis')
+
+        # 3. Add colorbar and formatting
+        plt.colorbar(sc)
+        plt.title(plot_title)
+        plt.show()
+
+    def plot_at_quad_3d_sliced(self, vals, plot_title="", slice_axis='z', slice_val=0.5, tol=0.05):
+        coords = self.basis.mapping.F(self.X_ref) 
+        flat_coords = coords.reshape(3, -1)
+        flat_vals = vals.flatten()
+        
+        x, y, z = flat_coords[0], flat_coords[1], flat_coords[2]
+        
+        # Filter points based on slice
+        if slice_axis == 'z':
+            mask = np.abs(z - slice_val) < tol
+        elif slice_axis == 'y':
+            mask = np.abs(y - slice_val) < tol
+        else: # x
+            mask = np.abs(x - slice_val) < tol
+            
+        # Apply mask
+        xs, ys, zs = x[mask], y[mask], z[mask]
+        vs = flat_vals[mask]
+
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.add_subplot(111, projection='3d')
+
+        sc = ax.scatter(xs, ys, zs, c=vs, s=10, cmap='viridis', alpha=0.8)
+
+        plt.colorbar(sc)
+        plt.title(f"{plot_title} (Slice @ {slice_axis}={slice_val:.3f})")
+        ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.set_zlim(0, 1)
+        ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.set_zlabel('Z')
+        plt.show()
+
 
     '''
     Arguments: 
@@ -140,10 +188,13 @@ class FEMSystem:
     def plot_at_interior_2d(self,u_interior,plot_title=""):
         u_final = self._get_u_from_interior(u_interior)
         ax = plot(self.basis, u_final, shading='gouraud')
+
+        if ax.collections:
+            plt.colorbar(ax.collections[0])
+        
         plt.colorbar(ax.collections[0])
         plt.title(plot_title)
         plt.show()
-    
     
     def plot_at_interior_2d_in3d(self,u_interior,plot_title=""):
         x_nodes,y_nodes = self.doflocs
@@ -170,6 +221,17 @@ class FEMSystem:
 
         plt.show()
 
+    def plot_interior_at_quad_3d(self,u_interior,plot_title="Values at Quadratures, for a 3D Function"):
+        u_global = self._get_u_from_interior(u_interior)
+        u_quad = self._interpolate_values(u_global)
+        self.plot_at_quad_3d(u_quad,plot_title)  
+    
+    def plot_interior_at_quad_3d_sliced(self,u_interior,slice_val,slice_axis="z",plot_title="Values at Quadratures, for a 3D Function Slice",tol=0.05):
+        u_global = self._get_u_from_interior(u_interior)
+        u_quad = self._interpolate_values(u_global)
+
+        self.plot_at_quad_3d_sliced(u_quad,plot_title=plot_title,slice_axis=slice_axis,slice_val=slice_val,tol=tol)
+
     
     '''
     Arguments: 
@@ -191,6 +253,28 @@ class FEMSystem:
         laplacian_quad = grad_quadx**2 + grad_quady**2
         self.plot_at_quad_2d(laplacian_quad,plot_title)
 
+    
+    def plot_values_3d(self,func,plot_title="Values at Quadratures, for a 3D Function"):
+        u_global = self._get_at_nodes(func)
+
+        # Get at quadratures and plot
+        u_quad = self._interpolate_values(u_global)
+        self.plot_at_quad_3d(u_quad,plot_title) 
+    
+    '''
+    Arguments:
+    - func(x,y,z): function to plot, with boundary conditions at self.boundary_condition
+    - slice_axis: "x", "y" or "z"
+    - slice_val: the value along the axis to take the slice
+    - tol: tolerance around the slice_val to be plotted
+    '''
+    def plot_values_3d_sliced(self,func,slice_val,slice_axis="z",plot_title="Values at Quadratures, for a 3D Function Slice",tol=0.05):
+        u_global = self._get_at_nodes(func)
+
+        # Get at quadratures and plot
+        u_quad = self._interpolate_values(u_global)
+        self.plot_at_quad_3d_sliced(u_quad,plot_title=plot_title,slice_axis=slice_axis,slice_val=slice_val,tol=tol)
+
     '''
     Arguments:
     - func(u,grad_u,x): where grad_u and x are multidimensional vectors. MUST return a scalar
@@ -205,6 +289,53 @@ class FEMSystem:
         L_density = func(u_quad, grad_quad, coords_q_T)
         integral_result = jnp.sum(L_density * self.weights)
         return integral_result
+
+    '''
+    Arguments:
+    - func(u1,grad_u1,u2,grad_u2,x): where grad_u1/2 and x are multidimensional vectors. MUST return a scalar
+    - u1_global: array of u1 at degrees of freedom
+    - u2_global1: array of u2 at degrees of freedom
+    '''
+    def integrate_two(self,func,u1_global,u2_global):
+        u1_quad = self._interpolate_values(u1_global)
+        grad1_quad = self._interpolate_grad(u1_global)
+        u2_quad = self._interpolate_values(u2_global)
+        grad2_quad = self._interpolate_grad(u2_global)
+        x_quad = self._interpolate_values(self.node_coords_global) # coordinates of quadrature points
+
+        coords_q_T = x_quad.transpose(2, 0, 1)
+        L_density = func(u1_quad,grad1_quad,u2_quad,grad2_quad,coords_q_T)
+        integral_result = jnp.sum(L_density * self.weights)
+        return integral_result
+
+    def greens(self,dof_source,dof_response):
+        u_global = jnp.zeros(len(self.all_dofs))
+        u_global = u_global.at[dof_source].set(1)
+
+        loc_response = self.doflocs[:dof_response] # location x,y,z of response
+        func = lambda u,grad_u,x: u / (4*jnp.pi*jnp.linalg.norm(x - loc_response))
+
+        return self.integrate(func,u_global)
+    
+    '''
+    Arguments:
+    - func(u,grad_u,x): where grad_u and x are multidimensional vectors. MUST return a scalar
+    - u_global: matrix of (n,dofs). Each row is a set of u's at the degrees of freedom
+    '''
+    # def vec_integrate(self,func,u_global):
+    #     u_quad = self._interpolate_values(u_global)
+    #     grad_quad = self._interpolate_grad(u_global)
+    #     x_quad = self._interpolate_values(self.node_coords_global) # coordinates of quadrature points
+
+    #     coords_q_T = x_quad.transpose(2, 0, 1)
+
+
+    #     L_density = func(u_quad, grad_quad, coords_q_T)
+
+
+
+    #     integral_result = jnp.sum(L_density * self.weights)
+    #     return integral_result 
 
     ''' Only intended for test purposes
     Arguments:
@@ -224,11 +355,10 @@ class FEMSystem:
     - u_interior: array of values only at interior dofs
     - objective(u_global): your objective function. Passes in full normalized u_global
     '''
-    def apply_bc_and_norm(self,u_interior,objective):
+    def apply_bc_and_norm(self,u_interior):
         u_full = jnp.ones(self.dofs) * self.boundary_condition
         u_full = u_full.at[self.interior_dofs].set(u_interior)
         u_norm = self.integrate(lambda u,a,b: u**2,u_full)
         u_full /= jnp.sqrt(u_norm)
-
-        return objective(u_full)
+        return u_full
     

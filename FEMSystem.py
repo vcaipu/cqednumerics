@@ -5,6 +5,7 @@ import jax.numpy as jnp
 
 import matplotlib.pyplot as plt
 from skfem.visuals.matplotlib import plot
+from jax.experimental import sparse
 
 class FEMSystem:
 
@@ -35,6 +36,7 @@ class FEMSystem:
     # Miscellanous
     dofmap = None
     node_coords_global = None
+    coords_q_T = None
     X_ref = None
     W_ref = None
 
@@ -74,8 +76,10 @@ class FEMSystem:
         self.phi_val,self.phi_grad = phi_val,phi_grad
 
         # Step 4: Get Miscellanous Things
-        self.dof_map = self.basis.element_dofs.T        
+        self.dof_map = self.basis.element_dofs.T # (elements, dofs per element) matrix, maps to a global dof index        
         self.node_coords_global = jnp.array(mesh.doflocs.T)
+        x_quad = self._interpolate_values(self.node_coords_global)
+        self.coords_q_T = x_quad.transpose(2, 0, 1) # Cache This
         self.doflocs = self.basis.doflocs
         self.X_ref,self.W_ref = X_ref,W_ref
     
@@ -84,7 +88,7 @@ class FEMSystem:
     - u_global: array of values at degrees of freedom. 
     '''
     def _interpolate_values(self,u_global):
-        u_local_arr = u_global[self.dof_map] # for every element, get the actual dof value at the nodes in the element
+        u_local_arr = u_global[self.dof_map] # for every element, get the actual dof value at the nodes in the element. Maps an array of length of total dofs to a (elements, dofs per element) matrix
         u_quad = jnp.einsum('eqd,ed... -> eq...',self.phi_val,u_local_arr) # for every element, the interpolated values of the quadrature points. Same dims as weights!!! e for "element", q for "quadrature", d for "degree of freedom / node"
         return u_quad
 
@@ -303,10 +307,8 @@ class FEMSystem:
     '''
     def compare_at_quads(self,func,u_global):
         u_quad = self._interpolate_values(u_global)
-        x_quad = self._interpolate_values(self.node_coords_global)
-        coords_q_T = x_quad.transpose(2, 0, 1)
  
-        f_quad = func(coords_q_T)
+        f_quad = func(self.coords_q_T)
 
         diff_sq = (u_quad - f_quad) ** 2
         return diff_sq
@@ -319,10 +321,8 @@ class FEMSystem:
     def integrate(self,func,u_global):
         u_quad = self._interpolate_values(u_global)
         grad_quad = self._interpolate_grad(u_global)
-        x_quad = self._interpolate_values(self.node_coords_global) # coordinates of quadrature points
 
-        coords_q_T = x_quad.transpose(2, 0, 1)
-        L_density = func(u_quad, grad_quad, coords_q_T)
+        L_density = func(u_quad, grad_quad, self.coords_q_T)
         integral_result = jnp.sum(L_density * self.weights)
         return integral_result
 
@@ -330,19 +330,69 @@ class FEMSystem:
     Arguments:
     - func(u1,grad_u1,u2,grad_u2,x): where grad_u1/2 and x are multidimensional vectors. MUST return a scalar
     - u1_global: array of u1 at degrees of freedom
-    - u2_global1: array of u2 at degrees of freedom
+    - u2_global: array of u2 at degrees of freedom
     '''
     def integrate_two(self,func,u1_global,u2_global):
         u1_quad = self._interpolate_values(u1_global)
         grad1_quad = self._interpolate_grad(u1_global)
         u2_quad = self._interpolate_values(u2_global)
         grad2_quad = self._interpolate_grad(u2_global)
-        x_quad = self._interpolate_values(self.node_coords_global) # coordinates of quadrature points
 
-        coords_q_T = x_quad.transpose(2, 0, 1)
-        L_density = func(u1_quad,grad1_quad,u2_quad,grad2_quad,coords_q_T)
+        L_density = func(u1_quad,grad1_quad,u2_quad,grad2_quad,self.coords_q_T)
         integral_result = jnp.sum(L_density * self.weights)
         return integral_result
+    
+    '''
+    Arguments:
+    - kernel_func(x_vec,y_vec): returns scalar, interaction function
+    - tol: tolerance, if absolute value is below tol, just set to zero. Returns a JAX spare matrix
+    '''  
+    def get_sparse_interaction_mat(self, kernel_func, tol=1e-5):
+        # 1. Get Flat Coordinates
+        # (Dim, E, Q) -> (Total_Points, Dim)
+        coords_flat = self.coords_q_T.transpose(1, 2, 0).reshape(-1, self.coords_q_T.shape[0])
+        
+        # 2. Compute Dense Kernel in chunks (to avoid initial OOM)
+        # OR just compute dense if it fits in RAM temporarily
+        K_dense = kernel_func(coords_flat, coords_flat)
+        
+        # 3. Apply Cutoff
+        # Set small values to absolute zero
+        K_dense = jnp.where(jnp.abs(K_dense) > tol, K_dense, 0.0)
+        
+        # 4. Convert to Sparse BCOO format
+        # This stores only indices and values for non-zero entries
+        K_sparse = sparse.BCOO.fromdense(K_dense)
+        return K_sparse
+    
+    '''
+    Arguments:
+    - func1(u1,grad_u1,u2,grad_u2,x): where grad_u1/2 and x are multidimensional vectors. MUST return a scalar
+    - func2(u1,grad_u1,u2,grad_u2,y): where grad_u1/2 and y are multidimensional vectors. MUST return a scalar
+    - interaction_matrix: quadratures x quadratures matrix for interactions
+    - u2_global: array of u2 at degrees of freedom
+    ''' 
+    def double_integral(self,func1,func2,interaction,u1_global,u2_global):
+        u1_quad = self._interpolate_values(u1_global)
+        grad1_quad = self._interpolate_grad(u1_global)
+        u2_quad = self._interpolate_values(u2_global)
+        grad2_quad = self._interpolate_grad(u2_global) 
+
+        # Evaluate at quadratures, should each return a (elements, quadratures per element matrix), of scalars, representing evaluated scalar value at the quadrature point
+        func_1_eval = func1(u1_quad,grad1_quad,u2_quad,grad2_quad,self.coords_q_T)
+        func_2_eval = func2(u1_quad,grad1_quad,u2_quad,grad2_quad,self.coords_q_T)
+        weighted_f1 = func_1_eval * self.weights # Multiply by weights now, for convenience. 
+        weighted_f2 = func_2_eval * self.weights
+
+        # Flatten, so just an array of values at quadrature points:
+        weighted_f1_flat = weighted_f1.ravel() # ravel flattens in a way consistent with ordering of quadratures
+        weighted_f2_flat = weighted_f2.ravel()
+
+
+
+
+
+
 
     def greens(self,dof_source,dof_response):
         u_global = jnp.zeros(len(self.all_dofs))
@@ -378,10 +428,7 @@ class FEMSystem:
     - func(x): function of x (array of dimension d) you want to integrate
     '''
     def integrate_function(self,func):
-        x_quad = self._interpolate_values(self.node_coords_global) # coordinates of quadrature points
-        coords_q_T = x_quad.transpose(2, 0, 1)
-
-        integrand_quad = func(coords_q_T)
+        integrand_quad = func(self.coords_q_T)
         integral_result = jnp.sum(integrand_quad * self.weights)
         return integral_result
     

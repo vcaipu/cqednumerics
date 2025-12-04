@@ -1,11 +1,13 @@
 import numpy.typing as npt
 
 import skfem as fem
+import jax
 import jax.numpy as jnp
 
 import matplotlib.pyplot as plt
 from skfem.visuals.matplotlib import plot
 from jax.experimental import sparse
+from scipy.spatial import KDTree
 
 class FEMSystem:
 
@@ -39,6 +41,7 @@ class FEMSystem:
     coords_q_T = None
     X_ref = None
     W_ref = None
+    flip_map = None
 
     # Constructor - Preprocess Basis
     def __init__(self,mesh,element,intorder,boundary_condition=0):
@@ -80,8 +83,24 @@ class FEMSystem:
         self.node_coords_global = jnp.array(mesh.doflocs.T)
         x_quad = self._interpolate_values(self.node_coords_global)
         self.coords_q_T = x_quad.transpose(2, 0, 1) # Cache This
-        self.doflocs = self.basis.doflocs
+        self.doflocs = self.basis.doflocs # arrays of x,y and z coordinates of the ith DOF
         self.X_ref,self.W_ref = X_ref,W_ref
+
+        # Step 5: Get Flipping Mapping
+        self.flip_map = self._generate_flip_mapping()
+
+    
+    def _generate_flip_mapping(self,axis=0):
+        coords = self.doflocs
+        flipped_coords = self.doflocs.copy()
+        flipped_coords[axis,:] *= -1
+
+        # Do the Nearest Neighbor Search
+        tree = KDTree(flipped_coords.T)
+
+        distances, indices = tree.query(coords.T, k=1)
+
+        return indices
     
     '''
     Arguments:
@@ -348,22 +367,23 @@ class FEMSystem:
     - tol: tolerance, if absolute value is below tol, just set to zero. Returns a JAX spare matrix
     '''  
     def get_sparse_interaction_mat(self, kernel_func, tol=1e-5):
-        # 1. Get Flat Coordinates
         # (Dim, E, Q) -> (Total_Points, Dim)
         coords_flat = self.coords_q_T.transpose(1, 2, 0).reshape(-1, self.coords_q_T.shape[0])
         
-        # 2. Compute Dense Kernel in chunks (to avoid initial OOM)
-        # OR just compute dense if it fits in RAM temporarily
-        K_dense = kernel_func(coords_flat, coords_flat)
+        # Expand dimensions to broadcast: (N, 1, D) vs (1, N, D) -> (N, N, D)
+        x_in = coords_flat[:, None, :]
+        y_in = coords_flat[None, :, :]
         
-        # 3. Apply Cutoff
-        # Set small values to absolute zero
+        # Compute Dense Kernel
+        K_dense = kernel_func(x_in, y_in)
+        
+        # Apply Cutoff
         K_dense = jnp.where(jnp.abs(K_dense) > tol, K_dense, 0.0)
         
-        # 4. Convert to Sparse BCOO format
-        # This stores only indices and values for non-zero entries
+        # Convert to Sparse
         K_sparse = sparse.BCOO.fromdense(K_dense)
         return K_sparse
+
     
     '''
     Arguments:
@@ -388,18 +408,18 @@ class FEMSystem:
         weighted_f1_flat = weighted_f1.ravel() # ravel flattens in a way consistent with ordering of quadratures
         weighted_f2_flat = weighted_f2.ravel()
 
+        # print(weighted_f1_flat.shape,weighted_f2_flat.shape)
+        # print(interaction.shape)
 
-
-
-
-
+        res = weighted_f1_flat @ interaction @ weighted_f2_flat
+        return res
 
     def greens(self,dof_source,dof_response):
         u_global = jnp.zeros(len(self.all_dofs))
         u_global = u_global.at[dof_source].set(1)
 
         loc_response = self.doflocs[:dof_response] # location x,y,z of response
-        func = lambda u,grad_u,x: u / (4*jnp.pi*jnp.linalg.norm(x - loc_response))
+        func = lambda u,grad_u,x: u * 1/ (2*jnp.pi) * jnp.log(jnp.linalg.norm(x - loc_response))
 
         return self.integrate(func,u_global)
     
@@ -442,7 +462,11 @@ class FEMSystem:
         u_full = jnp.ones(self.dofs) * self.boundary_condition
         u_full = u_full.at[self.interior_dofs].set(u_interior)
         u_norm = self.integrate(lambda u,a,b: u**2,u_full)
-        u_full /= jnp.sqrt(u_norm)
+
+        # Preventing Divide by Zero
+        safe_norm = jnp.where(u_norm > 0, u_norm, 1.0)
+        u_full = jnp.where(u_norm > 0, u_full / jnp.sqrt(safe_norm),u_full)
+
         return u_full
     
     def apply_bc(self,u_interior):
@@ -450,6 +474,32 @@ class FEMSystem:
         u_full = u_full.at[self.interior_dofs].set(u_interior)
         return u_full
     
+    def separate_even_odd_apply_by_and_norm(self,u_interior):
+        u_full = jnp.ones(self.dofs) * self.boundary_condition
+        u_full = u_full.at[self.interior_dofs].set(u_interior) 
+        u_full_flipped = u_full[self.flip_map] # Literally just reindexes
+
+        u_even = u_full + u_full_flipped
+        u_odd = u_full - u_full_flipped
+
+        u_even_norm = self.integrate(lambda u,a,b: u**2,u_even)
+        u_odd_norm = self.integrate(lambda u,a,b: u**2,u_odd)
+
+        safe_even_norm = jnp.where(u_even_norm > 0, u_even_norm, 1.0)
+        safe_odd_norm = jnp.where(u_odd_norm > 0, u_odd_norm, 1.0)
+
+        u_even = jnp.where(u_even_norm > 0, u_even / jnp.sqrt(safe_even_norm),u_even)
+        u_odd = jnp.where(u_odd_norm > 0, u_odd / jnp.sqrt(safe_odd_norm),u_odd)
+        
+        return u_even,u_odd
+    
     def get_initial_ones_interior(self):
         return jnp.ones(len(self.interior_dofs))
     
+    def get_initial_random_interior(self):
+        key = jax.random.PRNGKey(0)
+        random_array_uniform = jax.random.uniform(key, shape=(len(self.interior_dofs)), minval=0.0, maxval=1.0)
+        return random_array_uniform 
+    
+    def ones_on_island(self,theta_func):
+        return jnp.where(theta_func(self.doflocs),1.0,0.0)[self.interior_dofs]

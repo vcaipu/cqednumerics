@@ -18,6 +18,47 @@ Run in terminal, or in a script:
 
 ```
 module purge
-module load cudatoolkit/12.6   anaconda3/2024.6
+module load cudatoolkit/13.0
 conda activate [name of conda package]
 ```
+
+The packages you need are: 
+```
+pip install jax
+pip install -U "jax[cuda13]"
+```
+
+## Step 3: Activate GPU Interactive Session and Connect Jupyter Kernel
+
+Activate session by: 
+```
+salloc --time=30:00  --nodes=1  --ntasks-per-node=1  --cpus-per-task=4 --mem=20G  --gres=gpu:1 --qos=gpu-short
+```
+
+Then follow steps below to go to GPU Node. Will NOT be in the login node. 
+
+## Connecting to a GPU Interactive Session: 
+
+Put the following in a ssh config file like `~/.ssh/config` on your local machine:
+
+```
+Host della-login
+    HostName della.princeton.edu
+    User <your_netid>
+
+Host della-l* # Matches any compute node starting with della-l
+    ProxyJump della-login
+    User <your_netid>
+```
+
+So that it can redirect properly to della GPU node. 
+
+Then, look at the node name in the salloc-ed GPU node (something like della-lXXX), and use command palette to SSH into that by just typing as hostname "netid@della-lXXX"
+
+--------------
+
+Then activate environment by `source start.sh`
+
+Check can find GPU by running the test.py file, and seeing "gpu" on last line
+
+Connect to Jupyter Kernel by installing Jupyter Kernel in Python virtual env. Then should just be able to select Kernel in VSCode (when you first run a cell, it will prompt you to select a python virtual environment.)

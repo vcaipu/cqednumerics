@@ -1,13 +1,16 @@
 import numpy.typing as npt
 
 import skfem as fem
+from skfem.models.poisson import laplace
 import jax
 import jax.numpy as jnp
+import numpy as np
 
 import matplotlib.pyplot as plt
 from skfem.visuals.matplotlib import plot
 from jax.experimental import sparse
 from scipy.spatial import KDTree
+from scipy.sparse.linalg import inv
 
 class FEMSystem:
 
@@ -81,6 +84,7 @@ class FEMSystem:
         # Step 4: Get Miscellanous Things
         self.dof_map = self.basis.element_dofs.T # (elements, dofs per element) matrix, maps to a global dof index        
         self.node_coords_global = jnp.array(mesh.doflocs.T)
+        # self.dof_map = jnp.ascontiguousarray(self.basis.element_dofs.T.astype(jnp.int32))
         x_quad = self._interpolate_values(self.node_coords_global)
         self.coords_q_T = x_quad.transpose(2, 0, 1) # Cache This
         self.doflocs = self.basis.doflocs # arrays of x,y and z coordinates of the ith DOF
@@ -115,6 +119,49 @@ class FEMSystem:
         u_local_arr = u_global[self.dof_map] # for every element, get the actual dof value at the nodes in the element
         grad_quad = jnp.einsum('exqd,ed -> xeq',self.phi_grad,u_local_arr) # add in axis "x", for the spatial dimension, direction to take gradient in. 
         return grad_quad
+    
+    def _interpolate_mat_interior(self,I):
+        # 1. Create a Fast Lookup Table for Indices
+        # Map: Global_ID -> Interior_ID (or -1 if boundary)
+        # This acts like a hash map but is O(1) array access
+        global_to_interior = jnp.full(self.dofs, -1, dtype=jnp.int32)
+        global_to_interior = global_to_interior.at[I].set(jnp.arange(len(I)))
+
+        # Construct Interpolation Matrix P (DOFs -> Quads)
+        # We need a matrix where P[q, i] = phi_i(x_q)
+        # femsystem.phi_val has shape (Elements, Quads, Local_DOFs)
+        
+        E = self.elements
+        Q = self.quad_per_element
+        L = self.element.doflocs.shape[0] # Local DOFs (e.g. 3 for triangles)
+        N_dof = self.dofs
+        Total_Quad = E * Q
+        
+        # Flatten phi_val to data array
+        # phi_val_correct = jnp.transpose(self.phi_val, (0, 2, 1))
+        data = jnp.array(self.phi_val).flatten() # Shape: (E * Q * Local_DOFs)
+        
+        # Create row indices (Quadrature points 0..Total_Quad)
+        # Each quad has 3 local DOFs contributing to it
+        rows = jnp.repeat(jnp.arange(Total_Quad), L)
+        
+        # Create col indices (Global DOF indices)
+        # femsystem.dof_map has shape (E, 3) -> we need to broadcast to (E, Q, 3)
+        # because the same 3 global DOFs apply to all Q quads in that element
+        cols = jnp.broadcast_to(self.dof_map[:, jnp.newaxis, :], (E, Q, L)).flatten()
+
+        cols_interior = global_to_interior[cols]
+        mask = cols_interior != -1
+        # Apply mask to everything
+        rows_final = rows[mask]
+        cols_final = cols_interior[mask]
+        data_final = data[mask]
+
+        indices = jnp.stack([rows_final, cols_final], axis=1)
+        # Build Sparse P
+        P = sparse.BCOO((data_final, indices), shape=(Total_Quad, len(I)))
+        
+        return P
     
     def _complete_arr(self,interior_vals):
         u_full = jnp.zeros(self.dofs)
@@ -383,16 +430,8 @@ class FEMSystem:
         # Convert to Sparse
         K_sparse = sparse.BCOO.fromdense(K_dense)
         return K_sparse
-
     
-    '''
-    Arguments:
-    - func1(u1,grad_u1,u2,grad_u2,x): where grad_u1/2 and x are multidimensional vectors. MUST return a scalar
-    - func2(u1,grad_u1,u2,grad_u2,y): where grad_u1/2 and y are multidimensional vectors. MUST return a scalar
-    - interaction_matrix: quadratures x quadratures matrix for interactions
-    - u2_global: array of u2 at degrees of freedom
-    ''' 
-    def double_integral(self,func1,func2,interaction,u1_global,u2_global):
+    def _double_integral_preprocess(self,func1,func2,u1_global,u2_global):
         u1_quad = self._interpolate_values(u1_global)
         grad1_quad = self._interpolate_grad(u1_global)
         u2_quad = self._interpolate_values(u2_global)
@@ -407,12 +446,36 @@ class FEMSystem:
         # Flatten, so just an array of values at quadrature points:
         weighted_f1_flat = weighted_f1.ravel() # ravel flattens in a way consistent with ordering of quadratures
         weighted_f2_flat = weighted_f2.ravel()
+        return weighted_f1_flat,weighted_f2_flat
+    
+    '''
+    Arguments:
+    - func1(u1,grad_u1,u2,grad_u2,x): where grad_u1/2 and x are multidimensional vectors. MUST return a scalar
+    - func2(u1,grad_u1,u2,grad_u2,y): where grad_u1/2 and y are multidimensional vectors. MUST return a scalar
+    - interaction_matrix: quadratures x quadratures matrix for interactions
+    - u2_global: array of u2 at degrees of freedom
+    ''' 
+    def double_integral(self,func1,func2,interaction,u1_global,u2_global):
+        weighted_f1_flat,weighted_f2_flat = self._double_integral_preprocess(func1,func2,u1_global,u2_global)
 
-        # print(weighted_f1_flat.shape,weighted_f2_flat.shape)
-        # print(interaction.shape)
-
+        # Simple Matrix Multiplications: x^T G x
         res = weighted_f1_flat @ interaction @ weighted_f2_flat
+
         return res
+
+    '''
+    Writing in Progress, only hypothetically needed for extremely large meshes
+    ''' 
+    # Optimized, using just Bilinear form A (inverse of kernel matrix).
+    def double_integral2(self,func1,func2,bilinear_form,u1_global ,u2_global):
+        weighted_f1_flat,weighted_f2_flat = self._double_integral_preprocess(func1,func2,u1_global,u2_global)
+
+        # First we need to only take interior
+        weighted_f1_flat_interior,weighted_f2_flat_interior = weighted_f1_flat[self.interior_dofs], weighted_f2_flat[self.interior_dofs]
+
+        # Compute G @ weighted_f2_flat by the Conjugate Gradient Method
+
+
 
     def greens(self,dof_source,dof_response):
         u_global = jnp.zeros(len(self.all_dofs))
@@ -452,7 +515,19 @@ class FEMSystem:
         integral_result = jnp.sum(integrand_quad * self.weights)
         return integral_result
     
+    def get_greens_kernel(self):
 
+        # At DOFs 
+        A = fem.asm(laplace,self.basis)
+        A_int, xI, I = fem.condense(A, D=self.boundary_dofs, expand=True)
+        A_inv_int = inv(A_int).toarray()
+
+        P_int = self._interpolate_mat_interior(I)
+        #print("Got P Interior")
+
+        G_quad = P_int @ A_inv_int @ P_int.T
+        return G_quad
+        
     '''
     Arguments:
     - u_interior: array of values only at interior dofs

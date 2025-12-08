@@ -11,6 +11,7 @@ from skfem.visuals.matplotlib import plot
 from jax.experimental import sparse
 from scipy.spatial import KDTree
 from scipy.sparse.linalg import inv
+import datetime
 
 class FEMSystem:
 
@@ -46,8 +47,12 @@ class FEMSystem:
     W_ref = None
     flip_map = None
 
+    saveFigsDir = None
+
     # Constructor - Preprocess Basis
-    def __init__(self,mesh,element,intorder,boundary_condition=0):
+    def __init__(self,mesh,element,intorder,boundary_condition=0,saveFigsDir=None):
+
+        self.saveFigsDir = saveFigsDir
 
         # First set mesh, element, intorder and basis
         self.mesh = mesh
@@ -92,7 +97,11 @@ class FEMSystem:
 
         # Step 5: Get Flipping Mapping
         self.flip_map = self._generate_flip_mapping()
-
+    
+    def _save_fig(self,fig,plot_title):
+        if not self.saveFigsDir: return
+        if not plot_title: plot_title = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S.%f")
+        fig.savefig(self.saveFigsDir+plot_title+".png")
     
     def _generate_flip_mapping(self,axis=0):
         coords = self.doflocs
@@ -196,7 +205,14 @@ class FEMSystem:
         
         plt.colorbar(ax.collections[0])
         plt.title(plot_title)
+
+        # Save Fig
+        fig = ax.get_figure()
+        self._save_fig(fig,plot_title)
+
         plt.show()
+        
+
 
     def _plot_u_2d_in_3d(self,u,plot_title):
         x_nodes,y_nodes = self.doflocs
@@ -221,6 +237,11 @@ class FEMSystem:
         ax.set_zlabel('u(x,y)')
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
 
+
+        # Save Fig
+        fig = ax.get_figure()
+        self._save_fig(fig,plot_title)
+
         plt.show() 
     
     '''
@@ -239,6 +260,10 @@ class FEMSystem:
         plt.colorbar(sc)
         plt.title(plot_title)
         plt.axis('equal')
+
+        # Save Fig
+        self._save_fig(plt.gcf(),plot_title)
+
         plt.show()
     
     def plot_at_quad_3d(self,vals,plot_title=""):
@@ -254,6 +279,10 @@ class FEMSystem:
         # 3. Add colorbar and formatting
         plt.colorbar(sc)
         plt.title(plot_title)
+
+        # Save Fig
+        self._save_fig(plt.gcf(),plot_title)
+        
         plt.show()
 
     def plot_at_quad_3d_sliced(self, vals, plot_title="", slice_axis='z', slice_val=0.5, tol=0.05):
@@ -284,6 +313,10 @@ class FEMSystem:
         plt.title(f"{plot_title} (Slice @ {slice_axis}={slice_val:.3f})")
         ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.set_zlim(0, 1)
         ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.set_zlabel('Z')
+
+        # Save Fig
+        self._save_fig(plt.gcf(),plot_title)
+        
         plt.show()
     
     '''

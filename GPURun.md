@@ -35,6 +35,11 @@ Activate session by:
 salloc --time=30:00  --nodes=1  --ntasks-per-node=1  --cpus-per-task=4 --mem=20G  --gres=gpu:1 --qos=gpu-short
 ```
 
+Or from Della online docs: 
+```
+salloc --nodes=1 --ntasks=1 --mem=4G --time=00:20:00 --gres=gpu:1 --mail-type=begin
+```
+
 Then follow steps below to go to GPU Node. Will NOT be in the login node. 
 
 ## Connecting to a GPU Interactive Session: 

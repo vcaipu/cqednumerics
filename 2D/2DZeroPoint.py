@@ -24,12 +24,20 @@ parser = argparse.ArgumentParser(description="")
 parser.add_argument("--plotdir", type=str, help="Directory to save all plots. MUST end with a slash /")
 parser.add_argument("--sidelen", type=float, help="Sidelength of island. Default set to 20",default=20.0)
 parser.add_argument("--separation", type=float, help="Gap between islands. Default set to 20",default=20.0)
-parser.add_argument("--separation", type=float, help="Gap between islands. Default set to 20",default=20.0)
-parser.add_argument("--separation", type=float, help="Gap between islands. Default set to 20",default=20.0)
+parser.add_argument("--N", type=int, help="Total number of particles. Default is 5000",default=5000)
+parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 100",default=100)
 args = parser.parse_args()
 plotdir = args.plotdir
 sidelen = args.sidelen
 separation = args.separation
+n = args.n # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
+N = args.N #Total number of particles
+
+print(f"RUNNING WITH SEPARATION {separation}")
+
+# Make the plotdirs directory
+os.makedirs(plotdir, exist_ok=True)
+
 
 '''
 Part 1: Create Mesh
@@ -199,9 +207,6 @@ Before you start the optimization loop:
 3. Get Initial Guess
 '''
 
-# Set constants
-n = 100 # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
-N = 1000 #Total number of particles
 
 # 1. Defining Objective
 @jax.jit
@@ -268,6 +273,7 @@ u_even_interior,u_odd_interior = u_even[femsystem.interior_dofs],u_odd[femsystem
 femsystem.plot_at_interior_2d_in3d(u_odd_interior,plot_title="Odd Mode")
 femsystem.plot_at_interior_2d_in3d(u_even_interior,plot_title="Even Mode")
 
+energy = objective(result,G_mat,theta_at_dofs)
 
 x = (n-1)/2 - jnp.arange(n)
 fig, ax = plt.subplots(figsize=(8, 6)) # Creates a figure and a single subplot (axes)
@@ -280,14 +286,18 @@ femsystem._save_fig(plt.gcf(),"Coefficients")
 pickle_obj = {
     "n": n,
     "N": N,
+    "objective": energy, # Final objective value
     "theta_at_dofs": theta_at_dofs,
     "coeffs": coeffs,
     "u_even": u_even,
     "u_odd": u_odd,
     "femsystem": femsystem
 }
-print(pickle_obj)
 with open(plotdir+"results.pkl", 'wb') as f:
     pickle.dump(pickle_obj,f)
 
 print("Part 5 Finished: Saving Plots")
+
+
+lambda_x = 4*gamma(u_even,u_odd,G_mat)
+print(f"Separation = {separation} | Lambda_x: {lambda_x}")

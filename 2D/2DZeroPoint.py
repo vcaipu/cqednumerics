@@ -24,7 +24,7 @@ parser = argparse.ArgumentParser(description="")
 parser.add_argument("--plotdir", type=str, help="Directory to save all plots. MUST end with a slash /")
 parser.add_argument("--sidelen", type=float, help="Sidelength of island. Default set to 20",default=20.0)
 parser.add_argument("--separation", type=float, help="Gap between islands. Default set to 20",default=20.0)
-parser.add_argument("--N", type=int, help="Total number of particles. Default is 5000",default=5000)
+parser.add_argument("--N", type=int, help="Total number of particles. Default is 70",default=70)
 parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 100",default=100)
 args = parser.parse_args()
 plotdir = args.plotdir
@@ -222,7 +222,7 @@ def objective(vec,G_mat,theta_at_dofs):
     E_plus,E_minus = E(u_even,G_mat,theta_at_dofs), E(u_odd,G_mat,theta_at_dofs)
 
     # Construct Objective
-    e0 = ( E_plus + E_minus ) / 2
+    e0 = ( E_plus + E_minus ) / 2 - gamma(u_even,u_odd,G_mat) / N
     hz = ( E_plus - E_minus ) 
 
     cos1= cos_phi(n) #,cos_2phi(N)
@@ -230,7 +230,7 @@ def objective(vec,G_mat,theta_at_dofs):
 
     lambda_x = 4*gamma(u_even,u_odd,G_mat)
     jz2 = Jz2(n)
-    capacitive = lambda_x / N * expval(jz2,coeff_vec_norm)
+    capacitive = lambda_x / (N**2) * expval(jz2,coeff_vec_norm)
 
     return e0 + capacitive + first_harmonic
 

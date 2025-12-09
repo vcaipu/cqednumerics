@@ -13,6 +13,7 @@ from jaxopt import LBFGS
 import jax
 import matplotlib.pyplot as plt
 import argparse
+import pickle
 
 
 '''
@@ -21,8 +22,14 @@ Handle Command Line Args
 
 parser = argparse.ArgumentParser(description="")
 parser.add_argument("--plotdir", type=str, help="Directory to save all plots. MUST end with a slash /")
+parser.add_argument("--sidelen", type=float, help="Sidelength of island. Default set to 20",default=20.0)
+parser.add_argument("--separation", type=float, help="Gap between islands. Default set to 20",default=20.0)
+parser.add_argument("--separation", type=float, help="Gap between islands. Default set to 20",default=20.0)
+parser.add_argument("--separation", type=float, help="Gap between islands. Default set to 20",default=20.0)
 args = parser.parse_args()
 plotdir = args.plotdir
+sidelen = args.sidelen
+separation = args.separation
 
 '''
 Part 1: Create Mesh
@@ -47,8 +54,8 @@ Part 2: Define Geometry
 
 print("Starting Part 2: Defining the Geometry in 2D")
 
-sideLen = 20
-centerLeft,centerRight = (25,0), (-25,0)
+sideLen = sidelen 
+centerLeft,centerRight = ((sideLen + separation)/2,0), (-(sideLen + separation)/2,0)
 area = 2 * (sideLen ** 2)
 
 def theta(x_vec):
@@ -101,26 +108,38 @@ def alpha(u,G_mat):
 
 # U_{+--+} = U{-++-} - Remember middle two are wrt to y, Outer two wrt to x, from notation used in doc
 def beta(u1_arg,u2_arg,G_mat):
-    return femsystem.double_integral(lambda u1,a,b,c,d: u1**2, lambda a,b,u2,c,d: u2**2, G_mat, u1_arg,u2_arg)
+    return integrated_area * femsystem.double_integral(lambda u1,a,b,c,d: u1**2, lambda a,b,u2,c,d: u2**2, G_mat, u1_arg,u2_arg)
 
 # U_{++--} = U{+-+-}
 def gamma(u1_arg,u2_arg,G_mat):
-    return femsystem.double_integral(lambda u1,a,u2,c,d: u1*u2, lambda u1,b,u2,c,d: u1*u2, G_mat, u1_arg,u2_arg)
+    return integrated_area * femsystem.double_integral(lambda u1,a,u2,c,d: u1*u2, lambda u1,b,u2,c,d: u1*u2, G_mat, u1_arg,u2_arg)
 
 '''
 Helper Functions for Matrices
 '''
 
-def Sx(N):
-    return Sz(N)
+# N x N, with k off diagonal all 1s
+def off_diag(N,k):
+    ones_super, ones_sub = jnp.ones(N - k, dtype=jnp.int32),jnp.ones(N - k, dtype=jnp.int32)
+    super_diag_matrix,sub_diag_matrix= jnp.diag(ones_super, k=k),jnp.diag(ones_sub, k=-1*k)
+    result = super_diag_matrix + sub_diag_matrix
+    return result 
 
-def Sy(N):
-    return Sz(N) 
+def cos_phi(N):
+    return off_diag(N,1) / 2
 
-def Sz(N):
+def cos_2phi(N):
+    return off_diag(N,2) / 2
+
+def Jz(N):
     j = (N-1)/2
     diagonals = j - jnp.arange(N)
     return jnp.diag(diagonals)
+
+def Jz2(N):
+    j = (N-1)/2
+    diagonals = j - jnp.arange(N)
+    return jnp.diag(diagonals**2)
 
 def expval(mat,vec):
     return jnp.vdot(vec,mat @ vec)
@@ -181,33 +200,43 @@ Before you start the optimization loop:
 '''
 
 # Set constants
-N = 100 # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
+n = 100 # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
+N = 1000 #Total number of particles
 
 # 1. Defining Objective
 @jax.jit
 def objective(vec,G_mat,theta_at_dofs):
     # Unpack the modes from the coefficients
-    coeff_vec,u_interior = unpack(vec,N)
+    coeff_vec,u_interior = unpack(vec,n)
 
     # Normalize Coeff Vector: 
-    coeff_vec = normalize_vec(coeff_vec)
+    coeff_vec_norm = normalize_vec(coeff_vec)
 
     # Unpack even and odd modes
     u_even,u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_interior)
+    E_plus,E_minus = E(u_even,G_mat,theta_at_dofs), E(u_odd,G_mat,theta_at_dofs)
 
     # Construct Objective
-    e0 = zeropoint(u_even,u_odd,G_mat,theta_at_dofs)
-    spinZ = Sz(N)
-    term1 = expval(spinZ,coeff_vec) * h_z(u_even,u_odd,G_mat,theta_at_dofs)
+    e0 = ( E_plus + E_minus ) / 2
+    hz = ( E_plus - E_minus ) 
 
-    return e0 + term1
+    cos1= cos_phi(n) #,cos_2phi(N)
+    first_harmonic = expval(cos1,coeff_vec_norm) * hz / 2
+
+    lambda_x = 4*gamma(u_even,u_odd,G_mat)
+    jz2 = Jz2(n)
+    capacitive = lambda_x / N * expval(jz2,coeff_vec_norm)
+
+    return e0 + capacitive + first_harmonic
 
 # 2. Computing Interaction Kernel
 G_mat = femsystem.get_greens_kernel()
 
 # 3. Getting Initial Guess
-coeff_vector_init = guess_gaussian(N,100)
-print("Gaussian First Guess, with 100stddevs`")
+coeff_vector_init = guess_gaussian(n,10)
+normed = normalize_vec(coeff_vector_init)
+print(jnp.sum(coeff_vector_init**2),jnp.sum(normed**2))
+print("Gaussian First Guess")
 u_interior_init = femsystem.ones_on_island(theta_right_only)
 initial_guess = jnp.concatenate((coeff_vector_init, u_interior_init), axis=0)
 
@@ -224,7 +253,7 @@ print("Starting Part 4: Running Optimization Loop")
 solver = LBFGS(fun=objective,tol=1e-2,verbose=True)
 result = solver.run(initial_guess,G_mat,theta_at_dofs)
 result = result.params 
-coeffs,u_interior = unpack(result,N)
+coeffs,u_interior = unpack(result,n)
 print("Part 4 Finished: Ran Optimization Loop")
 print("\n\n --------------- \n\n")
 
@@ -240,11 +269,25 @@ femsystem.plot_at_interior_2d_in3d(u_odd_interior,plot_title="Odd Mode")
 femsystem.plot_at_interior_2d_in3d(u_even_interior,plot_title="Even Mode")
 
 
-x = (N-1)/2 - jnp.arange(N)
+x = (n-1)/2 - jnp.arange(n)
 fig, ax = plt.subplots(figsize=(8, 6)) # Creates a figure and a single subplot (axes)
 ax.plot(x,coeffs,".")
 ax.set_xlabel('Charge Imbalance Eigenvalue')
 ax.set_ylabel('Coefficient Value')
 femsystem._save_fig(plt.gcf(),"Coefficients")
+
+# Pickle the results
+pickle_obj = {
+    "n": n,
+    "N": N,
+    "theta_at_dofs": theta_at_dofs,
+    "coeffs": coeffs,
+    "u_even": u_even,
+    "u_odd": u_odd,
+    "femsystem": femsystem
+}
+print(pickle_obj)
+with open(plotdir+"results.pkl", 'wb') as f:
+    pickle.dump(pickle_obj,f)
 
 print("Part 5 Finished: Saving Plots")

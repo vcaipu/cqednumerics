@@ -14,4 +14,4 @@ module purge
 cd /scratch/gpfs/AROD/vc9839/finite-island-cqed
 source start.sh
 
-python3 test.py
+python3 ./2D/sweepseparations.py

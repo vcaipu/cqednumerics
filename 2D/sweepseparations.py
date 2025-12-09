@@ -1,8 +1,7 @@
 import subprocess
 import numpy as np
 
-
-separations = np.arange(1,31,10)
+separations = np.arange(1,31,3)
 
 for sep in separations:
     try:

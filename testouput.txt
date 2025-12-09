@@ -1,2 +1,1199 @@
-gpu
-This is a test from vc9839
+RUNNING WITH SEPARATION 1.0
+Starting Part 1: Creating the Mesh
+Part 1 Finished: Mesh Created
+Degrees of Freedom: 1089
+
+
+ --------------- 
+
+
+Starting Part 2: Defining the Geometry in 2D
+Area Computed: 800.0 | Area Integrated: 703.125
+Plotting Geometry...
+Part 2 Finished: Defined Geometry
+
+
+ --------------- 
+
+
+Starting Part 3: Defining Objective Function
+8.773645 0.99999994
+Gaussian First Guess
+Plotting the Initial Guess
+Part 3 Finished: Defined Objective Function
+
+
+ --------------- 
+
+
+Starting Part 4: Running Optimization Loop
+INFO: jaxopt.LBFGS: Iter: 1 Gradient Norm (stopping criterion): 0.6455549597740173 Objective Value:-169.79623413085938  Stepsize:0.4131636917591095  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 2 Gradient Norm (stopping criterion): 0.5348075032234192 Objective Value:-169.8982696533203  Stepsize:1.0  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 3 Gradient Norm (stopping criterion): 0.9818285703659058 Objective Value:-170.17323303222656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 4 Gradient Norm (stopping criterion): 0.3780152499675751 Objective Value:-170.20982360839844  Stepsize:0.1808963418006897  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 5 Gradient Norm (stopping criterion): 0.30636945366859436 Objective Value:-170.22256469726562  Stepsize:0.27134451270103455  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 6 Gradient Norm (stopping criterion): 0.22881996631622314 Objective Value:-170.23971557617188  Stepsize:0.4070167541503906  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 7 Gradient Norm (stopping criterion): 0.14510586857795715 Objective Value:-170.2663116455078  Stepsize:0.6105251312255859  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 8 Gradient Norm (stopping criterion): 0.15358635783195496 Objective Value:-170.2911834716797  Stepsize:0.9157876968383789  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 9 Gradient Norm (stopping criterion): 0.1635720282793045 Objective Value:-170.3113555908203  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 10 Gradient Norm (stopping criterion): 0.22400669753551483 Objective Value:-170.32061767578125  Stepsize:0.36253881454467773  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 11 Gradient Norm (stopping criterion): 0.1405971646308899 Objective Value:-170.32986450195312  Stepsize:0.5438082218170166  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 12 Gradient Norm (stopping criterion): 0.12312127649784088 Objective Value:-170.33865356445312  Stepsize:0.8157123327255249  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 13 Gradient Norm (stopping criterion): 0.13382752239704132 Objective Value:-170.34169006347656  Stepsize:0.5176082849502563  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 14 Gradient Norm (stopping criterion): 0.1026497483253479 Objective Value:-170.34397888183594  Stepsize:0.7764124274253845  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 15 Gradient Norm (stopping criterion): 0.08860723674297333 Objective Value:-170.3485565185547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 16 Gradient Norm (stopping criterion): 0.15204522013664246 Objective Value:-170.35092163085938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 17 Gradient Norm (stopping criterion): 0.08282975107431412 Objective Value:-170.35379028320312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 18 Gradient Norm (stopping criterion): 0.06329093873500824 Objective Value:-170.35618591308594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 19 Gradient Norm (stopping criterion): 0.07290174812078476 Objective Value:-170.3583984375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 20 Gradient Norm (stopping criterion): 0.12560410797595978 Objective Value:-170.3603515625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 21 Gradient Norm (stopping criterion): 0.07203880697488785 Objective Value:-170.36277770996094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 22 Gradient Norm (stopping criterion): 0.061578381806612015 Objective Value:-170.3656768798828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 23 Gradient Norm (stopping criterion): 0.07111765444278717 Objective Value:-170.3673553466797  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 24 Gradient Norm (stopping criterion): 0.15379884839057922 Objective Value:-170.36773681640625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 25 Gradient Norm (stopping criterion): 0.053688328713178635 Objective Value:-170.3693389892578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 26 Gradient Norm (stopping criterion): 0.04986424744129181 Objective Value:-170.3699188232422  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 27 Gradient Norm (stopping criterion): 0.0876694768667221 Objective Value:-170.37158203125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 28 Gradient Norm (stopping criterion): 0.17531698942184448 Objective Value:-170.37271118164062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 29 Gradient Norm (stopping criterion): 0.07990024238824844 Objective Value:-170.37461853027344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 30 Gradient Norm (stopping criterion): 0.06003512442111969 Objective Value:-170.37588500976562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 31 Gradient Norm (stopping criterion): 0.0705898255109787 Objective Value:-170.37696838378906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 32 Gradient Norm (stopping criterion): 0.13125251233577728 Objective Value:-170.37841796875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 33 Gradient Norm (stopping criterion): 0.07143136858940125 Objective Value:-170.3798828125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 34 Gradient Norm (stopping criterion): 0.05003928020596504 Objective Value:-170.380615234375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 35 Gradient Norm (stopping criterion): 0.05942116677761078 Objective Value:-170.3815460205078  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 36 Gradient Norm (stopping criterion): 0.08391249179840088 Objective Value:-170.38229370117188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 37 Gradient Norm (stopping criterion): 0.05392632633447647 Objective Value:-170.38304138183594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 38 Gradient Norm (stopping criterion): 0.044943273067474365 Objective Value:-170.38392639160156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 39 Gradient Norm (stopping criterion): 0.0651324987411499 Objective Value:-170.38438415527344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 40 Gradient Norm (stopping criterion): 0.05635855346918106 Objective Value:-170.38499450683594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 41 Gradient Norm (stopping criterion): 0.11962255835533142 Objective Value:-170.38587951660156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 42 Gradient Norm (stopping criterion): 0.05744817107915878 Objective Value:-170.38661193847656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 43 Gradient Norm (stopping criterion): 0.027139944955706596 Objective Value:-170.3868865966797  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 44 Gradient Norm (stopping criterion): 0.02317420393228531 Objective Value:-170.38705444335938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 45 Gradient Norm (stopping criterion): 0.03870975971221924 Objective Value:-170.38746643066406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 46 Gradient Norm (stopping criterion): 0.06829645484685898 Objective Value:-170.3876190185547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 47 Gradient Norm (stopping criterion): 0.027929648756980896 Objective Value:-170.38796997070312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 48 Gradient Norm (stopping criterion): 0.02216346748173237 Objective Value:-170.3881378173828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 49 Gradient Norm (stopping criterion): 0.02899622730910778 Objective Value:-170.38833618164062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 50 Gradient Norm (stopping criterion): 0.04413193464279175 Objective Value:-170.38861083984375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 51 Gradient Norm (stopping criterion): 0.050353653728961945 Objective Value:-170.3888702392578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 52 Gradient Norm (stopping criterion): 0.0239503663033247 Objective Value:-170.38905334472656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 53 Gradient Norm (stopping criterion): 0.025285283103585243 Objective Value:-170.38925170898438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 54 Gradient Norm (stopping criterion): 0.02899383008480072 Objective Value:-170.389404296875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 55 Gradient Norm (stopping criterion): 0.07180584222078323 Objective Value:-170.38966369628906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 56 Gradient Norm (stopping criterion): 0.025797925889492035 Objective Value:-170.38998413085938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 57 Gradient Norm (stopping criterion): 0.017899004742503166 Objective Value:-170.3900909423828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 58 Gradient Norm (stopping criterion): 0.022679535672068596 Objective Value:-170.39024353027344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 59 Gradient Norm (stopping criterion): 0.04784461110830307 Objective Value:-170.39031982421875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 60 Gradient Norm (stopping criterion): 0.02180526964366436 Objective Value:-170.3904266357422  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 61 Gradient Norm (stopping criterion): 0.01491258293390274 Objective Value:-170.3905487060547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 62 Gradient Norm (stopping criterion): 0.018710331991314888 Objective Value:-170.39060974121094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 63 Gradient Norm (stopping criterion): 0.020278289914131165 Objective Value:-170.39076232910156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 64 Gradient Norm (stopping criterion): 0.023530971258878708 Objective Value:-170.3908233642578  Stepsize:0.31284964084625244  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 65 Gradient Norm (stopping criterion): 0.017019161954522133 Objective Value:-170.39085388183594  Stepsize:0.46927446126937866  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 66 Gradient Norm (stopping criterion): 0.010852002538740635 Objective Value:-170.39089965820312  Stepsize:0.7039116621017456  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 67 Gradient Norm (stopping criterion): 0.015926001593470573 Objective Value:-170.39093017578125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 68 Gradient Norm (stopping criterion): 0.019452547654509544 Objective Value:-170.39097595214844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 69 Gradient Norm (stopping criterion): 0.03783353418111801 Objective Value:-170.3910675048828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 70 Gradient Norm (stopping criterion): 0.012989743612706661 Objective Value:-170.3911590576172  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 71 Gradient Norm (stopping criterion): 0.00909354630857706 Objective Value:-170.3911895751953  Stepsize:1.0  Number Linesearch Iterations:1 
+Part 4 Finished: Ran Optimization Loop
+
+
+ --------------- 
+
+
+Starting Part 5: Saving Plots
+Part 5 Finished: Saving Plots
+Separation = 1.0 | Lambda_x: 198.5186309814453
+RUNNING WITH SEPARATION 4.0
+Starting Part 1: Creating the Mesh
+Part 1 Finished: Mesh Created
+Degrees of Freedom: 1089
+
+
+ --------------- 
+
+
+Starting Part 2: Defining the Geometry in 2D
+Area Computed: 800.0 | Area Integrated: 703.125
+Plotting Geometry...
+Part 2 Finished: Defined Geometry
+
+
+ --------------- 
+
+
+Starting Part 3: Defining Objective Function
+8.773645 0.99999994
+Gaussian First Guess
+Plotting the Initial Guess
+Part 3 Finished: Defined Objective Function
+
+
+ --------------- 
+
+
+Starting Part 4: Running Optimization Loop
+INFO: jaxopt.LBFGS: Iter: 1 Gradient Norm (stopping criterion): 0.6455392837524414 Objective Value:-169.7962646484375  Stepsize:0.41315484046936035  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 2 Gradient Norm (stopping criterion): 0.5348104238510132 Objective Value:-169.89830017089844  Stepsize:1.0  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 3 Gradient Norm (stopping criterion): 0.9848129153251648 Objective Value:-170.1729736328125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 4 Gradient Norm (stopping criterion): 0.37798652052879333 Objective Value:-170.20974731445312  Stepsize:0.1816408932209015  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 5 Gradient Norm (stopping criterion): 0.30602818727493286 Objective Value:-170.22259521484375  Stepsize:0.2724613547325134  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 6 Gradient Norm (stopping criterion): 0.22837136685848236 Objective Value:-170.2397918701172  Stepsize:0.40869203209877014  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 7 Gradient Norm (stopping criterion): 0.1448872983455658 Objective Value:-170.26646423339844  Stepsize:0.6130380630493164  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 8 Gradient Norm (stopping criterion): 0.15379424393177032 Objective Value:-170.2913360595703  Stepsize:0.9195570945739746  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 9 Gradient Norm (stopping criterion): 0.16562329232692719 Objective Value:-170.31149291992188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 10 Gradient Norm (stopping criterion): 0.26291418075561523 Objective Value:-170.31956481933594  Stepsize:0.3123125731945038  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 11 Gradient Norm (stopping criterion): 0.15616962313652039 Objective Value:-170.3278350830078  Stepsize:0.4684688448905945  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 12 Gradient Norm (stopping criterion): 0.08569229394197464 Objective Value:-170.3358154296875  Stepsize:0.7027032375335693  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 13 Gradient Norm (stopping criterion): 0.14395008981227875 Objective Value:-170.34085083007812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 14 Gradient Norm (stopping criterion): 0.10205642133951187 Objective Value:-170.3448486328125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 15 Gradient Norm (stopping criterion): 0.08160315454006195 Objective Value:-170.34971618652344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 16 Gradient Norm (stopping criterion): 0.13550406694412231 Objective Value:-170.3517303466797  Stepsize:0.5140626430511475  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 17 Gradient Norm (stopping criterion): 0.08125435560941696 Objective Value:-170.35414123535156  Stepsize:0.7710939645767212  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 18 Gradient Norm (stopping criterion): 0.06571383029222488 Objective Value:-170.3564453125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 19 Gradient Norm (stopping criterion): 0.09432848542928696 Objective Value:-170.35841369628906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 20 Gradient Norm (stopping criterion): 0.06692171096801758 Objective Value:-170.36070251464844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 21 Gradient Norm (stopping criterion): 0.06968402117490768 Objective Value:-170.3638458251953  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 22 Gradient Norm (stopping criterion): 0.1309630125761032 Objective Value:-170.36520385742188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 23 Gradient Norm (stopping criterion): 0.05707516521215439 Objective Value:-170.3671875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 24 Gradient Norm (stopping criterion): 0.04904530569911003 Objective Value:-170.36827087402344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 25 Gradient Norm (stopping criterion): 0.08368703722953796 Objective Value:-170.36912536621094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 26 Gradient Norm (stopping criterion): 0.06616580486297607 Objective Value:-170.37010192871094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 27 Gradient Norm (stopping criterion): 0.07198678702116013 Objective Value:-170.3713836669922  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 28 Gradient Norm (stopping criterion): 0.11973435431718826 Objective Value:-170.37306213378906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 29 Gradient Norm (stopping criterion): 0.08938092738389969 Objective Value:-170.3745574951172  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 30 Gradient Norm (stopping criterion): 0.07345090061426163 Objective Value:-170.3756561279297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 31 Gradient Norm (stopping criterion): 0.0913703441619873 Objective Value:-170.3775634765625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 32 Gradient Norm (stopping criterion): 0.1067889854311943 Objective Value:-170.3785400390625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 33 Gradient Norm (stopping criterion): 0.0693189799785614 Objective Value:-170.37942504882812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 34 Gradient Norm (stopping criterion): 0.05205271393060684 Objective Value:-170.38046264648438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 35 Gradient Norm (stopping criterion): 0.058252912014722824 Objective Value:-170.38108825683594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 36 Gradient Norm (stopping criterion): 0.07624433189630508 Objective Value:-170.3823699951172  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 37 Gradient Norm (stopping criterion): 0.10763372480869293 Objective Value:-170.3830108642578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 38 Gradient Norm (stopping criterion): 0.04834563285112381 Objective Value:-170.38375854492188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 39 Gradient Norm (stopping criterion): 0.04192069545388222 Objective Value:-170.38430786132812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 40 Gradient Norm (stopping criterion): 0.054622698575258255 Objective Value:-170.3848114013672  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 41 Gradient Norm (stopping criterion): 0.06306565552949905 Objective Value:-170.3859100341797  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 42 Gradient Norm (stopping criterion): 0.06772512942552567 Objective Value:-170.38623046875  Stepsize:0.2602725923061371  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 43 Gradient Norm (stopping criterion): 0.05199152231216431 Objective Value:-170.38650512695312  Stepsize:0.39040887355804443  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 44 Gradient Norm (stopping criterion): 0.02793511189520359 Objective Value:-170.38685607910156  Stepsize:0.5856133103370667  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 45 Gradient Norm (stopping criterion): 0.026939334347844124 Objective Value:-170.38714599609375  Stepsize:0.8784199953079224  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 46 Gradient Norm (stopping criterion): 0.03912399336695671 Objective Value:-170.38735961914062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 47 Gradient Norm (stopping criterion): 0.05026593804359436 Objective Value:-170.38772583007812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 48 Gradient Norm (stopping criterion): 0.04271756485104561 Objective Value:-170.3882598876953  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 49 Gradient Norm (stopping criterion): 0.08297932893037796 Objective Value:-170.388427734375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 50 Gradient Norm (stopping criterion): 0.02329544723033905 Objective Value:-170.38890075683594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 51 Gradient Norm (stopping criterion): 0.02168744057416916 Objective Value:-170.38900756835938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 52 Gradient Norm (stopping criterion): 0.026851968839764595 Objective Value:-170.38931274414062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 53 Gradient Norm (stopping criterion): 0.04082297906279564 Objective Value:-170.38943481445312  Stepsize:0.46361255645751953  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 54 Gradient Norm (stopping criterion): 0.028718722984194756 Objective Value:-170.3896026611328  Stepsize:0.6954188346862793  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 55 Gradient Norm (stopping criterion): 0.02080387808382511 Objective Value:-170.38986206054688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 56 Gradient Norm (stopping criterion): 0.03697463124990463 Objective Value:-170.38990783691406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 57 Gradient Norm (stopping criterion): 0.022706706076860428 Objective Value:-170.3900146484375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 58 Gradient Norm (stopping criterion): 0.019085893407464027 Objective Value:-170.39019775390625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 59 Gradient Norm (stopping criterion): 0.0202992781996727 Objective Value:-170.39031982421875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 60 Gradient Norm (stopping criterion): 0.034516170620918274 Objective Value:-170.39053344726562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 61 Gradient Norm (stopping criterion): 0.02390378527343273 Objective Value:-170.39059448242188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 62 Gradient Norm (stopping criterion): 0.012513285502791405 Objective Value:-170.39071655273438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 63 Gradient Norm (stopping criterion): 0.012739889323711395 Objective Value:-170.39077758789062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 64 Gradient Norm (stopping criterion): 0.021722029894590378 Objective Value:-170.39076232910156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 65 Gradient Norm (stopping criterion): 0.012996835634112358 Objective Value:-170.39085388183594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 66 Gradient Norm (stopping criterion): 0.010912836529314518 Objective Value:-170.39093017578125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 67 Gradient Norm (stopping criterion): 0.01707184873521328 Objective Value:-170.39093017578125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 68 Gradient Norm (stopping criterion): 0.012166576460003853 Objective Value:-170.3909912109375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 69 Gradient Norm (stopping criterion): 0.009917226620018482 Objective Value:-170.39105224609375  Stepsize:1.0  Number Linesearch Iterations:1 
+Part 4 Finished: Ran Optimization Loop
+
+
+ --------------- 
+
+
+Starting Part 5: Saving Plots
+Part 5 Finished: Saving Plots
+Separation = 4.0 | Lambda_x: 198.6124267578125
+RUNNING WITH SEPARATION 7.0
+Starting Part 1: Creating the Mesh
+Part 1 Finished: Mesh Created
+Degrees of Freedom: 1089
+
+
+ --------------- 
+
+
+Starting Part 2: Defining the Geometry in 2D
+Area Computed: 800.0 | Area Integrated: 843.7499389648438
+Plotting Geometry...
+Part 2 Finished: Defined Geometry
+
+
+ --------------- 
+
+
+Starting Part 3: Defining Objective Function
+8.773645 0.99999994
+Gaussian First Guess
+Plotting the Initial Guess
+Part 3 Finished: Defined Objective Function
+
+
+ --------------- 
+
+
+Starting Part 4: Running Optimization Loop
+INFO: jaxopt.LBFGS: Iter: 1 Gradient Norm (stopping criterion): 0.7573938965797424 Objective Value:-188.7095947265625  Stepsize:0.3904457092285156  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 2 Gradient Norm (stopping criterion): 0.6462301015853882 Objective Value:-188.7839813232422  Stepsize:0.5856685638427734  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 3 Gradient Norm (stopping criterion): 1.7475967407226562 Objective Value:-188.9737548828125  Stepsize:0.8785028457641602  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 4 Gradient Norm (stopping criterion): 0.9532660245895386 Objective Value:-189.08497619628906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 5 Gradient Norm (stopping criterion): 0.42009010910987854 Objective Value:-189.13467407226562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 6 Gradient Norm (stopping criterion): 0.2869976758956909 Objective Value:-189.16029357910156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 7 Gradient Norm (stopping criterion): 0.33390623331069946 Objective Value:-189.2001190185547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 8 Gradient Norm (stopping criterion): 0.3098577857017517 Objective Value:-189.2427978515625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 9 Gradient Norm (stopping criterion): 0.2258979082107544 Objective Value:-189.2863006591797  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 10 Gradient Norm (stopping criterion): 0.12977832555770874 Objective Value:-189.30987548828125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 11 Gradient Norm (stopping criterion): 0.12168632447719574 Objective Value:-189.3195037841797  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 12 Gradient Norm (stopping criterion): 0.19453291594982147 Objective Value:-189.32443237304688  Stepsize:0.4327417314052582  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 13 Gradient Norm (stopping criterion): 0.11761317402124405 Objective Value:-189.3289794921875  Stepsize:0.6491125822067261  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 14 Gradient Norm (stopping criterion): 0.08605659753084183 Objective Value:-189.3341522216797  Stepsize:0.9736688733100891  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 15 Gradient Norm (stopping criterion): 0.0987158939242363 Objective Value:-189.33926391601562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 16 Gradient Norm (stopping criterion): 0.18384145200252533 Objective Value:-189.34506225585938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 17 Gradient Norm (stopping criterion): 0.22921410202980042 Objective Value:-189.34584045410156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 18 Gradient Norm (stopping criterion): 0.06031281128525734 Objective Value:-189.35012817382812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 19 Gradient Norm (stopping criterion): 0.05065954849123955 Objective Value:-189.35107421875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 20 Gradient Norm (stopping criterion): 0.05892200767993927 Objective Value:-189.3531951904297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 21 Gradient Norm (stopping criterion): 0.19234859943389893 Objective Value:-189.35520935058594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 22 Gradient Norm (stopping criterion): 0.0749785453081131 Objective Value:-189.3579559326172  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 23 Gradient Norm (stopping criterion): 0.05898395925760269 Objective Value:-189.35946655273438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 24 Gradient Norm (stopping criterion): 0.1169455423951149 Objective Value:-189.361083984375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 25 Gradient Norm (stopping criterion): 0.10054926574230194 Objective Value:-189.36245727539062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 26 Gradient Norm (stopping criterion): 0.06666544824838638 Objective Value:-189.36366271972656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 27 Gradient Norm (stopping criterion): 0.08580400794744492 Objective Value:-189.36585998535156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 28 Gradient Norm (stopping criterion): 0.11972225457429886 Objective Value:-189.36668395996094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 29 Gradient Norm (stopping criterion): 0.0786026269197464 Objective Value:-189.36758422851562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 30 Gradient Norm (stopping criterion): 0.06981122493743896 Objective Value:-189.36941528320312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 31 Gradient Norm (stopping criterion): 0.08160872012376785 Objective Value:-189.37025451660156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 32 Gradient Norm (stopping criterion): 0.13481679558753967 Objective Value:-189.37152099609375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 33 Gradient Norm (stopping criterion): 0.07812119275331497 Objective Value:-189.37318420410156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 34 Gradient Norm (stopping criterion): 0.07194363325834274 Objective Value:-189.37460327148438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 35 Gradient Norm (stopping criterion): 0.08000441640615463 Objective Value:-189.3761749267578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 36 Gradient Norm (stopping criterion): 0.0887429341673851 Objective Value:-189.37681579589844  Stepsize:0.4752180576324463  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 37 Gradient Norm (stopping criterion): 0.06363851577043533 Objective Value:-189.37745666503906  Stepsize:0.7128270864486694  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 38 Gradient Norm (stopping criterion): 0.05041136220097542 Objective Value:-189.3785858154297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 39 Gradient Norm (stopping criterion): 0.060243118554353714 Objective Value:-189.37925720214844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 40 Gradient Norm (stopping criterion): 0.06808903068304062 Objective Value:-189.3799591064453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 41 Gradient Norm (stopping criterion): 0.0469190813601017 Objective Value:-189.38059997558594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 42 Gradient Norm (stopping criterion): 0.04709767550230026 Objective Value:-189.38125610351562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 43 Gradient Norm (stopping criterion): 0.05412354692816734 Objective Value:-189.38177490234375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 44 Gradient Norm (stopping criterion): 0.0868501290678978 Objective Value:-189.3821258544922  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 45 Gradient Norm (stopping criterion): 0.036449775099754333 Objective Value:-189.38259887695312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 46 Gradient Norm (stopping criterion): 0.03357119858264923 Objective Value:-189.38287353515625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 47 Gradient Norm (stopping criterion): 0.04225744307041168 Objective Value:-189.3832550048828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 48 Gradient Norm (stopping criterion): 0.04854998365044594 Objective Value:-189.38381958007812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 49 Gradient Norm (stopping criterion): 0.052041515707969666 Objective Value:-189.38406372070312  Stepsize:0.37539908289909363  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 50 Gradient Norm (stopping criterion): 0.03739532455801964 Objective Value:-189.38426208496094  Stepsize:0.5630986094474792  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 51 Gradient Norm (stopping criterion): 0.030006641522049904 Objective Value:-189.38461303710938  Stepsize:0.8446478843688965  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 52 Gradient Norm (stopping criterion): 0.04133124276995659 Objective Value:-189.3849639892578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 53 Gradient Norm (stopping criterion): 0.05827587842941284 Objective Value:-189.38528442382812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 54 Gradient Norm (stopping criterion): 0.04529877379536629 Objective Value:-189.3856201171875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 55 Gradient Norm (stopping criterion): 0.02288869023323059 Objective Value:-189.38580322265625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 56 Gradient Norm (stopping criterion): 0.02488138899207115 Objective Value:-189.38597106933594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 57 Gradient Norm (stopping criterion): 0.027641868218779564 Objective Value:-189.38609313964844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 58 Gradient Norm (stopping criterion): 0.06045575439929962 Objective Value:-189.38621520996094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 59 Gradient Norm (stopping criterion): 0.02014109119772911 Objective Value:-189.3863983154297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 60 Gradient Norm (stopping criterion): 0.015886571258306503 Objective Value:-189.38650512695312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 61 Gradient Norm (stopping criterion): 0.018797889351844788 Objective Value:-189.3865509033203  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 62 Gradient Norm (stopping criterion): 0.023232758045196533 Objective Value:-189.38665771484375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 63 Gradient Norm (stopping criterion): 0.019912386313080788 Objective Value:-189.38671875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 64 Gradient Norm (stopping criterion): 0.012207254767417908 Objective Value:-189.3867950439453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 65 Gradient Norm (stopping criterion): 0.01646272838115692 Objective Value:-189.38685607910156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 66 Gradient Norm (stopping criterion): 0.019475098699331284 Objective Value:-189.3869171142578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 67 Gradient Norm (stopping criterion): 0.026151830330491066 Objective Value:-189.38702392578125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 68 Gradient Norm (stopping criterion): 0.013340209610760212 Objective Value:-189.38710021972656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 69 Gradient Norm (stopping criterion): 0.012222467921674252 Objective Value:-189.38711547851562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 70 Gradient Norm (stopping criterion): 0.012180625461041927 Objective Value:-189.3871307373047  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 71 Gradient Norm (stopping criterion): 0.03396366536617279 Objective Value:-189.3871612548828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 72 Gradient Norm (stopping criterion): 0.010269624181091785 Objective Value:-189.38723754882812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 73 Gradient Norm (stopping criterion): 0.00685484055429697 Objective Value:-189.38723754882812  Stepsize:1.0  Number Linesearch Iterations:1 
+Part 4 Finished: Ran Optimization Loop
+
+
+ --------------- 
+
+
+Starting Part 5: Saving Plots
+Part 5 Finished: Saving Plots
+Separation = 7.0 | Lambda_x: 244.58236694335938
+RUNNING WITH SEPARATION 10.0
+Starting Part 1: Creating the Mesh
+Part 1 Finished: Mesh Created
+Degrees of Freedom: 1089
+
+
+ --------------- 
+
+
+Starting Part 2: Defining the Geometry in 2D
+Area Computed: 800.0 | Area Integrated: 703.125
+Plotting Geometry...
+Part 2 Finished: Defined Geometry
+
+
+ --------------- 
+
+
+Starting Part 3: Defining Objective Function
+8.773645 0.99999994
+Gaussian First Guess
+Plotting the Initial Guess
+Part 3 Finished: Defined Objective Function
+
+
+ --------------- 
+
+
+Starting Part 4: Running Optimization Loop
+INFO: jaxopt.LBFGS: Iter: 1 Gradient Norm (stopping criterion): 0.7269896268844604 Objective Value:-153.6080322265625  Stepsize:0.44588786363601685  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 2 Gradient Norm (stopping criterion): 0.640325129032135 Objective Value:-153.69754028320312  Stepsize:0.6688318252563477  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 3 Gradient Norm (stopping criterion): 0.8756393790245056 Objective Value:-153.96315002441406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 4 Gradient Norm (stopping criterion): 1.0527019500732422 Objective Value:-154.0204315185547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 5 Gradient Norm (stopping criterion): 0.4228362441062927 Objective Value:-154.0760498046875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 6 Gradient Norm (stopping criterion): 0.21981921792030334 Objective Value:-154.09945678710938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 7 Gradient Norm (stopping criterion): 0.2195967435836792 Objective Value:-154.13015747070312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 8 Gradient Norm (stopping criterion): 0.21106630563735962 Objective Value:-154.15139770507812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 9 Gradient Norm (stopping criterion): 0.23911543190479279 Objective Value:-154.18582153320312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 10 Gradient Norm (stopping criterion): 0.20980674028396606 Objective Value:-154.2011260986328  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 11 Gradient Norm (stopping criterion): 0.13071244955062866 Objective Value:-154.2118682861328  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 12 Gradient Norm (stopping criterion): 0.1981239765882492 Objective Value:-154.21701049804688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 13 Gradient Norm (stopping criterion): 0.0954018235206604 Objective Value:-154.22279357910156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 14 Gradient Norm (stopping criterion): 0.09990161657333374 Objective Value:-154.22735595703125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 15 Gradient Norm (stopping criterion): 0.0891747921705246 Objective Value:-154.23220825195312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 16 Gradient Norm (stopping criterion): 0.1172802746295929 Objective Value:-154.23867797851562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 17 Gradient Norm (stopping criterion): 0.24731802940368652 Objective Value:-154.24000549316406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 18 Gradient Norm (stopping criterion): 0.08015969395637512 Objective Value:-154.24468994140625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 19 Gradient Norm (stopping criterion): 0.0657913088798523 Objective Value:-154.24603271484375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 20 Gradient Norm (stopping criterion): 0.11708913743495941 Objective Value:-154.24855041503906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 21 Gradient Norm (stopping criterion): 0.14748987555503845 Objective Value:-154.25082397460938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 22 Gradient Norm (stopping criterion): 0.08004122972488403 Objective Value:-154.2532196044922  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 23 Gradient Norm (stopping criterion): 0.06780744343996048 Objective Value:-154.25547790527344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 24 Gradient Norm (stopping criterion): 0.125299870967865 Objective Value:-154.25665283203125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 25 Gradient Norm (stopping criterion): 0.08942612260580063 Objective Value:-154.25820922851562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 26 Gradient Norm (stopping criterion): 0.09108694642782211 Objective Value:-154.26182556152344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 27 Gradient Norm (stopping criterion): 0.15679390728473663 Objective Value:-154.26358032226562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 28 Gradient Norm (stopping criterion): 0.09184690564870834 Objective Value:-154.2654266357422  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 29 Gradient Norm (stopping criterion): 0.0702679380774498 Objective Value:-154.2670440673828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 30 Gradient Norm (stopping criterion): 0.08742640167474747 Objective Value:-154.26840209960938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 31 Gradient Norm (stopping criterion): 0.12817224860191345 Objective Value:-154.27044677734375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 32 Gradient Norm (stopping criterion): 0.10022534430027008 Objective Value:-154.27223205566406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 33 Gradient Norm (stopping criterion): 0.06347204744815826 Objective Value:-154.2734832763672  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 34 Gradient Norm (stopping criterion): 0.06587132811546326 Objective Value:-154.27444458007812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 35 Gradient Norm (stopping criterion): 0.07792066037654877 Objective Value:-154.2754364013672  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 36 Gradient Norm (stopping criterion): 0.08969104290008545 Objective Value:-154.2772674560547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 37 Gradient Norm (stopping criterion): 0.16138288378715515 Objective Value:-154.27764892578125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 38 Gradient Norm (stopping criterion): 0.049483779817819595 Objective Value:-154.279052734375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 39 Gradient Norm (stopping criterion): 0.037022870033979416 Objective Value:-154.27944946289062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 40 Gradient Norm (stopping criterion): 0.04858742281794548 Objective Value:-154.2799530029297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 41 Gradient Norm (stopping criterion): 0.06522618234157562 Objective Value:-154.28077697753906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 42 Gradient Norm (stopping criterion): 0.12998002767562866 Objective Value:-154.28099060058594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 43 Gradient Norm (stopping criterion): 0.04280854016542435 Objective Value:-154.2821044921875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 44 Gradient Norm (stopping criterion): 0.03370966389775276 Objective Value:-154.2823944091797  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 45 Gradient Norm (stopping criterion): 0.04265180602669716 Objective Value:-154.28282165527344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 46 Gradient Norm (stopping criterion): 0.0789671242237091 Objective Value:-154.28335571289062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 47 Gradient Norm (stopping criterion): 0.0500243604183197 Objective Value:-154.2840118408203  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 48 Gradient Norm (stopping criterion): 0.034457769244909286 Objective Value:-154.28451538085938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 49 Gradient Norm (stopping criterion): 0.04673143848776817 Objective Value:-154.28504943847656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 50 Gradient Norm (stopping criterion): 0.05406508967280388 Objective Value:-154.285400390625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 51 Gradient Norm (stopping criterion): 0.04057949036359787 Objective Value:-154.28582763671875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 52 Gradient Norm (stopping criterion): 0.049045611172914505 Objective Value:-154.28648376464844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 53 Gradient Norm (stopping criterion): 0.06011413037776947 Objective Value:-154.2868194580078  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 54 Gradient Norm (stopping criterion): 0.03937187418341637 Objective Value:-154.28712463378906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 55 Gradient Norm (stopping criterion): 0.029605794697999954 Objective Value:-154.28762817382812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 56 Gradient Norm (stopping criterion): 0.031863365322351456 Objective Value:-154.28787231445312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 57 Gradient Norm (stopping criterion): 0.07520116120576859 Objective Value:-154.28819274902344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 58 Gradient Norm (stopping criterion): 0.02813616581261158 Objective Value:-154.28863525390625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 59 Gradient Norm (stopping criterion): 0.022381512448191643 Objective Value:-154.28872680664062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 60 Gradient Norm (stopping criterion): 0.026218362152576447 Objective Value:-154.2889404296875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 61 Gradient Norm (stopping criterion): 0.05914304405450821 Objective Value:-154.28903198242188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 62 Gradient Norm (stopping criterion): 0.023767508566379547 Objective Value:-154.2892608642578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 63 Gradient Norm (stopping criterion): 0.016936155036091805 Objective Value:-154.2893524169922  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 64 Gradient Norm (stopping criterion): 0.01962389424443245 Objective Value:-154.28944396972656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 65 Gradient Norm (stopping criterion): 0.03536303713917732 Objective Value:-154.28958129882812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 66 Gradient Norm (stopping criterion): 0.022563716396689415 Objective Value:-154.2897491455078  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 67 Gradient Norm (stopping criterion): 0.015246911905705929 Objective Value:-154.2898406982422  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 68 Gradient Norm (stopping criterion): 0.019325243309140205 Objective Value:-154.2899627685547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 69 Gradient Norm (stopping criterion): 0.03138378635048866 Objective Value:-154.29002380371094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 70 Gradient Norm (stopping criterion): 0.016410676762461662 Objective Value:-154.29010009765625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 71 Gradient Norm (stopping criterion): 0.013075784780085087 Objective Value:-154.2901611328125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 72 Gradient Norm (stopping criterion): 0.015862446278333664 Objective Value:-154.2902069091797  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 73 Gradient Norm (stopping criterion): 0.015470419079065323 Objective Value:-154.290283203125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 74 Gradient Norm (stopping criterion): 0.024976542219519615 Objective Value:-154.2903289794922  Stepsize:0.3859906792640686  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 75 Gradient Norm (stopping criterion): 0.017149802297353745 Objective Value:-154.29037475585938  Stepsize:0.5789860486984253  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 76 Gradient Norm (stopping criterion): 0.010330908000469208 Objective Value:-154.2904510498047  Stepsize:0.8684790730476379  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 77 Gradient Norm (stopping criterion): 0.013174130581319332 Objective Value:-154.29051208496094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 78 Gradient Norm (stopping criterion): 0.02390582673251629 Objective Value:-154.29054260253906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 79 Gradient Norm (stopping criterion): 0.012363633140921593 Objective Value:-154.2906036376953  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 80 Gradient Norm (stopping criterion): 0.009554320946335793 Objective Value:-154.29063415527344  Stepsize:1.0  Number Linesearch Iterations:1 
+Part 4 Finished: Ran Optimization Loop
+
+
+ --------------- 
+
+
+Starting Part 5: Saving Plots
+Part 5 Finished: Saving Plots
+Separation = 10.0 | Lambda_x: 249.64222717285156
+RUNNING WITH SEPARATION 13.0
+Starting Part 1: Creating the Mesh
+Part 1 Finished: Mesh Created
+Degrees of Freedom: 1089
+
+
+ --------------- 
+
+
+Starting Part 2: Defining the Geometry in 2D
+Area Computed: 800.0 | Area Integrated: 843.75
+Plotting Geometry...
+Part 2 Finished: Defined Geometry
+
+
+ --------------- 
+
+
+Starting Part 3: Defining Objective Function
+8.773645 0.99999994
+Gaussian First Guess
+Plotting the Initial Guess
+Part 3 Finished: Defined Objective Function
+
+
+ --------------- 
+
+
+Starting Part 4: Running Optimization Loop
+INFO: jaxopt.LBFGS: Iter: 1 Gradient Norm (stopping criterion): 0.8469036817550659 Objective Value:-171.0789794921875  Stepsize:0.4219458997249603  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 2 Gradient Norm (stopping criterion): 0.7118052244186401 Objective Value:-171.1800079345703  Stepsize:0.6329188346862793  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 3 Gradient Norm (stopping criterion): 1.0868542194366455 Objective Value:-171.40269470214844  Stepsize:0.949378252029419  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 4 Gradient Norm (stopping criterion): 0.9093047976493835 Objective Value:-171.50588989257812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 5 Gradient Norm (stopping criterion): 0.5340831875801086 Objective Value:-171.5482177734375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 6 Gradient Norm (stopping criterion): 0.3280206024646759 Objective Value:-171.60430908203125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 7 Gradient Norm (stopping criterion): 0.36810702085494995 Objective Value:-171.63287353515625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 8 Gradient Norm (stopping criterion): 0.2751215100288391 Objective Value:-171.69680786132812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 9 Gradient Norm (stopping criterion): 0.14364898204803467 Objective Value:-171.72486877441406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 10 Gradient Norm (stopping criterion): 0.11889293044805527 Objective Value:-171.74098205566406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 11 Gradient Norm (stopping criterion): 0.20346994698047638 Objective Value:-171.75340270996094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 12 Gradient Norm (stopping criterion): 0.24669741094112396 Objective Value:-171.7606658935547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 13 Gradient Norm (stopping criterion): 0.11191385984420776 Objective Value:-171.7678680419922  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 14 Gradient Norm (stopping criterion): 0.10237792879343033 Objective Value:-171.77285766601562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 15 Gradient Norm (stopping criterion): 0.12181825935840607 Objective Value:-171.7772216796875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 16 Gradient Norm (stopping criterion): 0.17168346047401428 Objective Value:-171.77992248535156  Stepsize:0.4549795091152191  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 17 Gradient Norm (stopping criterion): 0.11116748303174973 Objective Value:-171.78269958496094  Stepsize:0.6824692487716675  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 18 Gradient Norm (stopping criterion): 0.08954259753227234 Objective Value:-171.78651428222656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 19 Gradient Norm (stopping criterion): 0.179205521941185 Objective Value:-171.7881317138672  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 20 Gradient Norm (stopping criterion): 0.0936969518661499 Objective Value:-171.79025268554688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 21 Gradient Norm (stopping criterion): 0.07301703840494156 Objective Value:-171.7923126220703  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 22 Gradient Norm (stopping criterion): 0.10166839510202408 Objective Value:-171.79409790039062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 23 Gradient Norm (stopping criterion): 0.19867034256458282 Objective Value:-171.79592895507812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 24 Gradient Norm (stopping criterion): 0.1003120020031929 Objective Value:-171.79830932617188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 25 Gradient Norm (stopping criterion): 0.07412047684192657 Objective Value:-171.79991149902344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 26 Gradient Norm (stopping criterion): 0.09596428275108337 Objective Value:-171.80126953125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 27 Gradient Norm (stopping criterion): 0.13658402860164642 Objective Value:-171.8027801513672  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 28 Gradient Norm (stopping criterion): 0.10286038368940353 Objective Value:-171.8046875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 29 Gradient Norm (stopping criterion): 0.10327649861574173 Objective Value:-171.80807495117188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 30 Gradient Norm (stopping criterion): 0.16526278853416443 Objective Value:-171.80966186523438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 31 Gradient Norm (stopping criterion): 0.09303627163171768 Objective Value:-171.811279296875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 32 Gradient Norm (stopping criterion): 0.07271801680326462 Objective Value:-171.81288146972656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 33 Gradient Norm (stopping criterion): 0.08836404234170914 Objective Value:-171.81407165527344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 34 Gradient Norm (stopping criterion): 0.13207457959651947 Objective Value:-171.81568908691406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 35 Gradient Norm (stopping criterion): 0.08544018864631653 Objective Value:-171.8173065185547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 36 Gradient Norm (stopping criterion): 0.07062748074531555 Objective Value:-171.818603515625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 37 Gradient Norm (stopping criterion): 0.10341275483369827 Objective Value:-171.82077026367188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 38 Gradient Norm (stopping criterion): 0.12620438635349274 Objective Value:-171.82240295410156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 39 Gradient Norm (stopping criterion): 0.08215527981519699 Objective Value:-171.82400512695312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 40 Gradient Norm (stopping criterion): 0.07082479447126389 Objective Value:-171.82565307617188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 41 Gradient Norm (stopping criterion): 0.07527528703212738 Objective Value:-171.8264617919922  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 42 Gradient Norm (stopping criterion): 0.06793142855167389 Objective Value:-171.82737731933594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 43 Gradient Norm (stopping criterion): 0.14120876789093018 Objective Value:-171.82858276367188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 44 Gradient Norm (stopping criterion): 0.059558600187301636 Objective Value:-171.82998657226562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 45 Gradient Norm (stopping criterion): 0.0439913235604763 Objective Value:-171.83047485351562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 46 Gradient Norm (stopping criterion): 0.044425807893276215 Objective Value:-171.83128356933594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 47 Gradient Norm (stopping criterion): 0.1070929616689682 Objective Value:-171.83154296875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 48 Gradient Norm (stopping criterion): 0.04652084410190582 Objective Value:-171.8321533203125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 49 Gradient Norm (stopping criterion): 0.03604469820857048 Objective Value:-171.83262634277344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 50 Gradient Norm (stopping criterion): 0.044806938618421555 Objective Value:-171.8330841064453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 51 Gradient Norm (stopping criterion): 0.052686210721731186 Objective Value:-171.8337860107422  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 52 Gradient Norm (stopping criterion): 0.058639682829380035 Objective Value:-171.8341064453125  Stepsize:0.36339080333709717  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 53 Gradient Norm (stopping criterion): 0.0410260446369648 Objective Value:-171.83433532714844  Stepsize:0.5450862050056458  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 54 Gradient Norm (stopping criterion): 0.029436739161610603 Objective Value:-171.83477783203125  Stepsize:0.817629337310791  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 55 Gradient Norm (stopping criterion): 0.041349075734615326 Objective Value:-171.83509826660156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 56 Gradient Norm (stopping criterion): 0.05343279987573624 Objective Value:-171.83555603027344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 57 Gradient Norm (stopping criterion): 0.07355114072561264 Objective Value:-171.83580017089844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 58 Gradient Norm (stopping criterion): 0.029859373345971107 Objective Value:-171.83615112304688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 59 Gradient Norm (stopping criterion): 0.024076446890830994 Objective Value:-171.8363494873047  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 60 Gradient Norm (stopping criterion): 0.027623634785413742 Objective Value:-171.8364715576172  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 61 Gradient Norm (stopping criterion): 0.05763925611972809 Objective Value:-171.83668518066406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 62 Gradient Norm (stopping criterion): 0.025081366300582886 Objective Value:-171.8368682861328  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 63 Gradient Norm (stopping criterion): 0.017260396853089333 Objective Value:-171.83697509765625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 64 Gradient Norm (stopping criterion): 0.020288966596126556 Objective Value:-171.8371124267578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 65 Gradient Norm (stopping criterion): 0.024053165689110756 Objective Value:-171.8372344970703  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 66 Gradient Norm (stopping criterion): 0.049478333443403244 Objective Value:-171.8373565673828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 67 Gradient Norm (stopping criterion): 0.017532140016555786 Objective Value:-171.83750915527344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 68 Gradient Norm (stopping criterion): 0.017277387902140617 Objective Value:-171.83761596679688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 69 Gradient Norm (stopping criterion): 0.022357966750860214 Objective Value:-171.8376922607422  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 70 Gradient Norm (stopping criterion): 0.042321424931287766 Objective Value:-171.8378143310547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 71 Gradient Norm (stopping criterion): 0.021904606372117996 Objective Value:-171.8379669189453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 72 Gradient Norm (stopping criterion): 0.018013110384345055 Objective Value:-171.83807373046875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 73 Gradient Norm (stopping criterion): 0.024576017633080482 Objective Value:-171.8382110595703  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 74 Gradient Norm (stopping criterion): 0.03224155306816101 Objective Value:-171.83828735351562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 75 Gradient Norm (stopping criterion): 0.017533695325255394 Objective Value:-171.8384246826172  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 76 Gradient Norm (stopping criterion): 0.013176077045500278 Objective Value:-171.83848571777344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 77 Gradient Norm (stopping criterion): 0.016578804701566696 Objective Value:-171.83851623535156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 78 Gradient Norm (stopping criterion): 0.013900439254939556 Objective Value:-171.83860778808594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 79 Gradient Norm (stopping criterion): 0.015497846528887749 Objective Value:-171.83865356445312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 80 Gradient Norm (stopping criterion): 0.025696799159049988 Objective Value:-171.83871459960938  Stepsize:0.562469482421875  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 81 Gradient Norm (stopping criterion): 0.014010623097419739 Objective Value:-171.8388214111328  Stepsize:0.8437042236328125  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 82 Gradient Norm (stopping criterion): 0.01060464046895504 Objective Value:-171.83888244628906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 83 Gradient Norm (stopping criterion): 0.014844625256955624 Objective Value:-171.83889770507812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 84 Gradient Norm (stopping criterion): 0.015761444345116615 Objective Value:-171.8389434814453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 85 Gradient Norm (stopping criterion): 0.012273997068405151 Objective Value:-171.8389892578125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 86 Gradient Norm (stopping criterion): 0.012061693705618382 Objective Value:-171.83905029296875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 87 Gradient Norm (stopping criterion): 0.015020941384136677 Objective Value:-171.8390655517578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 88 Gradient Norm (stopping criterion): 0.010570882819592953 Objective Value:-171.839111328125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 89 Gradient Norm (stopping criterion): 0.011921057477593422 Objective Value:-171.8391571044922  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 90 Gradient Norm (stopping criterion): 0.016818994656205177 Objective Value:-171.83920288085938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 91 Gradient Norm (stopping criterion): 0.010319612920284271 Objective Value:-171.8391876220703  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 92 Gradient Norm (stopping criterion): 0.008167637512087822 Objective Value:-171.83920288085938  Stepsize:1.0  Number Linesearch Iterations:1 
+Part 4 Finished: Ran Optimization Loop
+
+
+ --------------- 
+
+
+Starting Part 5: Saving Plots
+Part 5 Finished: Saving Plots
+Separation = 13.0 | Lambda_x: 296.8053283691406
+RUNNING WITH SEPARATION 16.0
+Starting Part 1: Creating the Mesh
+Part 1 Finished: Mesh Created
+Degrees of Freedom: 1089
+
+
+ --------------- 
+
+
+Starting Part 2: Defining the Geometry in 2D
+Area Computed: 800.0 | Area Integrated: 703.125
+Plotting Geometry...
+Part 2 Finished: Defined Geometry
+
+
+ --------------- 
+
+
+Starting Part 3: Defining Objective Function
+8.773645 0.99999994
+Gaussian First Guess
+Plotting the Initial Guess
+Part 3 Finished: Defined Objective Function
+
+
+ --------------- 
+
+
+Starting Part 4: Running Optimization Loop
+INFO: jaxopt.LBFGS: Iter: 1 Gradient Norm (stopping criterion): 0.7851176261901855 Objective Value:-140.77684020996094  Stepsize:0.46560928225517273  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 2 Gradient Norm (stopping criterion): 0.6795721054077148 Objective Value:-140.88726806640625  Stepsize:0.6984139084815979  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 3 Gradient Norm (stopping criterion): 0.9276950359344482 Objective Value:-141.1472625732422  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 4 Gradient Norm (stopping criterion): 0.8585838079452515 Objective Value:-141.23385620117188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 5 Gradient Norm (stopping criterion): 0.44403889775276184 Objective Value:-141.27716064453125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 6 Gradient Norm (stopping criterion): 0.1977533996105194 Objective Value:-141.31248474121094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 7 Gradient Norm (stopping criterion): 0.22701719403266907 Objective Value:-141.33950805664062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 8 Gradient Norm (stopping criterion): 0.200028657913208 Objective Value:-141.36859130859375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 9 Gradient Norm (stopping criterion): 0.2115703672170639 Objective Value:-141.4041748046875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 10 Gradient Norm (stopping criterion): 0.3254818022251129 Objective Value:-141.4131317138672  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 11 Gradient Norm (stopping criterion): 0.2647530138492584 Objective Value:-141.42608642578125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 12 Gradient Norm (stopping criterion): 0.09313809871673584 Objective Value:-141.43255615234375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 13 Gradient Norm (stopping criterion): 0.081358902156353 Objective Value:-141.43585205078125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 14 Gradient Norm (stopping criterion): 0.10264389216899872 Objective Value:-141.4430389404297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 15 Gradient Norm (stopping criterion): 0.1900726556777954 Objective Value:-141.44537353515625  Stepsize:0.39771604537963867  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 16 Gradient Norm (stopping criterion): 0.1343647986650467 Objective Value:-141.44850158691406  Stepsize:0.596574068069458  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 17 Gradient Norm (stopping criterion): 0.08926691114902496 Objective Value:-141.45285034179688  Stepsize:0.894861102104187  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 18 Gradient Norm (stopping criterion): 0.22237591445446014 Objective Value:-141.45364379882812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 19 Gradient Norm (stopping criterion): 0.0844997987151146 Objective Value:-141.45611572265625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 20 Gradient Norm (stopping criterion): 0.06597739458084106 Objective Value:-141.45751953125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 21 Gradient Norm (stopping criterion): 0.10172457993030548 Objective Value:-141.45985412597656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 22 Gradient Norm (stopping criterion): 0.13794998824596405 Objective Value:-141.4627685546875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 23 Gradient Norm (stopping criterion): 0.21351885795593262 Objective Value:-141.46463012695312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 24 Gradient Norm (stopping criterion): 0.0784376859664917 Objective Value:-141.46763610839844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 25 Gradient Norm (stopping criterion): 0.07515186071395874 Objective Value:-141.46893310546875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 26 Gradient Norm (stopping criterion): 0.09218517690896988 Objective Value:-141.47021484375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 27 Gradient Norm (stopping criterion): 0.1993098258972168 Objective Value:-141.47137451171875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 28 Gradient Norm (stopping criterion): 0.07915834337472916 Objective Value:-141.47366333007812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 29 Gradient Norm (stopping criterion): 0.09431590139865875 Objective Value:-141.47567749023438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 30 Gradient Norm (stopping criterion): 0.12901613116264343 Objective Value:-141.47802734375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 31 Gradient Norm (stopping criterion): 0.18911749124526978 Objective Value:-141.48043823242188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 32 Gradient Norm (stopping criterion): 0.11034653335809708 Objective Value:-141.4824676513672  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 33 Gradient Norm (stopping criterion): 0.06760761886835098 Objective Value:-141.48374938964844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 34 Gradient Norm (stopping criterion): 0.09861194342374802 Objective Value:-141.4851837158203  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 35 Gradient Norm (stopping criterion): 0.11312360316514969 Objective Value:-141.48651123046875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 36 Gradient Norm (stopping criterion): 0.1758342683315277 Objective Value:-141.48809814453125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 37 Gradient Norm (stopping criterion): 0.07593395560979843 Objective Value:-141.49014282226562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 38 Gradient Norm (stopping criterion): 0.07395569980144501 Objective Value:-141.49124145507812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 39 Gradient Norm (stopping criterion): 0.09268932044506073 Objective Value:-141.49267578125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 40 Gradient Norm (stopping criterion): 0.12227648496627808 Objective Value:-141.49400329589844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 41 Gradient Norm (stopping criterion): 0.060710545629262924 Objective Value:-141.4953155517578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 42 Gradient Norm (stopping criterion): 0.04932238906621933 Objective Value:-141.49610900878906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 43 Gradient Norm (stopping criterion): 0.06455352157354355 Objective Value:-141.496826171875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 44 Gradient Norm (stopping criterion): 0.07204898446798325 Objective Value:-141.49746704101562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 45 Gradient Norm (stopping criterion): 0.04822591319680214 Objective Value:-141.4981231689453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 46 Gradient Norm (stopping criterion): 0.04365498945116997 Objective Value:-141.498779296875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 47 Gradient Norm (stopping criterion): 0.053714051842689514 Objective Value:-141.49932861328125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 48 Gradient Norm (stopping criterion): 0.06809438019990921 Objective Value:-141.49986267089844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 49 Gradient Norm (stopping criterion): 0.0432940237224102 Objective Value:-141.50047302246094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 50 Gradient Norm (stopping criterion): 0.042179256677627563 Objective Value:-141.50111389160156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 51 Gradient Norm (stopping criterion): 0.05149272456765175 Objective Value:-141.50155639648438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 52 Gradient Norm (stopping criterion): 0.04483442008495331 Objective Value:-141.5022735595703  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 53 Gradient Norm (stopping criterion): 0.05916281417012215 Objective Value:-141.50277709960938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 54 Gradient Norm (stopping criterion): 0.040762759745121 Objective Value:-141.50328063964844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 55 Gradient Norm (stopping criterion): 0.03595716506242752 Objective Value:-141.50363159179688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 56 Gradient Norm (stopping criterion): 0.05304044857621193 Objective Value:-141.50405883789062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 57 Gradient Norm (stopping criterion): 0.03427644073963165 Objective Value:-141.5044708251953  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 58 Gradient Norm (stopping criterion): 0.028631530702114105 Objective Value:-141.5047149658203  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 59 Gradient Norm (stopping criterion): 0.040128692984580994 Objective Value:-141.50497436523438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 60 Gradient Norm (stopping criterion): 0.030279409140348434 Objective Value:-141.50521850585938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 61 Gradient Norm (stopping criterion): 0.0251577477902174 Objective Value:-141.50538635253906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 62 Gradient Norm (stopping criterion): 0.03327088803052902 Objective Value:-141.50564575195312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 63 Gradient Norm (stopping criterion): 0.040387000888586044 Objective Value:-141.5057830810547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 64 Gradient Norm (stopping criterion): 0.02135992981493473 Objective Value:-141.5059356689453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 65 Gradient Norm (stopping criterion): 0.01826525665819645 Objective Value:-141.50604248046875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 66 Gradient Norm (stopping criterion): 0.021071771159768105 Objective Value:-141.50616455078125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 67 Gradient Norm (stopping criterion): 0.04386346787214279 Objective Value:-141.5063018798828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 68 Gradient Norm (stopping criterion): 0.016616633161902428 Objective Value:-141.50637817382812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 69 Gradient Norm (stopping criterion): 0.015441046096384525 Objective Value:-141.50645446777344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 70 Gradient Norm (stopping criterion): 0.018247006461024284 Objective Value:-141.50656127929688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 71 Gradient Norm (stopping criterion): 0.05890573561191559 Objective Value:-141.50660705566406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 72 Gradient Norm (stopping criterion): 0.018441518768668175 Objective Value:-141.50674438476562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 73 Gradient Norm (stopping criterion): 0.013010173104703426 Objective Value:-141.50682067871094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 74 Gradient Norm (stopping criterion): 0.015507918782532215 Objective Value:-141.5069122314453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 75 Gradient Norm (stopping criterion): 0.01626523584127426 Objective Value:-141.50697326660156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 76 Gradient Norm (stopping criterion): 0.026990076526999474 Objective Value:-141.50706481933594  Stepsize:0.44988948106765747  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 77 Gradient Norm (stopping criterion): 0.014663451351225376 Objective Value:-141.507080078125  Stepsize:0.6748342514038086  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 78 Gradient Norm (stopping criterion): 0.010592779144644737 Objective Value:-141.5071563720703  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 79 Gradient Norm (stopping criterion): 0.01280857902020216 Objective Value:-141.5072021484375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 80 Gradient Norm (stopping criterion): 0.020846480503678322 Objective Value:-141.50721740722656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 81 Gradient Norm (stopping criterion): 0.01619630493223667 Objective Value:-141.50729370117188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 82 Gradient Norm (stopping criterion): 0.015440358780324459 Objective Value:-141.50735473632812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 83 Gradient Norm (stopping criterion): 0.025477727875113487 Objective Value:-141.5074005126953  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 84 Gradient Norm (stopping criterion): 0.019967058673501015 Objective Value:-141.50746154785156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 85 Gradient Norm (stopping criterion): 0.011155489832162857 Objective Value:-141.5074920654297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 86 Gradient Norm (stopping criterion): 0.00937629584223032 Objective Value:-141.50755310058594  Stepsize:1.0  Number Linesearch Iterations:1 
+Part 4 Finished: Ran Optimization Loop
+
+
+ --------------- 
+
+
+Starting Part 5: Saving Plots
+Part 5 Finished: Saving Plots
+Separation = 16.0 | Lambda_x: 285.2054748535156
+RUNNING WITH SEPARATION 19.0
+Starting Part 1: Creating the Mesh
+Part 1 Finished: Mesh Created
+Degrees of Freedom: 1089
+
+
+ --------------- 
+
+
+Starting Part 2: Defining the Geometry in 2D
+Area Computed: 800.0 | Area Integrated: 703.125
+Plotting Geometry...
+Part 2 Finished: Defined Geometry
+
+
+ --------------- 
+
+
+Starting Part 3: Defining Objective Function
+8.773645 0.99999994
+Gaussian First Guess
+Plotting the Initial Guess
+Part 3 Finished: Defined Objective Function
+
+
+ --------------- 
+
+
+Starting Part 4: Running Optimization Loop
+INFO: jaxopt.LBFGS: Iter: 1 Gradient Norm (stopping criterion): 0.7851039171218872 Objective Value:-140.77687072753906  Stepsize:0.4656045138835907  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 2 Gradient Norm (stopping criterion): 0.679564893245697 Objective Value:-140.88726806640625  Stepsize:0.6984067559242249  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 3 Gradient Norm (stopping criterion): 0.9279335737228394 Objective Value:-141.14723205566406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 4 Gradient Norm (stopping criterion): 0.8585638403892517 Objective Value:-141.2338409423828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 5 Gradient Norm (stopping criterion): 0.4440172612667084 Objective Value:-141.27716064453125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 6 Gradient Norm (stopping criterion): 0.19776324927806854 Objective Value:-141.31246948242188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 7 Gradient Norm (stopping criterion): 0.22700385749340057 Objective Value:-141.33949279785156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 8 Gradient Norm (stopping criterion): 0.20004045963287354 Objective Value:-141.3686065673828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 9 Gradient Norm (stopping criterion): 0.2113083004951477 Objective Value:-141.4041748046875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 10 Gradient Norm (stopping criterion): 0.2978813350200653 Objective Value:-141.41407775878906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 11 Gradient Norm (stopping criterion): 0.22884418070316315 Objective Value:-141.42759704589844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 12 Gradient Norm (stopping criterion): 0.09401051700115204 Objective Value:-141.4334716796875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 13 Gradient Norm (stopping criterion): 0.08356276899576187 Objective Value:-141.4368896484375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 14 Gradient Norm (stopping criterion): 0.1766931265592575 Objective Value:-141.44471740722656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 15 Gradient Norm (stopping criterion): 0.136452779173851 Objective Value:-141.44805908203125  Stepsize:0.4150155484676361  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 16 Gradient Norm (stopping criterion): 0.09420161694288254 Objective Value:-141.44998168945312  Stepsize:0.622523307800293  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 17 Gradient Norm (stopping criterion): 0.07487456500530243 Objective Value:-141.45333862304688  Stepsize:0.9337849617004395  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 18 Gradient Norm (stopping criterion): 0.22383920848369598 Objective Value:-141.45376586914062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 19 Gradient Norm (stopping criterion): 0.09513067454099655 Objective Value:-141.4559783935547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 20 Gradient Norm (stopping criterion): 0.06464138627052307 Objective Value:-141.45790100097656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 21 Gradient Norm (stopping criterion): 0.12202409654855728 Objective Value:-141.46096801757812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 22 Gradient Norm (stopping criterion): 0.12437448650598526 Objective Value:-141.46417236328125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 23 Gradient Norm (stopping criterion): 0.1757693886756897 Objective Value:-141.4650421142578  Stepsize:0.1958167552947998  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 24 Gradient Norm (stopping criterion): 0.14978894591331482 Objective Value:-141.46592712402344  Stepsize:0.2937251329421997  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 25 Gradient Norm (stopping criterion): 0.10009001195430756 Objective Value:-141.468017578125  Stepsize:0.44058769941329956  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 26 Gradient Norm (stopping criterion): 0.07501175254583359 Objective Value:-141.4706573486328  Stepsize:0.660881519317627  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 27 Gradient Norm (stopping criterion): 0.15315894782543182 Objective Value:-141.47279357910156  Stepsize:0.9913222789764404  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 28 Gradient Norm (stopping criterion): 0.1335008293390274 Objective Value:-141.474609375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 29 Gradient Norm (stopping criterion): 0.11250051110982895 Objective Value:-141.4764404296875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 30 Gradient Norm (stopping criterion): 0.18105949461460114 Objective Value:-141.47872924804688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 31 Gradient Norm (stopping criterion): 0.10276896506547928 Objective Value:-141.48074340820312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 32 Gradient Norm (stopping criterion): 0.09662158042192459 Objective Value:-141.4818878173828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 33 Gradient Norm (stopping criterion): 0.15194416046142578 Objective Value:-141.4851531982422  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 34 Gradient Norm (stopping criterion): 0.1825002133846283 Objective Value:-141.48573303222656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 35 Gradient Norm (stopping criterion): 0.07333043962717056 Objective Value:-141.48724365234375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 36 Gradient Norm (stopping criterion): 0.050115637481212616 Objective Value:-141.48806762695312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 37 Gradient Norm (stopping criterion): 0.08750125020742416 Objective Value:-141.48971557617188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 38 Gradient Norm (stopping criterion): 0.09237401932477951 Objective Value:-141.49114990234375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 39 Gradient Norm (stopping criterion): 0.14054809510707855 Objective Value:-141.49221801757812  Stepsize:0.42321673035621643  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 40 Gradient Norm (stopping criterion): 0.09339125454425812 Objective Value:-141.4936065673828  Stepsize:0.6348251104354858  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 41 Gradient Norm (stopping criterion): 0.05151750519871712 Objective Value:-141.49525451660156  Stepsize:0.9522376656532288  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 42 Gradient Norm (stopping criterion): 0.06976078450679779 Objective Value:-141.4958953857422  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 43 Gradient Norm (stopping criterion): 0.06486564874649048 Objective Value:-141.49659729003906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 44 Gradient Norm (stopping criterion): 0.06507769972085953 Objective Value:-141.4977264404297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 45 Gradient Norm (stopping criterion): 0.09198058396577835 Objective Value:-141.4984130859375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 46 Gradient Norm (stopping criterion): 0.04321151226758957 Objective Value:-141.4990692138672  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 47 Gradient Norm (stopping criterion): 0.0387805812060833 Objective Value:-141.4994354248047  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 48 Gradient Norm (stopping criterion): 0.05380021035671234 Objective Value:-141.49996948242188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 49 Gradient Norm (stopping criterion): 0.08387377113103867 Objective Value:-141.50082397460938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 50 Gradient Norm (stopping criterion): 0.05048849806189537 Objective Value:-141.50155639648438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 51 Gradient Norm (stopping criterion): 0.03354614973068237 Objective Value:-141.5019073486328  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 52 Gradient Norm (stopping criterion): 0.038929883390665054 Objective Value:-141.50216674804688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 53 Gradient Norm (stopping criterion): 0.04035503417253494 Objective Value:-141.50247192382812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 54 Gradient Norm (stopping criterion): 0.04495057463645935 Objective Value:-141.50303649902344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 55 Gradient Norm (stopping criterion): 0.11223592609167099 Objective Value:-141.5032196044922  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 56 Gradient Norm (stopping criterion): 0.03259352594614029 Objective Value:-141.50392150878906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 57 Gradient Norm (stopping criterion): 0.026272283867001534 Objective Value:-141.50413513183594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 58 Gradient Norm (stopping criterion): 0.034813545644283295 Objective Value:-141.50448608398438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 59 Gradient Norm (stopping criterion): 0.07700794190168381 Objective Value:-141.50466918945312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 60 Gradient Norm (stopping criterion): 0.027917496860027313 Objective Value:-141.5050048828125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 61 Gradient Norm (stopping criterion): 0.017580587416887283 Objective Value:-141.50511169433594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 62 Gradient Norm (stopping criterion): 0.020231034606695175 Objective Value:-141.5051727294922  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 63 Gradient Norm (stopping criterion): 0.026048550382256508 Objective Value:-141.50537109375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 64 Gradient Norm (stopping criterion): 0.06223904341459274 Objective Value:-141.5054931640625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 65 Gradient Norm (stopping criterion): 0.024101514369249344 Objective Value:-141.50576782226562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 66 Gradient Norm (stopping criterion): 0.017723483964800835 Objective Value:-141.505859375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 67 Gradient Norm (stopping criterion): 0.020368998870253563 Objective Value:-141.50595092773438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 68 Gradient Norm (stopping criterion): 0.0340341255068779 Objective Value:-141.5060577392578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 69 Gradient Norm (stopping criterion): 0.02390037663280964 Objective Value:-141.50624084472656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 70 Gradient Norm (stopping criterion): 0.020879028365015984 Objective Value:-141.5063934326172  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 71 Gradient Norm (stopping criterion): 0.033757202327251434 Objective Value:-141.50653076171875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 72 Gradient Norm (stopping criterion): 0.023896781727671623 Objective Value:-141.50665283203125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 73 Gradient Norm (stopping criterion): 0.018253766000270844 Objective Value:-141.50677490234375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 74 Gradient Norm (stopping criterion): 0.028670061379671097 Objective Value:-141.50686645507812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 75 Gradient Norm (stopping criterion): 0.02165895886719227 Objective Value:-141.50697326660156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 76 Gradient Norm (stopping criterion): 0.01593967340886593 Objective Value:-141.50698852539062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 77 Gradient Norm (stopping criterion): 0.01643192209303379 Objective Value:-141.50711059570312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 78 Gradient Norm (stopping criterion): 0.029074233025312424 Objective Value:-141.50714111328125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 79 Gradient Norm (stopping criterion): 0.017146611586213112 Objective Value:-141.50723266601562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 80 Gradient Norm (stopping criterion): 0.013015802949666977 Objective Value:-141.50729370117188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 81 Gradient Norm (stopping criterion): 0.014208698645234108 Objective Value:-141.50735473632812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 82 Gradient Norm (stopping criterion): 0.037073589861392975 Objective Value:-141.5074005126953  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 83 Gradient Norm (stopping criterion): 0.012652844190597534 Objective Value:-141.50747680664062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 84 Gradient Norm (stopping criterion): 0.008297313936054707 Objective Value:-141.5074920654297  Stepsize:1.0  Number Linesearch Iterations:1 
+Part 4 Finished: Ran Optimization Loop
+
+
+ --------------- 
+
+
+Starting Part 5: Saving Plots
+Part 5 Finished: Saving Plots
+Separation = 19.0 | Lambda_x: 285.217529296875
+RUNNING WITH SEPARATION 22.0
+Starting Part 1: Creating the Mesh
+Part 1 Finished: Mesh Created
+Degrees of Freedom: 1089
+
+
+ --------------- 
+
+
+Starting Part 2: Defining the Geometry in 2D
+Area Computed: 800.0 | Area Integrated: 843.75
+Plotting Geometry...
+Part 2 Finished: Defined Geometry
+
+
+ --------------- 
+
+
+Starting Part 3: Defining Objective Function
+8.773645 0.99999994
+Gaussian First Guess
+Plotting the Initial Guess
+Part 3 Finished: Defined Objective Function
+
+
+ --------------- 
+
+
+Starting Part 4: Running Optimization Loop
+INFO: jaxopt.LBFGS: Iter: 1 Gradient Norm (stopping criterion): 0.9116304516792297 Objective Value:-156.73101806640625  Stepsize:0.43786516785621643  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 2 Gradient Norm (stopping criterion): 0.7638869285583496 Objective Value:-156.8510284423828  Stepsize:0.6567977666854858  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 3 Gradient Norm (stopping criterion): 0.7974879741668701 Objective Value:-157.09263610839844  Stepsize:0.9851966500282288  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 4 Gradient Norm (stopping criterion): 0.832760751247406 Objective Value:-157.19859313964844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 5 Gradient Norm (stopping criterion): 0.5429061055183411 Objective Value:-157.2510986328125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 6 Gradient Norm (stopping criterion): 0.33584722876548767 Objective Value:-157.31884765625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 7 Gradient Norm (stopping criterion): 0.3317432701587677 Objective Value:-157.34642028808594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 8 Gradient Norm (stopping criterion): 0.17512066662311554 Objective Value:-157.40333557128906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 9 Gradient Norm (stopping criterion): 0.19289040565490723 Objective Value:-157.4282684326172  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 10 Gradient Norm (stopping criterion): 0.4205165505409241 Objective Value:-157.43084716796875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 11 Gradient Norm (stopping criterion): 0.132747083902359 Objective Value:-157.44935607910156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 12 Gradient Norm (stopping criterion): 0.10677109658718109 Objective Value:-157.45428466796875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 13 Gradient Norm (stopping criterion): 0.16746963560581207 Objective Value:-157.46006774902344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 14 Gradient Norm (stopping criterion): 0.2066299468278885 Objective Value:-157.4650421142578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 15 Gradient Norm (stopping criterion): 0.11860018968582153 Objective Value:-157.46974182128906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 16 Gradient Norm (stopping criterion): 0.10834652185440063 Objective Value:-157.4746856689453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 17 Gradient Norm (stopping criterion): 0.1831226348876953 Objective Value:-157.47747802734375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 18 Gradient Norm (stopping criterion): 0.10331708192825317 Objective Value:-157.4805450439453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 19 Gradient Norm (stopping criterion): 0.08819480985403061 Objective Value:-157.48301696777344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 20 Gradient Norm (stopping criterion): 0.13516917824745178 Objective Value:-157.48580932617188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 21 Gradient Norm (stopping criterion): 0.1714448630809784 Objective Value:-157.48780822753906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 22 Gradient Norm (stopping criterion): 0.10272715985774994 Objective Value:-157.4898223876953  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 23 Gradient Norm (stopping criterion): 0.08150400966405869 Objective Value:-157.49163818359375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 24 Gradient Norm (stopping criterion): 0.10744999349117279 Objective Value:-157.49282836914062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 25 Gradient Norm (stopping criterion): 0.12095611542463303 Objective Value:-157.49508666992188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 26 Gradient Norm (stopping criterion): 0.22910751402378082 Objective Value:-157.49732971191406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 27 Gradient Norm (stopping criterion): 0.10631588101387024 Objective Value:-157.50025939941406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 28 Gradient Norm (stopping criterion): 0.08586381375789642 Objective Value:-157.50189208984375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 29 Gradient Norm (stopping criterion): 0.10867683589458466 Objective Value:-157.5037384033203  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 30 Gradient Norm (stopping criterion): 0.1884649246931076 Objective Value:-157.50558471679688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 31 Gradient Norm (stopping criterion): 0.10613412410020828 Objective Value:-157.50790405273438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 32 Gradient Norm (stopping criterion): 0.0791386291384697 Objective Value:-157.5098876953125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 33 Gradient Norm (stopping criterion): 0.09106596559286118 Objective Value:-157.51136779785156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 34 Gradient Norm (stopping criterion): 0.1536770612001419 Objective Value:-157.5128936767578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 35 Gradient Norm (stopping criterion): 0.08696625381708145 Objective Value:-157.51478576660156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 36 Gradient Norm (stopping criterion): 0.08234357088804245 Objective Value:-157.5167236328125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 37 Gradient Norm (stopping criterion): 0.08959463238716125 Objective Value:-157.51837158203125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 38 Gradient Norm (stopping criterion): 0.22897246479988098 Objective Value:-157.51878356933594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 39 Gradient Norm (stopping criterion): 0.07409090548753738 Objective Value:-157.5213623046875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 40 Gradient Norm (stopping criterion): 0.0577702634036541 Objective Value:-157.52227783203125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 41 Gradient Norm (stopping criterion): 0.07611681520938873 Objective Value:-157.52352905273438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 42 Gradient Norm (stopping criterion): 0.08248134702444077 Objective Value:-157.52516174316406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 43 Gradient Norm (stopping criterion): 0.09686323255300522 Objective Value:-157.5260772705078  Stepsize:0.4727603495121002  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 44 Gradient Norm (stopping criterion): 0.05695253238081932 Objective Value:-157.52691650390625  Stepsize:0.7091405391693115  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 45 Gradient Norm (stopping criterion): 0.05445175617933273 Objective Value:-157.5277862548828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 46 Gradient Norm (stopping criterion): 0.06856147944927216 Objective Value:-157.52845764160156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 47 Gradient Norm (stopping criterion): 0.0718793198466301 Objective Value:-157.5293426513672  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 48 Gradient Norm (stopping criterion): 0.052603982388973236 Objective Value:-157.5301055908203  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 49 Gradient Norm (stopping criterion): 0.042106129229068756 Objective Value:-157.53062438964844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 50 Gradient Norm (stopping criterion): 0.04948138818144798 Objective Value:-157.53114318847656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 51 Gradient Norm (stopping criterion): 0.04761336371302605 Objective Value:-157.53164672851562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 52 Gradient Norm (stopping criterion): 0.046756308525800705 Objective Value:-157.53224182128906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 53 Gradient Norm (stopping criterion): 0.07071799039840698 Objective Value:-157.5328369140625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 54 Gradient Norm (stopping criterion): 0.044487934559583664 Objective Value:-157.5333709716797  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 55 Gradient Norm (stopping criterion): 0.036156605929136276 Objective Value:-157.53372192382812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 56 Gradient Norm (stopping criterion): 0.04384336248040199 Objective Value:-157.5341339111328  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 57 Gradient Norm (stopping criterion): 0.06373605877161026 Objective Value:-157.53448486328125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 58 Gradient Norm (stopping criterion): 0.03332897275686264 Objective Value:-157.5348358154297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 59 Gradient Norm (stopping criterion): 0.022676216438412666 Objective Value:-157.5351104736328  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 60 Gradient Norm (stopping criterion): 0.021945349872112274 Objective Value:-157.5352020263672  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 61 Gradient Norm (stopping criterion): 0.039610955864191055 Objective Value:-157.5353240966797  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 62 Gradient Norm (stopping criterion): 0.01828077808022499 Objective Value:-157.53541564941406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 63 Gradient Norm (stopping criterion): 0.017854107543826103 Objective Value:-157.53553771972656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 64 Gradient Norm (stopping criterion): 0.022420041263103485 Objective Value:-157.53562927246094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 65 Gradient Norm (stopping criterion): 0.04930771142244339 Objective Value:-157.53573608398438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 66 Gradient Norm (stopping criterion): 0.023415803909301758 Objective Value:-157.535888671875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 67 Gradient Norm (stopping criterion): 0.018645770847797394 Objective Value:-157.53602600097656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 68 Gradient Norm (stopping criterion): 0.019566191360354424 Objective Value:-157.53611755371094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 69 Gradient Norm (stopping criterion): 0.024507317692041397 Objective Value:-157.5362548828125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 70 Gradient Norm (stopping criterion): 0.027928169816732407 Objective Value:-157.53634643554688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 71 Gradient Norm (stopping criterion): 0.015398489311337471 Objective Value:-157.53639221191406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 72 Gradient Norm (stopping criterion): 0.01679690182209015 Objective Value:-157.53646850585938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 73 Gradient Norm (stopping criterion): 0.022123662754893303 Objective Value:-157.53659057617188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 74 Gradient Norm (stopping criterion): 0.026982400566339493 Objective Value:-157.53665161132812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 75 Gradient Norm (stopping criterion): 0.013377798721194267 Objective Value:-157.53671264648438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 76 Gradient Norm (stopping criterion): 0.014958024956285954 Objective Value:-157.53675842285156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 77 Gradient Norm (stopping criterion): 0.018326396122574806 Objective Value:-157.5368194580078  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 78 Gradient Norm (stopping criterion): 0.04353828728199005 Objective Value:-157.53688049316406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 79 Gradient Norm (stopping criterion): 0.014180534519255161 Objective Value:-157.53692626953125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 80 Gradient Norm (stopping criterion): 0.00958322361111641 Objective Value:-157.5369415283203  Stepsize:1.0  Number Linesearch Iterations:1 
+Part 4 Finished: Ran Optimization Loop
+
+
+ --------------- 
+
+
+Starting Part 5: Saving Plots
+Part 5 Finished: Saving Plots
+Separation = 22.0 | Lambda_x: 332.2327575683594
+RUNNING WITH SEPARATION 25.0
+Starting Part 1: Creating the Mesh
+Part 1 Finished: Mesh Created
+Degrees of Freedom: 1089
+
+
+ --------------- 
+
+
+Starting Part 2: Defining the Geometry in 2D
+Area Computed: 800.0 | Area Integrated: 703.125
+Plotting Geometry...
+Part 2 Finished: Defined Geometry
+
+
+ --------------- 
+
+
+Starting Part 3: Defining Objective Function
+8.773645 0.99999994
+Gaussian First Guess
+Plotting the Initial Guess
+Part 3 Finished: Defined Objective Function
+
+
+ --------------- 
+
+
+Starting Part 4: Running Optimization Loop
+INFO: jaxopt.LBFGS: Iter: 1 Gradient Norm (stopping criterion): 0.8219744563102722 Objective Value:-129.902099609375  Stepsize:0.4770660996437073  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 2 Gradient Norm (stopping criterion): 0.7063646912574768 Objective Value:-130.0261688232422  Stepsize:0.7155991792678833  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 3 Gradient Norm (stopping criterion): 0.8149239420890808 Objective Value:-130.2957305908203  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 4 Gradient Norm (stopping criterion): 0.7867066264152527 Objective Value:-130.38644409179688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 5 Gradient Norm (stopping criterion): 0.46201953291893005 Objective Value:-130.42843627929688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 6 Gradient Norm (stopping criterion): 0.2064889520406723 Objective Value:-130.47531127929688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 7 Gradient Norm (stopping criterion): 0.2240922749042511 Objective Value:-130.4951934814453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 8 Gradient Norm (stopping criterion): 0.17435067892074585 Objective Value:-130.53475952148438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 9 Gradient Norm (stopping criterion): 0.1982032209634781 Objective Value:-130.5594024658203  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 10 Gradient Norm (stopping criterion): 0.19742168486118317 Objective Value:-130.57415771484375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 11 Gradient Norm (stopping criterion): 0.2037496119737625 Objective Value:-130.58189392089844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 12 Gradient Norm (stopping criterion): 0.11905547976493835 Objective Value:-130.58819580078125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 13 Gradient Norm (stopping criterion): 0.10617295652627945 Objective Value:-130.59335327148438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 14 Gradient Norm (stopping criterion): 0.20427489280700684 Objective Value:-130.5961456298828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 15 Gradient Norm (stopping criterion): 0.10413864254951477 Objective Value:-130.60000610351562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 16 Gradient Norm (stopping criterion): 0.07956970483064651 Objective Value:-130.6036376953125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 17 Gradient Norm (stopping criterion): 0.13053442537784576 Objective Value:-130.60546875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 18 Gradient Norm (stopping criterion): 0.08704858273267746 Objective Value:-130.6077880859375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 19 Gradient Norm (stopping criterion): 0.09758982807397842 Objective Value:-130.61083984375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 20 Gradient Norm (stopping criterion): 0.1557113379240036 Objective Value:-130.61346435546875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 21 Gradient Norm (stopping criterion): 0.10665974766016006 Objective Value:-130.61563110351562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 22 Gradient Norm (stopping criterion): 0.08872449398040771 Objective Value:-130.6176300048828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 23 Gradient Norm (stopping criterion): 0.12293750047683716 Objective Value:-130.61952209472656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 24 Gradient Norm (stopping criterion): 0.12265101075172424 Objective Value:-130.62173461914062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 25 Gradient Norm (stopping criterion): 0.10933905839920044 Objective Value:-130.62393188476562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 26 Gradient Norm (stopping criterion): 0.11849025636911392 Objective Value:-130.62619018554688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 27 Gradient Norm (stopping criterion): 0.10702942311763763 Objective Value:-130.62794494628906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 28 Gradient Norm (stopping criterion): 0.09523381292819977 Objective Value:-130.62966918945312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 29 Gradient Norm (stopping criterion): 0.13690410554409027 Objective Value:-130.63238525390625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 30 Gradient Norm (stopping criterion): 0.15726518630981445 Objective Value:-130.63430786132812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 31 Gradient Norm (stopping criterion): 0.10060892254114151 Objective Value:-130.63613891601562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 32 Gradient Norm (stopping criterion): 0.07755792140960693 Objective Value:-130.6385040283203  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 33 Gradient Norm (stopping criterion): 0.0976773276925087 Objective Value:-130.63978576660156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 34 Gradient Norm (stopping criterion): 0.08046668022871017 Objective Value:-130.6416778564453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 35 Gradient Norm (stopping criterion): 0.1216551661491394 Objective Value:-130.6435089111328  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 36 Gradient Norm (stopping criterion): 0.08058104664087296 Objective Value:-130.64537048339844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 37 Gradient Norm (stopping criterion): 0.07114066928625107 Objective Value:-130.64674377441406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 38 Gradient Norm (stopping criterion): 0.08843336999416351 Objective Value:-130.64797973632812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 39 Gradient Norm (stopping criterion): 0.07113124430179596 Objective Value:-130.6490936279297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 40 Gradient Norm (stopping criterion): 0.06413592398166656 Objective Value:-130.65020751953125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 41 Gradient Norm (stopping criterion): 0.08791595697402954 Objective Value:-130.65138244628906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 42 Gradient Norm (stopping criterion): 0.0695817843079567 Objective Value:-130.65223693847656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 43 Gradient Norm (stopping criterion): 0.04246992990374565 Objective Value:-130.65274047851562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 44 Gradient Norm (stopping criterion): 0.038811784237623215 Objective Value:-130.65325927734375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 45 Gradient Norm (stopping criterion): 0.053704503923654556 Objective Value:-130.6537628173828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 46 Gradient Norm (stopping criterion): 0.06105135753750801 Objective Value:-130.6546173095703  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 47 Gradient Norm (stopping criterion): 0.09080196171998978 Objective Value:-130.65521240234375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 48 Gradient Norm (stopping criterion): 0.0391109324991703 Objective Value:-130.6558380126953  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 49 Gradient Norm (stopping criterion): 0.03308888524770737 Objective Value:-130.65611267089844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 50 Gradient Norm (stopping criterion): 0.04564700648188591 Objective Value:-130.65647888183594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 51 Gradient Norm (stopping criterion): 0.07202507555484772 Objective Value:-130.65699768066406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 52 Gradient Norm (stopping criterion): 0.04738749563694 Objective Value:-130.65757751464844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 53 Gradient Norm (stopping criterion): 0.042719658464193344 Objective Value:-130.658203125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 54 Gradient Norm (stopping criterion): 0.05172364413738251 Objective Value:-130.6586456298828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 55 Gradient Norm (stopping criterion): 0.04024827107787132 Objective Value:-130.65907287597656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 56 Gradient Norm (stopping criterion): 0.029132075607776642 Objective Value:-130.65927124023438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 57 Gradient Norm (stopping criterion): 0.027750970795750618 Objective Value:-130.6595001220703  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 58 Gradient Norm (stopping criterion): 0.033190175890922546 Objective Value:-130.65966796875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 59 Gradient Norm (stopping criterion): 0.030105840414762497 Objective Value:-130.659912109375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 60 Gradient Norm (stopping criterion): 0.04351207986474037 Objective Value:-130.66004943847656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 61 Gradient Norm (stopping criterion): 0.02609241008758545 Objective Value:-130.66021728515625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 62 Gradient Norm (stopping criterion): 0.025202056393027306 Objective Value:-130.66043090820312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 63 Gradient Norm (stopping criterion): 0.030728135257959366 Objective Value:-130.66065979003906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 64 Gradient Norm (stopping criterion): 0.0357113778591156 Objective Value:-130.66078186035156  Stepsize:0.45696717500686646  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 65 Gradient Norm (stopping criterion): 0.02243788167834282 Objective Value:-130.660888671875  Stepsize:0.6854507923126221  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 66 Gradient Norm (stopping criterion): 0.01618082821369171 Objective Value:-130.66098022460938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 67 Gradient Norm (stopping criterion): 0.02156119793653488 Objective Value:-130.6610565185547  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 68 Gradient Norm (stopping criterion): 0.02293560840189457 Objective Value:-130.66114807128906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 69 Gradient Norm (stopping criterion): 0.0362432524561882 Objective Value:-130.6613311767578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 70 Gradient Norm (stopping criterion): 0.037410035729408264 Objective Value:-130.66140747070312  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 71 Gradient Norm (stopping criterion): 0.012554404325783253 Objective Value:-130.66152954101562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 72 Gradient Norm (stopping criterion): 0.011539975181221962 Objective Value:-130.66151428222656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 73 Gradient Norm (stopping criterion): 0.014093030244112015 Objective Value:-130.6615753173828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 74 Gradient Norm (stopping criterion): 0.04037858545780182 Objective Value:-130.66159057617188  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 75 Gradient Norm (stopping criterion): 0.013176539912819862 Objective Value:-130.66165161132812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 76 Gradient Norm (stopping criterion): 0.010281692259013653 Objective Value:-130.66172790527344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 77 Gradient Norm (stopping criterion): 0.013248358853161335 Objective Value:-130.66172790527344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 78 Gradient Norm (stopping criterion): 0.017707226797938347 Objective Value:-130.66175842285156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 79 Gradient Norm (stopping criterion): 0.030353980138897896 Objective Value:-130.6617889404297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 80 Gradient Norm (stopping criterion): 0.009955015033483505 Objective Value:-130.66189575195312  Stepsize:1.0  Number Linesearch Iterations:1 
+Part 4 Finished: Ran Optimization Loop
+
+
+ --------------- 
+
+
+Starting Part 5: Saving Plots
+Part 5 Finished: Saving Plots
+Separation = 25.0 | Lambda_x: 308.123046875
+RUNNING WITH SEPARATION 28.0
+Starting Part 1: Creating the Mesh
+Part 1 Finished: Mesh Created
+Degrees of Freedom: 1089
+
+
+ --------------- 
+
+
+Starting Part 2: Defining the Geometry in 2D
+Area Computed: 800.0 | Area Integrated: 843.75
+Plotting Geometry...
+Part 2 Finished: Defined Geometry
+
+
+ --------------- 
+
+
+Starting Part 3: Defining Objective Function
+8.773645 0.99999994
+Gaussian First Guess
+Plotting the Initial Guess
+Part 3 Finished: Defined Objective Function
+
+
+ --------------- 
+
+
+Starting Part 4: Running Optimization Loop
+INFO: jaxopt.LBFGS: Iter: 1 Gradient Norm (stopping criterion): 0.9520158171653748 Objective Value:-144.26605224609375  Stepsize:0.44621869921684265  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 2 Gradient Norm (stopping criterion): 0.8005644679069519 Objective Value:-144.39706420898438  Stepsize:0.6693280339241028  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 3 Gradient Norm (stopping criterion): 0.660413920879364 Objective Value:-144.644287109375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 4 Gradient Norm (stopping criterion): 0.7405052781105042 Objective Value:-144.7598419189453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 5 Gradient Norm (stopping criterion): 0.44510170817375183 Objective Value:-144.82957458496094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 6 Gradient Norm (stopping criterion): 0.29161208868026733 Objective Value:-144.89083862304688  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 7 Gradient Norm (stopping criterion): 0.25569599866867065 Objective Value:-144.9278106689453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 8 Gradient Norm (stopping criterion): 0.2520366907119751 Objective Value:-144.9672088623047  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 9 Gradient Norm (stopping criterion): 0.21494638919830322 Objective Value:-144.98193359375  Stepsize:0.43078508973121643  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 10 Gradient Norm (stopping criterion): 0.14654502272605896 Objective Value:-144.98985290527344  Stepsize:0.6461776494979858  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 11 Gradient Norm (stopping criterion): 0.15780742466449738 Objective Value:-145.0012969970703  Stepsize:0.9692664742469788  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 12 Gradient Norm (stopping criterion): 0.3670589029788971 Objective Value:-145.0049285888672  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 13 Gradient Norm (stopping criterion): 0.16905640065670013 Objective Value:-145.01365661621094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 14 Gradient Norm (stopping criterion): 0.11824694275856018 Objective Value:-145.0207977294922  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 15 Gradient Norm (stopping criterion): 0.13127020001411438 Objective Value:-145.0260772705078  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 16 Gradient Norm (stopping criterion): 0.20547476410865784 Objective Value:-145.0286407470703  Stepsize:0.4236375689506531  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 17 Gradient Norm (stopping criterion): 0.14777708053588867 Objective Value:-145.03147888183594  Stepsize:0.6354563236236572  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 18 Gradient Norm (stopping criterion): 0.10467325150966644 Objective Value:-145.03671264648438  Stepsize:0.9531844854354858  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 19 Gradient Norm (stopping criterion): 0.22475767135620117 Objective Value:-145.0395050048828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 20 Gradient Norm (stopping criterion): 0.12067435681819916 Objective Value:-145.04270935058594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 21 Gradient Norm (stopping criterion): 0.08698632568120956 Objective Value:-145.0449981689453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 22 Gradient Norm (stopping criterion): 0.10772647708654404 Objective Value:-145.04664611816406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 23 Gradient Norm (stopping criterion): 0.14328114688396454 Objective Value:-145.0485382080078  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 24 Gradient Norm (stopping criterion): 0.11126688122749329 Objective Value:-145.05067443847656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 25 Gradient Norm (stopping criterion): 0.10706321150064468 Objective Value:-145.0538330078125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 26 Gradient Norm (stopping criterion): 0.19231447577476501 Objective Value:-145.05477905273438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 27 Gradient Norm (stopping criterion): 0.09365708380937576 Objective Value:-145.0561981201172  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 28 Gradient Norm (stopping criterion): 0.08314839750528336 Objective Value:-145.05751037597656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 29 Gradient Norm (stopping criterion): 0.1296614706516266 Objective Value:-145.05926513671875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 30 Gradient Norm (stopping criterion): 0.15622831881046295 Objective Value:-145.0622100830078  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 31 Gradient Norm (stopping criterion): 0.23573338985443115 Objective Value:-145.0640869140625  Stepsize:0.5052984356880188  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 32 Gradient Norm (stopping criterion): 0.14186441898345947 Objective Value:-145.0669708251953  Stepsize:0.7579476833343506  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 33 Gradient Norm (stopping criterion): 0.07161828875541687 Objective Value:-145.0694122314453  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 34 Gradient Norm (stopping criterion): 0.09152868390083313 Objective Value:-145.07098388671875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 35 Gradient Norm (stopping criterion): 0.12668076157569885 Objective Value:-145.07290649414062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 36 Gradient Norm (stopping criterion): 0.14440447092056274 Objective Value:-145.07496643066406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 37 Gradient Norm (stopping criterion): 0.09826687723398209 Objective Value:-145.07705688476562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 38 Gradient Norm (stopping criterion): 0.07340493053197861 Objective Value:-145.0786590576172  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 39 Gradient Norm (stopping criterion): 0.09230532497167587 Objective Value:-145.07994079589844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 40 Gradient Norm (stopping criterion): 0.10725259780883789 Objective Value:-145.0819091796875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 41 Gradient Norm (stopping criterion): 0.15903340280056 Objective Value:-145.083740234375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 42 Gradient Norm (stopping criterion): 0.07680327445268631 Objective Value:-145.0856170654297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 43 Gradient Norm (stopping criterion): 0.059255681931972504 Objective Value:-145.08665466308594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 44 Gradient Norm (stopping criterion): 0.06205437704920769 Objective Value:-145.08753967285156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 45 Gradient Norm (stopping criterion): 0.13006381690502167 Objective Value:-145.0885009765625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 46 Gradient Norm (stopping criterion): 0.06266450881958008 Objective Value:-145.08973693847656  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 47 Gradient Norm (stopping criterion): 0.04754189774394035 Objective Value:-145.09051513671875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 48 Gradient Norm (stopping criterion): 0.055147118866443634 Objective Value:-145.09121704101562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 49 Gradient Norm (stopping criterion): 0.10982644557952881 Objective Value:-145.09170532226562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 50 Gradient Norm (stopping criterion): 0.0445467047393322 Objective Value:-145.09246826171875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 51 Gradient Norm (stopping criterion): 0.03797794505953789 Objective Value:-145.09283447265625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 52 Gradient Norm (stopping criterion): 0.043584488332271576 Objective Value:-145.09324645996094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 53 Gradient Norm (stopping criterion): 0.07130670547485352 Objective Value:-145.09385681152344  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 54 Gradient Norm (stopping criterion): 0.052397411316633224 Objective Value:-145.0943603515625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 55 Gradient Norm (stopping criterion): 0.030899202451109886 Objective Value:-145.09471130371094  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 56 Gradient Norm (stopping criterion): 0.03936975076794624 Objective Value:-145.09512329101562  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 57 Gradient Norm (stopping criterion): 0.05052260309457779 Objective Value:-145.09547424316406  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 58 Gradient Norm (stopping criterion): 0.048473428934812546 Objective Value:-145.09584045410156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 59 Gradient Norm (stopping criterion): 0.02714351937174797 Objective Value:-145.09613037109375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 60 Gradient Norm (stopping criterion): 0.025183135643601418 Objective Value:-145.09632873535156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 61 Gradient Norm (stopping criterion): 0.030448561534285545 Objective Value:-145.0964813232422  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 62 Gradient Norm (stopping criterion): 0.030664468184113503 Objective Value:-145.09669494628906  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 63 Gradient Norm (stopping criterion): 0.023990903049707413 Objective Value:-145.09686279296875  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 64 Gradient Norm (stopping criterion): 0.026886986568570137 Objective Value:-145.09698486328125  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 65 Gradient Norm (stopping criterion): 0.02575068548321724 Objective Value:-145.0971221923828  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 66 Gradient Norm (stopping criterion): 0.025745313614606857 Objective Value:-145.09732055664062  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 67 Gradient Norm (stopping criterion): 0.037500541657209396 Objective Value:-145.09751892089844  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 68 Gradient Norm (stopping criterion): 0.02063923142850399 Objective Value:-145.09765625  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 69 Gradient Norm (stopping criterion): 0.01856866292655468 Objective Value:-145.09774780273438  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 70 Gradient Norm (stopping criterion): 0.0264277420938015 Objective Value:-145.09788513183594  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 71 Gradient Norm (stopping criterion): 0.04129316657781601 Objective Value:-145.0980682373047  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 72 Gradient Norm (stopping criterion): 0.027914205566048622 Objective Value:-145.0983123779297  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 73 Gradient Norm (stopping criterion): 0.023525072261691093 Objective Value:-145.09848022460938  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 74 Gradient Norm (stopping criterion): 0.0326191745698452 Objective Value:-145.0985870361328  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 75 Gradient Norm (stopping criterion): 0.020058047026395798 Objective Value:-145.09866333007812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 76 Gradient Norm (stopping criterion): 0.01631411351263523 Objective Value:-145.09877014160156  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 77 Gradient Norm (stopping criterion): 0.016705630347132683 Objective Value:-145.0988311767578  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 78 Gradient Norm (stopping criterion): 0.02553977258503437 Objective Value:-145.09886169433594  Stepsize:0.39936164021492004  Number Linesearch Iterations:2 
+INFO: jaxopt.LBFGS: Iter: 79 Gradient Norm (stopping criterion): 0.01719120517373085 Objective Value:-145.09890747070312  Stepsize:0.5990424752235413  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 80 Gradient Norm (stopping criterion): 0.011995600536465645 Objective Value:-145.0989990234375  Stepsize:0.8985637426376343  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 81 Gradient Norm (stopping criterion): 0.015956485643982887 Objective Value:-145.0990447998047  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 82 Gradient Norm (stopping criterion): 0.02172405645251274 Objective Value:-145.09912109375  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 83 Gradient Norm (stopping criterion): 0.012083444744348526 Objective Value:-145.09915161132812  Stepsize:1.0  Number Linesearch Iterations:1 
+INFO: jaxopt.LBFGS: Iter: 84 Gradient Norm (stopping criterion): 0.009792198427021503 Objective Value:-145.0991973876953  Stepsize:1.0  Number Linesearch Iterations:1 
+Part 4 Finished: Ran Optimization Loop
+
+
+ --------------- 
+
+
+Starting Part 5: Saving Plots
+Part 5 Finished: Saving Plots
+Separation = 28.0 | Lambda_x: 354.17657470703125
+##### RUNNING SEPARATION = 1 #############
+Command exited with return code: 0
+##### RUNNING SEPARATION = 4 #############
+Command exited with return code: 0
+##### RUNNING SEPARATION = 7 #############
+Command exited with return code: 0
+##### RUNNING SEPARATION = 10 #############
+Command exited with return code: 0
+##### RUNNING SEPARATION = 13 #############
+Command exited with return code: 0
+##### RUNNING SEPARATION = 16 #############
+Command exited with return code: 0
+##### RUNNING SEPARATION = 19 #############
+Command exited with return code: 0
+##### RUNNING SEPARATION = 22 #############
+Command exited with return code: 0
+##### RUNNING SEPARATION = 25 #############
+Command exited with return code: 0
+##### RUNNING SEPARATION = 28 #############
+Command exited with return code: 0

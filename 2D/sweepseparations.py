@@ -6,7 +6,7 @@ separations = np.arange(1,31,3)
 for sep in separations:
     try:
         print(f"##### RUNNING SEPARATION = {sep} #############")
-        command = ['python3',"./2D/2DZeroPoint.py",f"--plotdir=./2D/newplots/{sep}/",f"--separation={sep}"]
+        command = ['python3',"./2D/2DZeroPoint.py",f"--plotdir=./2D/newplots2/{sep}/",f"--separation={sep}"]
         result = subprocess.run(command, check=True)
         
         # The return code is stored in the CompletedProcess object

@@ -1,5 +1,6 @@
 import gmsh
 import sys
+
 gmsh.initialize()
 
 # Create a gmsh "Model"
@@ -34,7 +35,7 @@ sidelen = 30
 separation = 10
 inner_dim = 20
 
-lc_large,lc_small = 10,1
+lc_large,lc_small = 30,5
 
 out_sq_loop = create_square(0,0,120,lc_large)
 left_sq_loop = create_square(-(separation + sidelen)/2,0,sidelen,lc_small)

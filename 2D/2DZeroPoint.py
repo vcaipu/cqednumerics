@@ -255,7 +255,7 @@ Part 4: Run Optimizaton Loop
 '''
 
 print("Starting Part 4: Running Optimization Loop")
-solver = LBFGS(fun=objective,tol=1e-2,verbose=True)
+solver = LBFGS(fun=objective,tol=1e-6,verbose=True)
 result = solver.run(initial_guess,G_mat,theta_at_dofs)
 result = result.params 
 coeffs,u_interior = unpack(result,n)

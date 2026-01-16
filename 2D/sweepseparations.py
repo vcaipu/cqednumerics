@@ -2,13 +2,13 @@ import subprocess
 import numpy as np
 
 separations = np.arange(1,31,3)
-sep = 5
-Ns = np.arange(50,100,10)
+sep = 30
+Ns = np.arange(1000,10000,1000)
 
 for N in Ns:
     try:
         print(f"##### RUNNING N = {N} #############")
-        command = ['python3',"./2D/2DZeroPoint.py",f"--plotdir=./2D/newplotsvaryN/{N}/",f"--separation={sep}",f"--N={N}"]
+        command = ['python3',"./2D/2DZeroPoint.py",f"--plotdir=./2D/phasetransitiontry4/{N}/",f"--separation={sep}",f"--N={N}",f"--n=50"]
         result = subprocess.run(command, check=True)
         
         # The return code is stored in the CompletedProcess object

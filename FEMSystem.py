@@ -97,7 +97,7 @@ class FEMSystem:
 
         # Step 5: Get Flipping Mapping
         self.flip_map = self._generate_flip_mapping()
-    
+
     def _save_fig(self,fig,plot_title):
         if not self.saveFigsDir: return
         if not plot_title: plot_title = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S.%f")
@@ -518,11 +518,12 @@ class FEMSystem:
     - interaction_matrix: quadratures x quadratures matrix for interactions
     - u2_global: array of u2 at degrees of freedom
     ''' 
-    def double_integral(self,func1,func2,interaction,u1_global,u2_global):
+    def double_integral(self,func1,func2,interaction,P_int,u1_global,u2_global):
         weighted_f1_flat,weighted_f2_flat = self._double_integral_preprocess(func1,func2,u1_global,u2_global)
 
-        # Simple Matrix Multiplications: x^T G x
-        res = weighted_f1_flat @ interaction @ weighted_f2_flat
+        v1 = P_int.T @ weighted_f1_flat
+        v2 = P_int.T @ weighted_f2_flat
+        res = v1 @ interaction @ v2
 
         return res
 
@@ -583,13 +584,11 @@ class FEMSystem:
         # At DOFs 
         A = fem.asm(laplace,self.basis)
         A_int, xI, I = fem.condense(A, D=self.boundary_dofs, expand=True)
-        A_inv_int = inv(A_int).toarray()
+        A_inv_int = jnp.array(inv(A_int).toarray())
 
         P_int = self._interpolate_mat_interior(I)
-        #print("Got P Interior")
 
-        G_quad = P_int @ A_inv_int @ P_int.T
-        return G_quad
+        return A_inv_int, P_int
         
     '''
     Arguments:

@@ -48,7 +48,7 @@ Part 1: Creating the Mesh
 '''
 print("Starting Part 1: Creating the Mesh")
 # Create the FEMSystem Object
-granularity = 10 # number of mesh elements
+granularity = 15 # number of mesh elements
 X = jnp.linspace(0, 1, granularity)
 Y = jnp.linspace(0, 1, granularity)
 Z = jnp.linspace(0, 1, granularity)
@@ -123,16 +123,16 @@ def theta_func(u,grad_u,u2,grad_u2,x):
     return u2
 
 # U_{++++} or U_{----}, Really N * \alpha
-def alpha(u,G_mat):
-    return 1/(material) * femsystem.double_integral(lambda u1,a,b,c,d: u1**2,lambda u1,a,b,c,d: u1**2,G_mat,u,u)
+def alpha(u,G_mat,P_int):
+    return 1/(material) * femsystem.double_integral(lambda u1,a,b,c,d: u1**2,lambda u1,a,b,c,d: u1**2,G_mat,P_int,u,u)
 
 # U_{+--+} = U{-++-} - Remember middle two are wrt to y, Outer two wrt to x, from notation used in doc
-def beta(u1_arg,u2_arg,G_mat):
-    return 1/(material) * femsystem.double_integral(lambda u1,a,b,c,d: u1**2, lambda a,b,u2,c,d: u2**2, G_mat, u1_arg,u2_arg)
+def beta(u1_arg,u2_arg,G_mat,P_int):
+    return 1/(material) * femsystem.double_integral(lambda u1,a,b,c,d: u1**2, lambda a,b,u2,c,d: u2**2, G_mat, P_int, u1_arg,u2_arg)
 
 # U_{++--} = U{+-+-}
-def gamma(u1_arg,u2_arg,G_mat):
-    return 1/(material) * femsystem.double_integral(lambda u1,a,u2,c,d: u1*u2, lambda u1,b,u2,c,d: u1*u2, G_mat, u1_arg,u2_arg)
+def gamma(u1_arg,u2_arg,G_mat,P_int):
+    return 1/(material) * femsystem.double_integral(lambda u1,a,u2,c,d: u1*u2, lambda u1,b,u2,c,d: u1*u2, G_mat, P_int, u1_arg,u2_arg)
 
 '''
 Helper Functions for Matrices
@@ -187,17 +187,17 @@ def unpack(vec,n):
 # If you hardcode it into the function, it will treat it as an actual part of the code and will spent time compiling a massive amount of hardcoded values as "code" essentially. This is why it takes almost 10 minutes to run first optimization iteration. 
 # @jax.jit
 
-def epsilon_func(u_global,G_mat,theta_at_dofs):
+def epsilon_func(u_global,G_mat,P_int,theta_at_dofs):
     # Kinetic Term
     kinetic = -4 * femsystem.integrate(laplacian,u_global)
 
     # Potential Term
-    potential = -2 * femsystem.double_integral(u_squared,theta_func,G_mat,u_global,theta_at_dofs)
+    potential = -2 * femsystem.double_integral(u_squared,theta_func,G_mat,P_int,u_global,theta_at_dofs)
 
     return kinetic  + potential
 
-def E(u_global,G_mat,theta_at_dofs):
-    return epsilon_func(u_global,G_mat,theta_at_dofs) + alpha(u_global,G_mat)
+def E(u_global,G_mat,P_int,theta_at_dofs):
+    return epsilon_func(u_global,G_mat,P_int,theta_at_dofs) + alpha(u_global,G_mat,P_int)
 
 
 '''
@@ -212,7 +212,7 @@ N_val = material * integrated_volume # The Value of "N", number of particles, in
 
 # 1. Defining Objective
 @jax.jit
-def objective(vec,G_mat,theta_at_dofs):
+def objective(vec,G_mat,P_int,theta_at_dofs):
     # Unpack the modes from the coefficients
     coeff_vec,u_interior = unpack(vec,n)
 
@@ -221,23 +221,23 @@ def objective(vec,G_mat,theta_at_dofs):
 
     # Unpack even and odd modes
     u_even,u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_interior)
-    E_plus,E_minus = E(u_even,G_mat,theta_at_dofs), E(u_odd,G_mat,theta_at_dofs)
+    E_plus,E_minus = E(u_even,G_mat,P_int,theta_at_dofs), E(u_odd,G_mat,P_int,theta_at_dofs)
 
     # Construct Objective
-    e0 = ( E_plus + E_minus ) / 2 - gamma(u_even,u_odd,G_mat)
+    e0 = ( E_plus + E_minus ) / 2 - gamma(u_even,u_odd,G_mat,P_int)
     hz = ( E_plus - E_minus ) 
 
     cos1= cos_phi(n) #,cos_2phi(N)
     first_harmonic = expval(cos1,coeff_vec_norm) * hz / 2
 
-    lambda_x = 4*gamma(u_even,u_odd,G_mat)
+    lambda_x = 4*gamma(u_even,u_odd,G_mat,P_int)
     jz2 = Jz2(n)
     capacitive = lambda_x * expval(jz2,coeff_vec_norm)
 
     return e0 + capacitive + first_harmonic
 
 # 2. Computing Interaction Kernel
-G_mat = femsystem.get_greens_kernel()
+G_mat,P_int = femsystem.get_greens_kernel()
 
 # 3. Getting Initial Guess
 coeff_vector_init = guess_gaussian(n) / 10
@@ -247,7 +247,7 @@ initial_guess = jnp.concatenate((coeff_vector_init, u_interior_init), axis=0)
 '''
 Testing, for a sanity check, and to do a jit compilation
 '''
-temp = objective(initial_guess,G_mat,theta_at_dofs)
+temp = objective(initial_guess,G_mat,P_int,theta_at_dofs)
 
 print("Part 3 Finished: Defined Objective Function")
 print("\n\n --------------- \n\n")
@@ -260,7 +260,7 @@ Part 4: Run Optimizaton Loop
 print("Starting Part 4: Running Optimization Loop")
 print("Starting Optimization")
 solver = LBFGS(fun=objective,tol=1e-2,verbose=True)
-result = solver.run(initial_guess,G_mat,theta_at_dofs)
+result = solver.run(initial_guess,G_mat,P_int,theta_at_dofs)
 result = result.params 
 coeffs,u_interior = unpack(result,n)
 
@@ -275,7 +275,7 @@ Part 5: Plot and Visualize Results
 u_even,u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_interior)
 u_even_interior,u_odd_interior = u_even[femsystem.interior_dofs],u_odd[femsystem.interior_dofs]
 
-energy = objective(result,G_mat,theta_at_dofs)
+energy = objective(result,G_mat,P_int,theta_at_dofs)
 
 # Pickle the results
 pickle_obj = {

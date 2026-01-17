@@ -266,24 +266,36 @@ class FEMSystem:
 
         plt.show()
     
-    def plot_at_quad_3d(self,vals,plot_title=""):
-        coords = self.basis.mapping.F(self.X_ref) 
-        flat_coords = coords.reshape(3, -1)
-
+    def _plot_3d(self,coords,vals,plot_title=""):
         fig = plt.figure(figsize=(8, 8))
         ax = fig.add_subplot(111, projection='3d')
-
-        flat_vals = vals.flatten()
-        sc = ax.scatter(flat_coords[0], flat_coords[1], flat_coords[2], c=flat_vals, s=5, cmap='viridis')
-
-        # 3. Add colorbar and formatting
+        
+        # Plot the data
+        sc = ax.scatter(coords[0], coords[1], coords[2], c=vals, s=5, cmap='viridis')
+        
+        # Add colorbar and formatting
         plt.colorbar(sc)
         plt.title(plot_title)
-
+        
         # Save Fig
         self._save_fig(plt.gcf(),plot_title)
         
         plt.show()
+
+        return fig, ax, sc
+    
+    def plot_3d_interior(self,u_interior,plot_title=""):
+        u = self._get_u_from_interior(u_interior)
+        coords = self.node_coords_global.T
+
+        self._plot_3d(coords,u,plot_title)
+
+    def plot_at_quad_3d(self,vals,plot_title=""):
+
+        coords = self.basis.mapping.F(self.X_ref) 
+        flat_coords = coords.reshape(3, -1)
+
+        self._plot_3d(flat_coords,vals,plot_title)
 
     def plot_at_quad_3d_sliced(self, vals, plot_title="", slice_axis='z', slice_val=0.5, tol=0.05):
         coords = self.basis.mapping.F(self.X_ref) 
@@ -311,7 +323,7 @@ class FEMSystem:
 
         plt.colorbar(sc)
         plt.title(f"{plot_title} (Slice @ {slice_axis}={slice_val:.3f})")
-        ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.set_zlim(0, 1)
+        ax.set_xlim(x.min(), x.max()); ax.set_ylim(y.min(), y.max()); ax.set_zlim(z.min(), z.max())
         ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.set_zlabel('Z')
 
         # Save Fig
@@ -319,6 +331,24 @@ class FEMSystem:
         
         plt.show()
     
+    def plot_n_slices_interior(self,u_interior,n_slices=5,slice_axis="z",plot_title="",tol=None):
+        coords = self.node_coords_global.T
+        x, y, z = coords[0], coords[1], coords[2]
+        if slice_axis == 'x':
+            axis_vals = x
+        elif slice_axis == 'y':
+            axis_vals = y
+        else:  # 'z'
+            axis_vals = z
+
+        half_dist = (axis_vals.max() - axis_vals.min()) / (2*n_slices)
+        if tol is None:
+            tol = half_dist
+        
+        for i in range(n_slices):
+            slice_val = i * (1 / n_slices) * (axis_vals.max() - axis_vals.min()) + axis_vals.min() + half_dist
+            self.plot_interior_at_quad_3d_sliced(u_interior,slice_val,slice_axis,plot_title,tol)
+
     '''
     Arguments:
     - func(x,y): function to plot

@@ -26,7 +26,7 @@ parser.add_argument("--sidelen", type=float, help="Sidelength of island. Default
 parser.add_argument("--separation", type=float, help="Gap between islands. Default set to 20",default=20.0)
 
 
-parser.add_argument("--material", type=int, help="n_s\\xi^3, value of material property")
+parser.add_argument("--material", type=float, help="n_s\\xi^3, value of material property")
 
 
 parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 100",default=100)
@@ -48,7 +48,7 @@ Part 1: Creating the Mesh
 '''
 print("Starting Part 1: Creating the Mesh")
 # Create the FEMSystem Object
-granularity = 15 # number of mesh elements
+granularity = 20 # number of mesh elements
 X = jnp.linspace(0, 1, granularity)
 Y = jnp.linspace(0, 1, granularity)
 Z = jnp.linspace(0, 1, granularity)
@@ -65,7 +65,7 @@ element = fem.ElementTetP1()
 intorder = 4
 
 # Now define the FEMSystem
-femsystem = FEMSystem(mesh,element,intorder,boundary_condition=0,saveFigsDir=None)
+femsystem = FEMSystem(mesh,element,intorder,boundary_condition=0,saveFigsDir=plotdir)
 print("Part 1 Finished: Mesh Created")
 print(f"Degrees of Freedom: {femsystem.dofs}")
 print("\n\n --------------- \n\n")
@@ -79,8 +79,8 @@ Part 2: Define Geometry
 seps = jnp.arange(1,40,0.1)
 int_areas = []
 
-separation = 10
-sideLen = 20
+
+sideLen = 40
 centerLeft,centerRight = ((sideLen+separation)/2,0,0), (-(sideLen+separation)/2,0,0)
 volume = 2 * (sideLen ** 3)
 
@@ -107,10 +107,14 @@ print("\n\n --------------- \n\n")
 Part 3: Define Objective Function
 '''
 
+# Set constants
+N_val = material * integrated_volume # The Value of "N", number of particles, in terms of quantities we know
+
 '''
 Helper Functions for Integrals
 '''
 
+# Really u*laplacian(u) = -(grad u)^2
 def laplacian(u,grad_u,x):
     return -1*jnp.sum(grad_u**2,axis=0)
 
@@ -197,7 +201,7 @@ def epsilon_func(u_global,G_mat,P_int,theta_at_dofs):
     return kinetic  + potential
 
 def E(u_global,G_mat,P_int,theta_at_dofs):
-    return epsilon_func(u_global,G_mat,P_int,theta_at_dofs) + alpha(u_global,G_mat,P_int)
+    return epsilon_func(u_global,G_mat,P_int,theta_at_dofs) + (N_val - 1)*alpha(u_global,G_mat,P_int)
 
 
 '''
@@ -207,8 +211,6 @@ Before you start the optimization loop:
 3. Get Initial Guess
 '''
 
-# Set constants
-N_val = material * integrated_volume # The Value of "N", number of particles, in terms of quantities we know
 
 # 1. Defining Objective
 @jax.jit
@@ -232,9 +234,10 @@ def objective(vec,G_mat,P_int,theta_at_dofs):
 
     lambda_x = 4*gamma(u_even,u_odd,G_mat,P_int)
     jz2 = Jz2(n)
-    capacitive = lambda_x * expval(jz2,coeff_vec_norm)
+    capacitive = lambda_x * expval(jz2,coeff_vec_norm) / (N_val)
 
-    return e0 + capacitive + first_harmonic
+   #return #e0 +
+    return capacitive + first_harmonic
 
 # 2. Computing Interaction Kernel
 G_mat,P_int = femsystem.get_greens_kernel()

@@ -266,12 +266,12 @@ class FEMSystem:
 
         plt.show()
     
-    def _plot_3d(self,coords,vals,plot_title=""):
+    def _plot_3d(self,coords,vals,plot_title="", vmin=None, vmax=None):
         fig = plt.figure(figsize=(8, 8))
         ax = fig.add_subplot(111, projection='3d')
         
-        # Plot the data
-        sc = ax.scatter(coords[0], coords[1], coords[2], c=vals, s=5, cmap='viridis')
+        # Plot the data with custom limits if provided
+        sc = ax.scatter(coords[0], coords[1], coords[2], c=vals, s=5, cmap='viridis', vmin=vmin, vmax=vmax)
         
         # Add colorbar and formatting
         plt.colorbar(sc)
@@ -284,20 +284,20 @@ class FEMSystem:
 
         return fig, ax, sc
     
-    def plot_3d_interior(self,u_interior,plot_title=""):
+    def plot_3d_interior(self,u_interior,plot_title="", vmin=None, vmax=None):
         u = self._get_u_from_interior(u_interior)
         coords = self.node_coords_global.T
 
-        self._plot_3d(coords,u,plot_title)
+        self._plot_3d(coords,u,plot_title, vmin=vmin, vmax=vmax)
 
-    def plot_at_quad_3d(self,vals,plot_title=""):
+    def plot_at_quad_3d(self,vals,plot_title="", vmin=None, vmax=None):
 
         coords = self.basis.mapping.F(self.X_ref) 
         flat_coords = coords.reshape(3, -1)
 
-        self._plot_3d(flat_coords,vals,plot_title)
+        self._plot_3d(flat_coords,vals,plot_title, vmin=vmin, vmax=vmax)
 
-    def plot_at_quad_3d_sliced(self, vals, plot_title="", slice_axis='z', slice_val=0.5, tol=0.05):
+    def plot_at_quad_3d_sliced(self, vals, plot_title="", slice_axis='z', slice_val=0.5, tol=0.05, vmin=None, vmax=None):
         coords = self.basis.mapping.F(self.X_ref) 
         flat_coords = coords.reshape(3, -1)
         flat_vals = vals.flatten()
@@ -319,7 +319,7 @@ class FEMSystem:
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(111, projection='3d')
 
-        sc = ax.scatter(xs, ys, zs, c=vs, s=10, cmap='viridis', alpha=0.8)
+        sc = ax.scatter(xs, ys, zs, c=vs, s=10, cmap='viridis', alpha=0.8, vmin=vmin, vmax=vmax)
 
         plt.colorbar(sc)
         plt.title(f"{plot_title} (Slice @ {slice_axis}={slice_val:.3f})")
@@ -344,10 +344,13 @@ class FEMSystem:
         half_dist = (axis_vals.max() - axis_vals.min()) / (2*n_slices)
         if tol is None:
             tol = half_dist
+
+        vmin,vmax = u_interior.min(), u_interior.max()
+        print("V min to max:",vmin,vmax)
         
         for i in range(n_slices):
             slice_val = i * (1 / n_slices) * (axis_vals.max() - axis_vals.min()) + axis_vals.min() + half_dist
-            self.plot_interior_at_quad_3d_sliced(u_interior,slice_val,slice_axis,plot_title,tol)
+            self.plot_interior_at_quad_3d_sliced(u_interior,slice_val,slice_axis,plot_title,tol,vmin,vmax)
 
     '''
     Arguments:
@@ -375,16 +378,16 @@ class FEMSystem:
         u_final = self._get_u_from_interior(u_interior)
         self._plot_u_2d_in_3d(u_final,plot_title)
 
-    def plot_interior_at_quad_3d(self,u_interior,plot_title="Values at Quadratures, for a 3D Function"):
+    def plot_interior_at_quad_3d(self,u_interior,plot_title="Values at Quadratures, for a 3D Function", vmin=None, vmax=None):
         u_global = self._get_u_from_interior(u_interior)
         u_quad = self._interpolate_values(u_global)
-        self.plot_at_quad_3d(u_quad,plot_title)  
+        self.plot_at_quad_3d(u_quad,plot_title, vmin=vmin, vmax=vmax)  
     
-    def plot_interior_at_quad_3d_sliced(self,u_interior,slice_val,slice_axis="z",plot_title="Values at Quadratures, for a 3D Function Slice",tol=0.05):
+    def plot_interior_at_quad_3d_sliced(self,u_interior,slice_val,slice_axis="z",plot_title="Values at Quadratures, for a 3D Function Slice",tol=0.05, vmin=None, vmax=None):
         u_global = self._get_u_from_interior(u_interior)
         u_quad = self._interpolate_values(u_global)
 
-        self.plot_at_quad_3d_sliced(u_quad,plot_title=plot_title,slice_axis=slice_axis,slice_val=slice_val,tol=tol)
+        self.plot_at_quad_3d_sliced(u_quad,plot_title=plot_title,slice_axis=slice_axis,slice_val=slice_val,tol=tol, vmin=vmin, vmax=vmax)
 
         
     '''

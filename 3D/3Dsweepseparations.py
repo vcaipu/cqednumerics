@@ -1,7 +1,7 @@
 import subprocess
 import numpy as np
 
-separations = np.arange(1,31,3)
+separations = np.arange(1,21,3)
 
 ### IMPORTANT: DIRECTORY TO SAVE RESULTS. MUST END WITH A SLASH /
 save_dir = "./allplots/sweep1/"
@@ -10,7 +10,7 @@ material = 0.0106
 for sep in separations:
     try:
         print(f"##### RUNNING Separation = {sep} #############")
-        command = ['python3',"./3DZeroPointCG.py",f"--plotdir={save_dir}Separation {sep}/",f"--separation={sep}",f"--n=50",f"--material={material}"]
+        command = ['python3',"./3DZeroPointCG.py",f"--plotdir={save_dir}Separation {sep}/",f"--separation={sep}",f"--material={material}"]
         result = subprocess.run(command, check=True)
         
         # The return code is stored in the CompletedProcess object

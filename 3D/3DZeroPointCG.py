@@ -59,7 +59,7 @@ Z = jnp.linspace(0, 1, granularity)
 mesh = fem.MeshTet.init_tensor(X,Y,Z)
 
 # Scale and center in 3D
-L = 120.0
+L = 60.0
 mesh = mesh.scaled(2 * L).translated((-L, -L,-L))
 
 # Define the unit Tetrehedral Element
@@ -97,8 +97,26 @@ def theta_right_only(x_vec):
     cond1 = (jnp.abs(x-centerLeft[0]) <= sideLen / 2) & (jnp.abs(y-centerLeft[1]) <= sideLen / 2) & (jnp.abs(z-centerLeft[2]) <= sideLen / 2)
     return cond1
 
+def smoothed_box(x_vec, center, side_len, sharpness=10.0):
+    # Distance from center in each dimension
+    dx = jnp.abs(x_vec[0] - center[0]) - side_len / 2
+    dy = jnp.abs(x_vec[1] - center[1]) - side_len / 2
+    dz = jnp.abs(x_vec[2] - center[2]) - side_len / 2
+    
+    # Max distance to boundary (positive outside, negative inside)
+    dist = jnp.maximum(jnp.maximum(dx, dy), dz)
+    
+    # Sigmoid maps dist=0 to 0.5. Higher sharpness = steeper transition.
+    return jax.nn.sigmoid(-sharpness * dist)
 
-theta_at_dofs = theta(femsystem.doflocs).astype(jnp.float32)
+def theta_smoothed(x_vec):
+    return smoothed_box(x_vec, centerLeft, sideLen) + smoothed_box(x_vec, centerRight, sideLen)
+
+def theta_right_only_smoothed(x_vec):
+    return smoothed_box(x_vec, centerLeft, sideLen)
+
+
+theta_at_dofs = theta_smoothed(femsystem.doflocs).astype(jnp.float32)
 integrated_volume = femsystem.integrate(lambda u,grad_u,x: u,theta_at_dofs)
 print(f"Area: {volume} | Integrated Area Estimate: {integrated_volume}")
 
@@ -244,7 +262,7 @@ def ej_ec_e0(u_interior,A_int,P_int,phi_theta_int):
     lambda_x = 4 * gamma_val
 
     # Really E_J and E_C per particle (E_J/N, E_C/N)
-    E_J = hz / 2
+    E_J = -1*hz / 2
     E_C = lambda_x / (N_val)
 
     return E_J, E_C, e0
@@ -262,7 +280,7 @@ def objective(vec, A_int, P_int, phi_theta_int):
 
     # Josephson Tunneling Term
     cos1 = cos_phi(n)
-    first_harmonic = E_J *expval(cos1, coeff_vec_norm)
+    first_harmonic = (-1* E_J) * expval(cos1, coeff_vec_norm)
 
     # Capacitive Term
     jz2 = Jz2(n)
@@ -299,7 +317,7 @@ ax.set_ylabel('Coefficient Value')
 femsystem._save_fig(plt.gcf(),"Initial Guess Coefficients")
 
 
-u_interior_init = femsystem.ones_on_island(theta_right_only)
+u_interior_init = femsystem.ones_on_island(theta_right_only_smoothed)
 initial_guess = jnp.concatenate((coeff_vector_init, u_interior_init), axis=0)
 
 '''
@@ -348,6 +366,7 @@ pickle_obj = {
     "e0": e0,
     "objective": energy, # Final objective value
     "theta_at_dofs": theta_at_dofs,
+    "integrated_volume": integrated_volume,
     "coeffs": coeffs,
     "u_even": u_even,
     "u_odd": u_odd,

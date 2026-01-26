@@ -11,6 +11,7 @@ from skfem.visuals.matplotlib import plot
 from jax.experimental import sparse
 from scipy.spatial import KDTree
 from scipy.sparse.linalg import inv
+from jax.scipy.sparse.linalg import cg
 import datetime
 
 class FEMSystem:
@@ -531,17 +532,73 @@ class FEMSystem:
         return res
 
     '''
-    Writing in Progress, only hypothetically needed for extremely large meshes
-    ''' 
-    # Optimized, using just Bilinear form A (inverse of kernel matrix).
-    def double_integral2(self,func1,func2,bilinear_form,u1_global ,u2_global):
-        weighted_f1_flat,weighted_f2_flat = self._double_integral_preprocess(func1,func2,u1_global,u2_global)
+    Optimized double integral using the Conjugate Gradient method.
+    This is significantly more memory efficient for large meshes as it avoids
+    computing or storing the dense inverse matrix (Green's Kernel).
+    '''
+    def double_integral_cg(self, func1, func2, A_int, P_int, u1_global, u2_global):
+        weighted_f1_flat, weighted_f2_flat = self._double_integral_preprocess(func1, func2, u1_global, u2_global)
 
-        # First we need to only take interior
-        weighted_f1_flat_interior,weighted_f2_flat_interior = weighted_f1_flat[self.interior_dofs], weighted_f2_flat[self.interior_dofs]
+        # Map quadrature weights back to interior DOFs: v = P_int^T @ w
+        v1 = P_int.T @ weighted_f1_flat
+        v2 = P_int.T @ weighted_f2_flat
 
-        # Compute G @ weighted_f2_flat by the Conjugate Gradient Method
+        # Solve A_int @ x = v2 for x using Conjugate Gradient.
+        # Use a custom solve to speed up compilation and differentiation
+        x = self._linear_solve_cg(A_int, v2)
 
+        # The final result is v1^T @ x
+        return v1 @ x
+
+    def _linear_solve_cg(self, A, b):
+        """Solve Ax = b using CG with a custom VJP to speed up JIT compilation and differentiation."""
+        
+        def _solve(A_mat, b_vec):
+            # Use a fixed tolerance and maxiter to keep compilation predictable.
+            # 1e-5 is typically sufficient for optimization gradients.
+            solution, _ = cg(A_mat, b_vec, tol=1e-5, maxiter=500)
+            return solution
+
+        @jax.custom_vjp
+        def solve(A_mat, b_vec):
+            return _solve(A_mat, b_vec)
+
+        def solve_fwd(A_mat, b_vec):
+            x = _solve(A_mat, b_vec)
+            return x, (A_mat, x)
+
+        def solve_bwd(res, g):
+            A_mat, x = res
+            # The gradient of s = v1^T A^-1 v2 w.r.t v2 is (A^-1)^T v1.
+            # Since our A (Laplacian stiffness) is symmetric, we solve A @ grad_b = g.
+            grad_b = _solve(A_mat, g)
+            # A_mat is constant in our optimization, so we return None for its gradient.
+            return None, grad_b
+
+        solve.defvjp(solve_fwd, solve_bwd)
+        return solve(A, b)
+
+    # Returns preprocessed things needed for Conjugate Gradient double integral
+    # A "Stiffness Matrix" is really just the "A" when solving Ax = b. 
+    # Also returns the interpolation matrix P_int, which is used to map the interior DOFs to the quadrature points.
+    def get_stiffness_matrix(self):
+        """
+        Returns the sparse stiffness matrix A_int and interpolation matrix P_int
+        in JAX BCOO format, suitable for double_integral_cg.
+        """
+        # Assemble the Laplacian stiffness matrix
+        A = fem.asm(laplace, self.basis)
+        
+        # Apply Dirichlet boundary conditions (condense the system)
+        A_int, xI, I = fem.condense(A, D=self.boundary_dofs, expand=True)
+        
+        # Convert Scipy sparse matrix to JAX BCOO format
+        A_int_jax = sparse.BCOO.from_scipy_sparse(A_int)
+        
+        # Get the interpolation matrix mapping interior DOFs to quadrature points
+        P_int = self._interpolate_mat_interior(I)
+        
+        return A_int_jax, P_int
 
 
     def greens(self,dof_source,dof_response):

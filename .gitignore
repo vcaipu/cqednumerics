@@ -2,3 +2,4 @@ __pycache__/
 /jax-gpu
 /2D/allplots
 /3D/allplots
+test*

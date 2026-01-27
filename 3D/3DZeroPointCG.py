@@ -27,9 +27,13 @@ parser.add_argument("--plotdir", type=str, help="Directory to save all plots. MU
 parser.add_argument("--material", type=float, help="n_s\\xi^3, value of material property")
 parser.add_argument("--separation", type=float, help="Gap between islands. Default set to 20",default=20.0)
 
-parser.add_argument("--sidelen", type=float, help="Sidelength of island. Default set to 20",default=20.0)
+parser.add_argument("--sidelen", type=float, help="sidelength of island. Default set to 20",default=20.0)
 parser.add_argument("--gridlen", type=float, help="Length of the outer cube. Default set to 120",default=120.0)
 parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 100",default=100)
+
+parser.add_argument("--lc_large", type=float, help="Element size for large elements. Default set to 10",default=15.0)
+parser.add_argument("--lc_small", type=float, help="Element size for small elements. Default set to 1",default=1.5)
+
 args = parser.parse_args()
 plotdir = args.plotdir
 sidelen = args.sidelen
@@ -37,7 +41,8 @@ separation = args.separation
 n = args.n # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
 material = args.material #Total number of particles
 gridlen = args.gridlen
-
+lc_large = args.lc_large
+lc_small = args.lc_small
 
 print(f"RUNNING WITH SEPARATION {separation}")
 
@@ -66,8 +71,6 @@ Z = jnp.linspace(0, 1, granularity)
 mesh_file_path = f"{plotdir}custommesh.msh"
 
 inner_dim = sidelen / 2
-lc_large = 20.0
-lc_small = 1
 generate_mesh(gridlen, sidelen, separation, inner_dim, lc_large, lc_small, mesh_file_path)
 
 # USING CUSTOM MESH
@@ -93,19 +96,20 @@ seps = jnp.arange(1,40,0.1)
 int_areas = []
 
 
-sideLen = 25
-centerLeft,centerRight = ((sideLen+separation)/2,0,0), (-(sideLen+separation)/2,0,0)
-volume = 2 * (sideLen ** 3)
+sidelenXY = 25
+sidelenZ = 10
+centerLeft,centerRight = ((sidelen+separation)/2,0,0), (-(sidelen+separation)/2,0,0)
+volume = 2 * (sidelen ** 3)
 
 def theta(x_vec):
     x,y,z = x_vec[0],x_vec[1],x_vec[2]
-    cond1 = (jnp.abs(x-centerLeft[0]) <= sideLen / 2) & (jnp.abs(y-centerLeft[1]) <= sideLen / 2) & (jnp.abs(z-centerLeft[2]) <= sideLen / 2)
-    cond2 = (jnp.abs(x-centerRight[0]) <= sideLen / 2) & (jnp.abs(y-centerRight[1]) <= sideLen / 2) & (jnp.abs(z-centerRight[2]) <= sideLen / 2)
+    cond1 = (jnp.abs(x-centerLeft[0]) <= sidelen / 2) & (jnp.abs(y-centerLeft[1]) <= sidelen / 2) & (jnp.abs(z-centerLeft[2]) <= sidelen / 2)
+    cond2 = (jnp.abs(x-centerRight[0]) <= sidelen / 2) & (jnp.abs(y-centerRight[1]) <= sidelen / 2) & (jnp.abs(z-centerRight[2]) <= sidelen / 2)
     return cond1 | cond2
 
 def theta_right_only(x_vec):
     x,y,z= x_vec[0],x_vec[1],x_vec[2]
-    cond1 = (jnp.abs(x-centerLeft[0]) <= sideLen / 2) & (jnp.abs(y-centerLeft[1]) <= sideLen / 2) & (jnp.abs(z-centerLeft[2]) <= sideLen / 2)
+    cond1 = (jnp.abs(x-centerLeft[0]) <= sidelen / 2) & (jnp.abs(y-centerLeft[1]) <= sidelen / 2) & (jnp.abs(z-centerLeft[2]) <= sidelen / 2)
     return cond1
 
 def smoothed_box(x_vec, center, side_len, sharpness=10.0):
@@ -121,13 +125,13 @@ def smoothed_box(x_vec, center, side_len, sharpness=10.0):
     return jax.nn.sigmoid(-sharpness * dist)
 
 def theta_smoothed(x_vec):
-    return smoothed_box(x_vec, centerLeft, sideLen) + smoothed_box(x_vec, centerRight, sideLen)
+    return smoothed_box(x_vec, centerLeft, sidelen) + smoothed_box(x_vec, centerRight, sidelen)
 
 def theta_right_only_smoothed(x_vec):
-    return smoothed_box(x_vec, centerLeft, sideLen)
+    return smoothed_box(x_vec, centerLeft, sidelen)
 
 
-theta_at_dofs = theta_smoothed(femsystem.doflocs).astype(jnp.float32)
+theta_at_dofs = theta(femsystem.doflocs).astype(jnp.float32)
 integrated_volume = femsystem.integrate(lambda u,grad_u,x: u,theta_at_dofs)
 print(f"Area: {volume} | Integrated Area Estimate: {integrated_volume}")
 
@@ -347,7 +351,7 @@ Part 4: Run Optimizaton Loop
 start_time = time.time()
 print("Starting Part 4: Running Optimization Loop")
 print("Starting Optimization")
-solver = LBFGS(fun=objective,tol=1e-2,verbose=True)
+solver = LBFGS(fun=objective,tol=5e-4,verbose=True)
 result = solver.run(initial_guess, A_int, P_int, phi_theta_int)
 result = result.params 
 coeffs,u_interior = unpack(result,n)
@@ -368,6 +372,9 @@ u_even_interior,u_odd_interior = u_even[femsystem.interior_dofs],u_odd[femsystem
 
 energy = objective(result, A_int, P_int, phi_theta_int)
 E_J, E_C, e0 = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
+
+print(f"EJ: {E_J} | EC: {E_C} | e0: {e0}")
+print(f"EJ/EC RATIO: {E_J/E_C}")
 
 # Pickle the results
 pickle_obj = {

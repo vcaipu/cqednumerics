@@ -50,10 +50,14 @@ def get_box_surface_loop(x, y, z, sidelenX, sidelenY, sidelenZ, lc_boundary, lc_
 # gridlen: length of the outer cube
 # sidelenX, sidelenY, sidelenZ: dimensions of the rectangular islands
 # separation: separation between the two rectangular islands
-# inner_dim: thickness reduction for the inner box (shell thickness)
+# inner_dimX, inner_dimY, inner_dimZ: dimensions of the inner box
 # lc_large: characteristic length of the outer cube
 # lc_small: characteristic length of the islands
-def generate_mesh(gridlen, sidelenX, sidelenY, sidelenZ, separation, inner_dim, lc_large, lc_small, output_file="custommesh.msh"):
+def generate_mesh(gridlen, sidelens, inner_dims, separation, lc_large, lc_small, output_file="custommesh.msh"):
+    sidelenX,sidelenY,sidelenZ = sidelens
+    inner_dimX,inner_dimY,inner_dimZ = inner_dims
+    
+    
     gmsh.initialize()
     gmsh.model.add("cube_mesh")
 
@@ -73,8 +77,8 @@ def generate_mesh(gridlen, sidelenX, sidelenY, sidelenZ, separation, inner_dim, 
     left_sl = get_box_surface_loop(-x_offset, 0, 0, sidelenX, sidelenY, sidelenZ, lc_small)
     right_sl = get_box_surface_loop(x_offset, 0, 0, sidelenX, sidelenY, sidelenZ, lc_small)
     
-    left_inner_sl = get_box_surface_loop(-x_offset, 0, 0, sidelenX - inner_dim, sidelenY - inner_dim, sidelenZ - inner_dim, lc_large, lc_large)
-    right_inner_sl = get_box_surface_loop(x_offset, 0, 0, sidelenX - inner_dim, sidelenY - inner_dim, sidelenZ - inner_dim, lc_large, lc_large)
+    left_inner_sl = get_box_surface_loop(-x_offset, 0, 0, inner_dimX, inner_dimY, inner_dimZ, lc_large, lc_large)
+    right_inner_sl = get_box_surface_loop(x_offset, 0, 0, inner_dimX, inner_dimY, inner_dimZ, lc_large, lc_large)
 
     # Volumes equivalent to the 2D surfaces:
     # 1. Outer volume (between big cube and two medium cubes)
@@ -100,3 +104,5 @@ def generate_mesh(gridlen, sidelenX, sidelenY, sidelenZ, separation, inner_dim, 
     # Save
     gmsh.write(output_file)
     gmsh.finalize()
+
+generate_mesh(120, (40, 60, 30), (2,10,10), 20, 40, 5, "custommesh.msh")

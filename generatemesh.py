@@ -15,6 +15,8 @@ def custom_lc(x, y):
     Lc = L_fine + (L_coarse - L_fine) / (1 + np.exp(-(r - R_refinement) / 0.5))
     
     return np.clip(Lc, L_fine, L_coarse)
+
+
 import gmsh
 import math
 import numpy as np

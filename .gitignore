@@ -3,3 +3,4 @@ __pycache__/
 /2D/allplots
 /3D/allplots
 test*
+*.msh

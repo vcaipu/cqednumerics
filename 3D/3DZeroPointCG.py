@@ -1,4 +1,5 @@
 # Import the FEMSystem Class from directory above
+from gmshgen3d import generate_mesh # Before changing directories.
 import sys
 import os
 current_dir = os.path.dirname(__file__)
@@ -17,20 +18,17 @@ import argparse
 import pickle
 import time
 
-
 '''
 Handle Command Line Args
 '''
 
 parser = argparse.ArgumentParser(description="")
 parser.add_argument("--plotdir", type=str, help="Directory to save all plots. MUST end with a slash /")
-parser.add_argument("--sidelen", type=float, help="Sidelength of island. Default set to 20",default=20.0)
+parser.add_argument("--material", type=float, help="n_s\\xi^3, value of material property")
 parser.add_argument("--separation", type=float, help="Gap between islands. Default set to 20",default=20.0)
 
-
-parser.add_argument("--material", type=float, help="n_s\\xi^3, value of material property")
-
-
+parser.add_argument("--sidelen", type=float, help="Sidelength of island. Default set to 20",default=20.0)
+parser.add_argument("--gridlen", type=float, help="Length of the outer cube. Default set to 120",default=120.0)
 parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 100",default=100)
 args = parser.parse_args()
 plotdir = args.plotdir
@@ -38,6 +36,8 @@ sidelen = args.sidelen
 separation = args.separation
 n = args.n # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
 material = args.material #Total number of particles
+gridlen = args.gridlen
+
 
 print(f"RUNNING WITH SEPARATION {separation}")
 
@@ -56,11 +56,22 @@ Y = jnp.linspace(0, 1, granularity)
 Z = jnp.linspace(0, 1, granularity)
 
 # Define the mesh
-mesh = fem.MeshTet.init_tensor(X,Y,Z)
+# mesh = fem.MeshTet.init_tensor(X,Y,Z)
 
 # Scale and center in 3D
-L = 60.0
-mesh = mesh.scaled(2 * L).translated((-L, -L,-L))
+# L = 60.0
+# mesh = mesh.scaled(2 * L).translated((-L, -L,-L))
+
+# Generate the Custom Mesh, save to a File
+mesh_file_path = f"{plotdir}custommesh.msh"
+
+inner_dim = sidelen / 2
+lc_large = 20.0
+lc_small = 1
+generate_mesh(gridlen, sidelen, separation, inner_dim, lc_large, lc_small, mesh_file_path)
+
+# USING CUSTOM MESH
+mesh = fem.Mesh.load(mesh_file_path) 
 
 # Define the unit Tetrehedral Element
 element = fem.ElementTetP1()

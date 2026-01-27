@@ -1,10 +1,10 @@
 import subprocess
 import numpy as np
 
-separations = np.arange(1,21,3)
+separations = np.arange(1,11,0.5)
 
 ### IMPORTANT: DIRECTORY TO SAVE RESULTS. MUST END WITH A SLASH /
-save_dir = "./allplots/sweep1/"
+save_dir = "./allplots/sweep3/"
 material = 0.0106
 
 for sep in separations:

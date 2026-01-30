@@ -18,6 +18,9 @@ import argparse
 import pickle
 import time
 
+import os
+os.environ["JAX_NO_CONSTANT_FOLD"] = "true"
+
 '''
 Handle Command Line Args
 '''
@@ -27,16 +30,21 @@ parser.add_argument("--plotdir", type=str, help="Directory to save all plots. MU
 parser.add_argument("--material", type=float, help="n_s\\xi^3, value of material property")
 parser.add_argument("--separation", type=float, help="Gap between islands. Default set to 20",default=20.0)
 
-parser.add_argument("--sidelen", type=float, help="sidelength of island. Default set to 20",default=20.0)
+parser.add_argument("--sidelenX", type=float, help="sidelength of island, X direction. Default set to 20",default=20.0)
+parser.add_argument("--sidelenY", type=float, help="sidelength of island, Y direction. Default set to 20",default=20.0)
+parser.add_argument("--sidelenZ", type=float, help="sidelength of island, Z direction. Default set to 20",default=20.0)
+
 parser.add_argument("--gridlen", type=float, help="Length of the outer cube. Default set to 120",default=120.0)
 parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 100",default=100)
 
-parser.add_argument("--lc_large", type=float, help="Element size for large elements. Default set to 10",default=15.0)
-parser.add_argument("--lc_small", type=float, help="Element size for small elements. Default set to 1",default=1.5)
+parser.add_argument("--lc_large", type=float, help="Element size for large elements. Default set to 10",default=10.0)
+parser.add_argument("--lc_small", type=float, help="Element size for small elements. Default set to 1",default=1)
 
 args = parser.parse_args()
 plotdir = args.plotdir
-sidelen = args.sidelen
+sidelenX = args.sidelenX
+sidelenY = args.sidelenY
+sidelenZ = args.sidelenZ
 separation = args.separation
 n = args.n # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
 material = args.material #Total number of particles
@@ -70,8 +78,10 @@ Z = jnp.linspace(0, 1, granularity)
 # Generate the Custom Mesh, save to a File
 mesh_file_path = f"{plotdir}custommesh.msh"
 
-inner_dim = sidelen / 2
-generate_mesh(gridlen, sidelen, separation, inner_dim, lc_large, lc_small, mesh_file_path)
+inner_dimX = sidelenX / 4
+inner_dimY = sidelenY / 4
+inner_dimZ = sidelenZ / 4
+generate_mesh(gridlen=gridlen, sidelens=(sidelenX, sidelenY, sidelenZ), inner_dims=(inner_dimX, inner_dimY, inner_dimZ), separation=separation, lc_large=lc_large, lc_small=lc_small, output_file=mesh_file_path)
 
 # USING CUSTOM MESH
 mesh = fem.Mesh.load(mesh_file_path) 
@@ -86,37 +96,33 @@ print("Part 1 Finished: Mesh Created")
 print(f"Degrees of Freedom: {femsystem.dofs}")
 print("\n\n --------------- \n\n")
 
-
 '''
 Part 2: Define Geometry
 '''
 
-# Step 1: Define the Geometry of two cubic islands:
+# Step 1: Define the Geometry of two rectangular islands:
 seps = jnp.arange(1,40,0.1)
 int_areas = []
 
-
-sidelenXY = 25
-sidelenZ = 10
-centerLeft,centerRight = ((sidelen+separation)/2,0,0), (-(sidelen+separation)/2,0,0)
-volume = 2 * (sidelen ** 3)
+centerLeft,centerRight = ((sidelenX+separation)/2,0,0), (-(sidelenX+separation)/2,0,0)
+volume = 2 * (sidelenX * sidelenY * sidelenZ)
 
 def theta(x_vec):
     x,y,z = x_vec[0],x_vec[1],x_vec[2]
-    cond1 = (jnp.abs(x-centerLeft[0]) <= sidelen / 2) & (jnp.abs(y-centerLeft[1]) <= sidelen / 2) & (jnp.abs(z-centerLeft[2]) <= sidelen / 2)
-    cond2 = (jnp.abs(x-centerRight[0]) <= sidelen / 2) & (jnp.abs(y-centerRight[1]) <= sidelen / 2) & (jnp.abs(z-centerRight[2]) <= sidelen / 2)
+    cond1 = (jnp.abs(x-centerLeft[0]) <= sidelenX / 2) & (jnp.abs(y-centerLeft[1]) <= sidelenY / 2) & (jnp.abs(z-centerLeft[2]) <= sidelenZ / 2)
+    cond2 = (jnp.abs(x-centerRight[0]) <= sidelenX / 2) & (jnp.abs(y-centerRight[1]) <= sidelenY / 2) & (jnp.abs(z-centerRight[2]) <= sidelenZ / 2)
     return cond1 | cond2
 
 def theta_right_only(x_vec):
     x,y,z= x_vec[0],x_vec[1],x_vec[2]
-    cond1 = (jnp.abs(x-centerLeft[0]) <= sidelen / 2) & (jnp.abs(y-centerLeft[1]) <= sidelen / 2) & (jnp.abs(z-centerLeft[2]) <= sidelen / 2)
+    cond1 = (jnp.abs(x-centerLeft[0]) <= sidelenX / 2) & (jnp.abs(y-centerLeft[1]) <= sidelenY / 2) & (jnp.abs(z-centerLeft[2]) <= sidelenZ / 2)
     return cond1
 
-def smoothed_box(x_vec, center, side_len, sharpness=10.0):
+def smoothed_box(x_vec, center, sx, sy, sz, sharpness=10.0):
     # Distance from center in each dimension
-    dx = jnp.abs(x_vec[0] - center[0]) - side_len / 2
-    dy = jnp.abs(x_vec[1] - center[1]) - side_len / 2
-    dz = jnp.abs(x_vec[2] - center[2]) - side_len / 2
+    dx = jnp.abs(x_vec[0] - center[0]) - sx / 2
+    dy = jnp.abs(x_vec[1] - center[1]) - sy / 2
+    dz = jnp.abs(x_vec[2] - center[2]) - sz / 2
     
     # Max distance to boundary (positive outside, negative inside)
     dist = jnp.maximum(jnp.maximum(dx, dy), dz)
@@ -125,10 +131,10 @@ def smoothed_box(x_vec, center, side_len, sharpness=10.0):
     return jax.nn.sigmoid(-sharpness * dist)
 
 def theta_smoothed(x_vec):
-    return smoothed_box(x_vec, centerLeft, sidelen) + smoothed_box(x_vec, centerRight, sidelen)
+    return smoothed_box(x_vec, centerLeft, sidelenX, sidelenY, sidelenZ) + smoothed_box(x_vec, centerRight, sidelenX, sidelenY, sidelenZ)
 
 def theta_right_only_smoothed(x_vec):
-    return smoothed_box(x_vec, centerLeft, sidelen)
+    return smoothed_box(x_vec, centerLeft, sidelenX, sidelenY, sidelenZ)
 
 
 theta_at_dofs = theta(femsystem.doflocs).astype(jnp.float32)

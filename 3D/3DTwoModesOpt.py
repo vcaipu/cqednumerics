@@ -21,6 +21,8 @@ import time
 import os
 os.environ["JAX_NO_CONSTANT_FOLD"] = "true"
 
+totalStartTime = time.time()
+
 '''
 Handle Command Line Args
 '''
@@ -382,8 +384,22 @@ E_J, E_C, e0 = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
 print(f"EJ: {E_J} | EC: {E_C} | e0: {e0}")
 print(f"EJ/EC RATIO: {E_J/E_C}")
 
+totalEndTime = time.time()
+totalTime = totalEndTime - totalStartTime
+print(f"Total Time Taken: {totalTime} seconds")
+
 # Pickle the results
 pickle_obj = {
+    "parameters": {
+        "material": material,
+        "separation": separation,
+        "sidelenX": sidelenX,
+        "sidelenY": sidelenY,
+        "sidelenZ": sidelenZ,
+        "gridlen": gridlen,
+        "lc_large": lc_large,
+        "lc_small": lc_small
+    },
     "n": n,
     "E_J": E_J,
     "E_C": E_C,
@@ -394,7 +410,8 @@ pickle_obj = {
     "coeffs": coeffs,
     "u_even": u_even,
     "u_odd": u_odd,
-    "femsystem": femsystem
+    "femsystem": femsystem,
+    "totalTime": totalTime
 }
 with open(plotdir+"results.pkl", 'wb') as f:
     pickle.dump(pickle_obj,f)

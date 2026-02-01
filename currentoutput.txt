@@ -1,0 +1,9 @@
+Running with the following parameters:
+DIRNAME: run8
+SEPARATION: 250
+SIDELLENX: 10
+SIDELLEY: 10
+SIDELLENZ: 10
+GRIDLEN: 290
+LC_SMALL: 3
+LC_LARGE: 0.8

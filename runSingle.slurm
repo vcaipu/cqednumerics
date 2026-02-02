@@ -33,7 +33,7 @@
 DIRNAME=${1:-"Run $(date +'%Y-%m-%d %H:%M:%S')"}
 SEPARATION=${2:-200}
 SIDELLENX=${3:-20}
-SIDELLEY=${4:-20}
+SIDELLENY=${4:-20}
 SIDELLENZ=${5:-20}
 GRIDLEN=${6:-250}
 LC_SMALL=${7:-0.8}
@@ -43,7 +43,7 @@ echo "Running with the following parameters:"
 echo "DIRNAME: ${DIRNAME}"
 echo "SEPARATION: ${SEPARATION}"
 echo "SIDELLENX: ${SIDELLENX}"
-echo "SIDELLEY: ${SIDELLEY}"
+echo "SIDELLENY: ${SIDELLENY}"
 echo "SIDELLENZ: ${SIDELLENZ}"
 echo "GRIDLEN: ${GRIDLEN}"
 echo "LC_SMALL: ${LC_SMALL}"
@@ -66,7 +66,7 @@ python3 3DTwoModesOpt.py \
     --gridlen=${GRIDLEN} \
     --lc_small=${LC_SMALL} \
     --sidelenX=${SIDELLENX} \
-    --sidelenY=${SIDELLEY} \
+    --sidelenY=${SIDELLENY} \
     --sidelenZ=${SIDELLENZ} \
     --lc_large=${LC_LARGE} > "./allplots/${DIRNAME}/output.txt" 2>&1
 

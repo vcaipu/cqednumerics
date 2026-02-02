@@ -54,7 +54,22 @@ gridlen = args.gridlen
 lc_large = args.lc_large
 lc_small = args.lc_small
 
-print(f"RUNNING WITH SEPARATION {separation}")
+
+print(f"RUNNING WITH THE FOLLOWING PARAMETERS:")
+print(f"  plotdir = {plotdir}")
+print(f"  material = {material}")
+print(f"  separation = {separation}")
+print(f"  sidelenX = {sidelenX}")
+print(f"  sidelenY = {sidelenY}")
+print(f"  sidelenZ = {sidelenZ}")
+print(f"  gridlen = {gridlen}")
+print(f"  n = {n}")
+print(f"  lc_large = {lc_large}")
+print(f"  lc_small = {lc_small}")
+
+print("\n\n --------------- \n\n")
+
+
 
 # Make the plotdirs directory
 os.makedirs(plotdir, exist_ok=True)

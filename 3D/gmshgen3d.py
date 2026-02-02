@@ -47,22 +47,23 @@ def get_box_surface_loop(x, y, z, sidelenX, sidelenY, sidelenZ, lc_boundary, lc_
 
 
 # Arguments:
-# gridlen: length of the outer cube
-# sidelenX, sidelenY, sidelenZ: dimensions of the rectangular islands
+# gridlens: dimensions of the outer box (gridlenX, gridlenY, gridlenZ)
+# sidelens: dimensions of the rectangular islands (sidelenX, sidelenY, sidelenZ)
 # separation: separation between the two rectangular islands
-# inner_dimX, inner_dimY, inner_dimZ: dimensions of the inner box
-# lc_large: characteristic length of the outer cube
+# inner_dims: dimensions of the inner box (inner_dimX, inner_dimY, inner_dimZ)
+# lc_large: characteristic length of the outer box
 # lc_small: characteristic length of the islands
-def generate_mesh(gridlen, sidelens, inner_dims, separation, lc_large, lc_small, output_file="custommesh.msh"):
-    sidelenX,sidelenY,sidelenZ = sidelens
-    inner_dimX,inner_dimY,inner_dimZ = inner_dims
+def generate_mesh(gridlens, sidelens, inner_dims, separation, lc_large, lc_small, output_file="custommesh.msh"):
+    gridlenX, gridlenY, gridlenZ = gridlens
+    sidelenX, sidelenY, sidelenZ = sidelens
+    inner_dimX, inner_dimY, inner_dimZ = inner_dims
     
     
     gmsh.initialize()
     gmsh.model.add("cube_mesh")
 
     # Parameters (similar to gmshgen.py but in 3D)
-    # gridlen = 120
+    # gridlenX, gridlenY, gridlenZ = 120, 120, 120
     # sidelenX, sidelenY, sidelenZ = 30, 30, 30
     # separation = 10
     # inner_dim = 20
@@ -71,7 +72,7 @@ def generate_mesh(gridlen, sidelens, inner_dims, separation, lc_large, lc_small,
     # lc_small = 1
 
     # Define surface loops for each box
-    out_sl = get_box_surface_loop(0, 0, 0, gridlen, gridlen, gridlen, lc_large, lc_large)
+    out_sl = get_box_surface_loop(0, 0, 0, gridlenX, gridlenY, gridlenZ, lc_large, lc_large)
     
     x_offset = (separation + sidelenX) / 2.0
     left_sl = get_box_surface_loop(-x_offset, 0, 0, sidelenX, sidelenY, sidelenZ, lc_small)
@@ -105,4 +106,4 @@ def generate_mesh(gridlen, sidelens, inner_dims, separation, lc_large, lc_small,
     gmsh.write(output_file)
     gmsh.finalize()
 
-generate_mesh(120, (40, 60, 30), (2,10,10), 20, 40, 5, "custommesh.msh")
+generate_mesh((150, 60, 60), (40, 40, 40), (20,20,20), 30, 80, 5, "custommesh.msh")

@@ -106,4 +106,4 @@ def generate_mesh(gridlens, sidelens, inner_dims, separation, lc_large, lc_small
     gmsh.write(output_file)
     gmsh.finalize()
 
-generate_mesh((150, 60, 60), (40, 40, 40), (20,20,20), 30, 80, 5, "custommesh.msh")
+# generate_mesh((150, 60, 60), (40, 40, 40), (20,20,20), 30, 80, 5, "custommesh.msh")

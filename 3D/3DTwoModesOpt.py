@@ -1,7 +1,12 @@
-# Import the FEMSystem Class from directory above
+# First set to no constant folding 
+import os
+os.environ["JAX_NO_CONSTANT_FOLD"] = "true"
+
+# Second import the generate_mesh function, before changing directories, but after setting the environment variable above to stop constant folding. 
 from gmshgen3d import generate_mesh # Before changing directories.
 import sys
-import os
+
+# Import the FEMSystem Class from directory above
 current_dir = os.path.dirname(__file__)
 parent_dir = os.path.abspath(os.path.join(current_dir, '..'))
 sys.path.insert(0, parent_dir)
@@ -18,8 +23,6 @@ import argparse
 import pickle
 import time
 
-import os
-os.environ["JAX_NO_CONSTANT_FOLD"] = "true"
 
 totalStartTime = time.time()
 
@@ -36,11 +39,15 @@ parser.add_argument("--sidelenX", type=float, help="sidelength of island, X dire
 parser.add_argument("--sidelenY", type=float, help="sidelength of island, Y direction. Default set to 20",default=20.0)
 parser.add_argument("--sidelenZ", type=float, help="sidelength of island, Z direction. Default set to 20",default=20.0)
 
-parser.add_argument("--gridlen", type=float, help="Length of the outer cube. Default set to 120",default=120.0)
+parser.add_argument("--padding", type=float, help="Padding between the outer box and the islands. Default set to 10",default=10.0)
 parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 100",default=100)
 
 parser.add_argument("--lc_large", type=float, help="Element size for large elements. Default set to 10",default=10.0)
 parser.add_argument("--lc_small", type=float, help="Element size for small elements. Default set to 1",default=1)
+parser.add_argument("--intorder", type=int, help="Integration order. Default set to 4",default=4)
+parser.add_argument("--opt_tol", type=float, help="LBFGS gradient tolerance. Tighter (e.g. 1e-5) reduces risk of stopping at bad local minima. Default 1e-5", default=1e-5)
+parser.add_argument("--opt_maxiter", type=int, help="LBFGS max iterations. Higher (e.g. 1000) gives good runs time to converge. Default 1000", default=1000)
+parser.add_argument("--retry_bad_ejec", type=int, help="If EJ/EC is outside [0.01, 10000], retry optimization with different init this many times. Default 1", default=1)
 
 args = parser.parse_args()
 plotdir = args.plotdir
@@ -50,22 +57,30 @@ sidelenZ = args.sidelenZ
 separation = args.separation
 n = args.n # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
 material = args.material #Total number of particles
-gridlen = args.gridlen
+padding = args.padding
+gridlenX = sidelenX + separation + 2 * padding
+gridlenY = sidelenY + 2 * padding
+gridlenZ = sidelenZ + 2 * padding
 lc_large = args.lc_large
 lc_small = args.lc_small
+intorder = args.intorder
+opt_tol = args.opt_tol
+opt_maxiter = args.opt_maxiter
+retry_bad_ejec = args.retry_bad_ejec
 
+# Physical sanity bounds for EJ/EC (reject solution if outside this range)
+EJEC_RATIO_MIN, EJEC_RATIO_MAX = 0.01, 10000.0
 
 print(f"RUNNING WITH THE FOLLOWING PARAMETERS:")
 print(f"  plotdir = {plotdir}")
 print(f"  material = {material}")
 print(f"  separation = {separation}")
-print(f"  sidelenX = {sidelenX}")
-print(f"  sidelenY = {sidelenY}")
-print(f"  sidelenZ = {sidelenZ}")
-print(f"  gridlen = {gridlen}")
+print(f"  Island Dimensions: ({sidelenX}, {sidelenY}, {sidelenZ})")
+print(f"  Grid Dimensions: ({gridlenX}, {gridlenY}, {gridlenZ}) | Padding: {padding}")
 print(f"  n = {n}")
 print(f"  lc_large = {lc_large}")
 print(f"  lc_small = {lc_small}")
+print(f"  opt_tol = {opt_tol}  opt_maxiter = {opt_maxiter}  retry_bad_ejec = {retry_bad_ejec}")
 
 print("\n\n --------------- \n\n")
 
@@ -79,29 +94,22 @@ os.makedirs(plotdir, exist_ok=True)
 Part 1: Creating the Mesh
 '''
 print("Starting Part 1: Creating the Mesh")
-# Create the FEMSystem Object
-granularity = 30 # number of mesh elements
-X = jnp.linspace(0, 1, granularity)
-Y = jnp.linspace(0, 1, granularity)
-Z = jnp.linspace(0, 1, granularity)
-
-# Define the mesh
-# mesh = fem.MeshTet.init_tensor(X,Y,Z)
-
-# Scale and center in 3D
-# L = 60.0
-# mesh = mesh.scaled(2 * L).translated((-L, -L,-L))
 
 # Generate the Custom Mesh, save to a File
 mesh_file_path = f"{plotdir}custommesh.msh"
 
-inner_dimX = sidelenX / 4
-inner_dimY = sidelenY / 4
-inner_dimZ = sidelenZ / 4
-generate_mesh(gridlen=gridlen, sidelens=(sidelenX, sidelenY, sidelenZ), inner_dims=(inner_dimX, inner_dimY, inner_dimZ), separation=separation, lc_large=lc_large, lc_small=lc_small, output_file=mesh_file_path)
+inner_dimX = sidelenX / 2
+inner_dimY = sidelenY / 2
+inner_dimZ = sidelenZ / 2
+
+generate_mesh(gridlens=(gridlenX, gridlenY, gridlenZ), sidelens=(sidelenX, sidelenY, sidelenZ), inner_dims=(inner_dimX, inner_dimY, inner_dimZ), separation=separation, lc_large=lc_large, lc_small=lc_small, output_file=mesh_file_path)
+time1 = time.time() - totalStartTime
+print(f"Mesh Generatated | Time: {time1 / 60:.2f} mins {time1% 60:.2f} secs")
 
 # USING CUSTOM MESH
 mesh = fem.Mesh.load(mesh_file_path) 
+time2 = time.time() - totalStartTime
+print(f"Mesh Loaded | Time: {time2 / 60:.2f} mins {time2 % 60:.2f} secs")
 
 # Define the unit Tetrehedral Element
 element = fem.ElementTetP1()
@@ -339,12 +347,12 @@ v_theta = P_int.T @ weighted_theta.ravel()
 phi_theta_int, _ = cg(A_int, v_theta)
 
 end_time = time.time()
-print(f"Time taken to compute Stiffness Matrix and Precompute Potential: {end_time - start_time} seconds")
-
+time3 = end_time - start_time
+print(f"Time taken to compute Stiffness Matrix and Precompute Potential: {time3} seconds")
 
 # 3. Getting Initial Guess
-print("Guessing a SINE")
-coeff_vector_init = guess_sine(n) / 10
+print("Guessing a Gaussian")
+coeff_vector_init = guess_gaussian(n,stddevs=6) / 10
 
 # Plotting Coefficients
 x = (n-1)/2 - jnp.arange(n)
@@ -361,27 +369,72 @@ initial_guess = jnp.concatenate((coeff_vector_init, u_interior_init), axis=0)
 '''
 Testing, for a sanity check, and to do a jit compilation
 '''
+start_time = time.time()
 temp = objective(initial_guess, A_int, P_int, phi_theta_int)
+end_time = time.time()
+time4 = end_time - start_time
+print(f"Time taken to run objective function once, for first time: {time4} seconds")
 
 print("Part 3 Finished: Defined Objective Function")
 print("\n\n --------------- \n\n")
 
 
 '''
-Part 4: Run Optimizaton Loop
+Part 4: Run Optimization Loop (with optional retries if EJ/EC is unphysical)
 '''
 
-start_time = time.time()
-print("Starting Part 4: Running Optimization Loop")
-print("Starting Optimization")
-solver = LBFGS(fun=objective,tol=5e-4,verbose=True)
-result = solver.run(initial_guess, A_int, P_int, phi_theta_int)
-result = result.params 
-coeffs,u_interior = unpack(result,n)
+def make_initial_guess(init_type="gaussian"):
+    """Build (coeff_vec, u_interior) initial guess. init_type: 'gaussian', 'gaussian_narrow', 'sine'."""
+    if init_type == "gaussian":
+        c = guess_gaussian(n, stddevs=6) / 10
+    elif init_type == "gaussian_narrow":
+        c = guess_gaussian(n, stddevs=4) / 10
+    elif init_type == "sine":
+        c = guess_sine(n) * 0.1
+    else:
+        c = guess_gaussian(n, stddevs=6) / 10
+    u_init = femsystem.ones_on_island(theta_right_only_smoothed)
+    return jnp.concatenate((c, u_init), axis=0)
 
-end_time = time.time()
-print(f"Time taken for optimization loop: {end_time - start_time} seconds")
+solver = LBFGS(fun=objective, tol=opt_tol, maxiter=opt_maxiter, verbose=True)
+init_types = ["gaussian", "gaussian_narrow", "sine"]
+best_result = None
+best_objective = jnp.inf   # we minimize objective (more negative = better)
+best_ejec_ok = False
+time5_total = 0.0
+attempt = 0
+max_attempts = 1 + retry_bad_ejec
 
+while attempt < max_attempts:
+    init_type = init_types[attempt % len(init_types)]
+    guess = make_initial_guess(init_type)
+    print(f"Starting Part 4: Running Optimization Loop (attempt {attempt + 1}/{max_attempts}, init={init_type})")
+    start_time = time.time()
+    result_cand = solver.run(guess, A_int, P_int, phi_theta_int)
+    result_cand = result_cand.params
+    time5_total += time.time() - start_time
+    coeffs_cand, u_interior_cand = unpack(result_cand, n)
+    E_J_cand, E_C_cand, e0_cand = ej_ec_e0(u_interior_cand, A_int, P_int, phi_theta_int)
+    ejec_ratio = float(E_J_cand / E_C_cand)
+    ejec_ok = (EJEC_RATIO_MIN <= ejec_ratio <= EJEC_RATIO_MAX)
+    obj_val = float(objective(result_cand, A_int, P_int, phi_theta_int))
+    print(f"  Attempt {attempt + 1}: objective={obj_val:.6f}  EJ/EC={ejec_ratio:.4f}  (physical range: {ejec_ok})")
+    if best_result is None or (ejec_ok and not best_ejec_ok) or (ejec_ok == best_ejec_ok and obj_val < best_objective):
+        best_result = result_cand
+        best_objective = obj_val
+        best_ejec_ok = ejec_ok
+    if ejec_ok or attempt >= max_attempts - 1:
+        break
+    print(f"  EJ/EC outside [{EJEC_RATIO_MIN}, {EJEC_RATIO_MAX}]; retrying with init={init_types[(attempt + 1) % len(init_types)]}.")
+    attempt += 1
+
+result = best_result
+coeffs, u_interior = unpack(result, n)
+time5 = time5_total
+if not best_ejec_ok:
+    print("WARNING: All attempts gave EJ/EC outside physical range; using best objective. Consider increasing retry_bad_ejec or tightening opt_tol.")
+
+print(f"Time taken for optimization loop(s): {time5} seconds")
 print("Part 4 Finished: Ran Optimization Loop")
 print("\n\n --------------- \n\n")
 
@@ -411,9 +464,19 @@ pickle_obj = {
         "sidelenX": sidelenX,
         "sidelenY": sidelenY,
         "sidelenZ": sidelenZ,
-        "gridlen": gridlen,
+        "padding": padding,
+        "gridlenX": gridlenX,
+        "gridlenY": gridlenY,
+        "gridlenZ": gridlenZ,
         "lc_large": lc_large,
         "lc_small": lc_small
+    },
+    "times": {
+        "mesh_gen": time1,
+        "mesh_load": time2,
+        "matrix_gen": time3,
+        "objective_run": time4,
+        "optimization_loop": time5
     },
     "n": n,
     "E_J": E_J,

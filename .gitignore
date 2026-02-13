@@ -4,3 +4,5 @@ __pycache__/
 /3D/allplots
 test*
 *.msh
+
+/3D/*.md

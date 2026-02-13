@@ -3,9 +3,9 @@
 #SBATCH --nodes=1                # node count
 #SBATCH --ntasks=1             # total number of tasks across all nodes
 #SBATCH --gres=gpu:1       # number of gpus per node
-#SBATCH --mem-per-cpu=30G
-#SBATCH --cpus-per-task=2
 #SBATCH --time=1:00:00          # total run time limit (HH:MM:SS)
+#SBATCH --cpus-per-task=4           # 4 cores for mesh generation/linalg
+#SBATCH --mem=128G           # Request 128GB of total RAM for the job
 #SBATCH --output=/scratch/gpfs/AROD/vc9839/finite-island-cqed/currentoutput.txt
 #SBATCH --error=/scratch/gpfs/AROD/vc9839/finite-island-cqed/currenterror.txt
 
@@ -35,7 +35,7 @@ SEPARATION=${2:-200}
 SIDELLENX=${3:-20}
 SIDELLENY=${4:-20}
 SIDELLENZ=${5:-20}
-GRIDLEN=${6:-250}
+PADDING=${6:-10}
 LC_SMALL=${7:-0.8}
 LC_LARGE=${8:-5}
 
@@ -45,7 +45,7 @@ echo "SEPARATION: ${SEPARATION}"
 echo "SIDELLENX: ${SIDELLENX}"
 echo "SIDELLENY: ${SIDELLENY}"
 echo "SIDELLENZ: ${SIDELLENZ}"
-echo "GRIDLEN: ${GRIDLEN}"
+echo "PADDING: ${PADDING}"
 echo "LC_SMALL: ${LC_SMALL}"
 echo "LC_LARGE: ${LC_LARGE}"
 
@@ -63,11 +63,9 @@ python3 3DTwoModesOpt.py \
     --material=0.0106 \
     --plotdir="./allplots/${DIRNAME}/" \
     --separation=${SEPARATION} \
-    --gridlen=${GRIDLEN} \
+    --padding=${PADDING} \
     --lc_small=${LC_SMALL} \
     --sidelenX=${SIDELLENX} \
     --sidelenY=${SIDELLENY} \
     --sidelenZ=${SIDELLENZ} \
     --lc_large=${LC_LARGE} > "./allplots/${DIRNAME}/output.txt" 2>&1
-
-echo "Script completed successfully."

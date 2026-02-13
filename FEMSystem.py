@@ -555,8 +555,8 @@ class FEMSystem:
         
         def _solve(A_mat, b_vec):
             # Use a fixed tolerance and maxiter to keep compilation predictable.
-            # 1e-5 is typically sufficient for optimization gradients.
-            solution, _ = cg(A_mat, b_vec, tol=1e-5, maxiter=500)
+            # Tighter tol (1e-7) can improve gradient accuracy and reduce risk of bad local minima.
+            solution, _ = cg(A_mat, b_vec, tol=1e-7, maxiter=1000)
             return solution
 
         @jax.custom_vjp

@@ -108,10 +108,13 @@ def main():
     parser = argparse.ArgumentParser(description="Summarize run results from allplots/run*")
     parser.add_argument("--base", type=str, default="3D/allplots", help="Base directory containing run folders")
     parser.add_argument("--runs", type=int, nargs='+', help="Specific run numbers to include")
+    parser.add_argument("--dirnames", type=str, nargs='+', help="Specific directory names to include")
     args = parser.parse_args()
 
     table_data = []
-    if args.runs:
+    if args.dirnames:
+        run_dirs = [os.path.join(args.base, d) for d in args.dirnames]
+    elif args.runs:
         run_dirs = [os.path.join(args.base, f"run{r}") for r in args.runs]
     else:
         if not os.path.exists(args.base):

@@ -53,7 +53,9 @@ def get_box_surface_loop(x, y, z, sidelenX, sidelenY, sidelenZ, lc_boundary, lc_
 # inner_dims: dimensions of the inner box (inner_dimX, inner_dimY, inner_dimZ)
 # lc_large: characteristic length of the outer box
 # lc_small: characteristic length of the islands
-def generate_mesh(gridlens, sidelens, inner_dims, separation, lc_large, lc_small, output_file="custommesh.msh"):
+# lc_small: characteristic length of the islands
+# element_order: 1 = linear (4-node tets), 2 = quadratic (10-node tets for P2 elements)
+def generate_mesh(gridlens, sidelens, inner_dims, separation, lc_large, lc_small, output_file="custommesh.msh", element_order=1):
     gridlenX, gridlenY, gridlenZ = gridlens
     sidelenX, sidelenY, sidelenZ = sidelens
     inner_dimX, inner_dimY, inner_dimZ = inner_dims
@@ -101,7 +103,9 @@ def generate_mesh(gridlens, sidelens, inner_dims, separation, lc_large, lc_small
     
     # Generate 3D mesh
     gmsh.model.mesh.generate(3)
-    
+    if element_order == 2:
+        gmsh.model.mesh.setOrder(2)  # 10-node quadratic tets for ElementTetP2
+
     # Save
     gmsh.write(output_file)
     gmsh.finalize()

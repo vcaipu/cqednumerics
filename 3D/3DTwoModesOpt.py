@@ -45,9 +45,10 @@ parser.add_argument("--n", type=int, help="Max number difference to be considere
 parser.add_argument("--lc_large", type=float, help="Element size for large elements. Default set to 10",default=10.0)
 parser.add_argument("--lc_small", type=float, help="Element size for small elements. Default set to 1",default=1)
 parser.add_argument("--intorder", type=int, help="Integration order. Default set to 4",default=4)
-parser.add_argument("--opt_tol", type=float, help="LBFGS gradient tolerance. Tighter (e.g. 1e-5) reduces risk of stopping at bad local minima. Default 1e-5", default=1e-5)
-parser.add_argument("--opt_maxiter", type=int, help="LBFGS max iterations. Higher (e.g. 1000) gives good runs time to converge. Default 1000", default=1000)
+parser.add_argument("--opt_tol", type=float, help="LBFGS gradient tolerance. Tighter (e.g. 1e-5) reduces risk of stopping at bad local minima. Default 1e-3", default=1e-3)
+parser.add_argument("--opt_maxiter", type=int, help="LBFGS max iterations. Higher (e.g. 1000) gives good runs time to converge. Default 500", default=500)
 parser.add_argument("--retry_bad_ejec", type=int, help="If EJ/EC is outside [0.01, 10000], retry optimization with different init this many times. Default 1", default=1)
+parser.add_argument("--element_order", type=int, choices=[1, 2], default=1, help="Finite element order: 1 = linear (P1), 2 = quadratic (P2). Default 1.")
 
 args = parser.parse_args()
 plotdir = args.plotdir
@@ -67,6 +68,7 @@ intorder = args.intorder
 opt_tol = args.opt_tol
 opt_maxiter = args.opt_maxiter
 retry_bad_ejec = args.retry_bad_ejec
+element_order = args.element_order
 
 # Physical sanity bounds for EJ/EC (reject solution if outside this range)
 EJEC_RATIO_MIN, EJEC_RATIO_MAX = 0.01, 10000.0
@@ -81,8 +83,10 @@ print(f"  n = {n}")
 print(f"  lc_large = {lc_large}")
 print(f"  lc_small = {lc_small}")
 print(f"  opt_tol = {opt_tol}  opt_maxiter = {opt_maxiter}  retry_bad_ejec = {retry_bad_ejec}")
+print(f"  element_order = {element_order}  ({'P1 linear' if element_order == 1 else 'P2 quadratic'})")
 
 print("\n\n --------------- \n\n")
+sys.stdout.flush()  # ensure params appear first in log when stdout is redirected (e.g. runSingle.slurm)
 
 
 
@@ -102,18 +106,22 @@ inner_dimX = sidelenX / 2
 inner_dimY = sidelenY / 2
 inner_dimZ = sidelenZ / 2
 
-generate_mesh(gridlens=(gridlenX, gridlenY, gridlenZ), sidelens=(sidelenX, sidelenY, sidelenZ), inner_dims=(inner_dimX, inner_dimY, inner_dimZ), separation=separation, lc_large=lc_large, lc_small=lc_small, output_file=mesh_file_path)
+generate_mesh(gridlens=(gridlenX, gridlenY, gridlenZ), sidelens=(sidelenX, sidelenY, sidelenZ), inner_dims=(inner_dimX, inner_dimY, inner_dimZ), separation=separation, lc_large=lc_large, lc_small=lc_small, output_file=mesh_file_path, element_order=element_order)
 time1 = time.time() - totalStartTime
 print(f"Mesh Generatated | Time: {time1 / 60:.2f} mins {time1% 60:.2f} secs")
 
-# USING CUSTOM MESH
-mesh = fem.Mesh.load(mesh_file_path) 
+# Load mesh (MeshTet2 for quadratic elements has 10 nodes per tet)
+if element_order == 2:
+    from skfem.mesh import MeshTet2
+    mesh = MeshTet2.load(mesh_file_path)
+else:
+    mesh = fem.Mesh.load(mesh_file_path)
 time2 = time.time() - totalStartTime
 print(f"Mesh Loaded | Time: {time2 / 60:.2f} mins {time2 % 60:.2f} secs")
 
-# Define the unit Tetrehedral Element
-element = fem.ElementTetP1()
-intorder = 4
+# Define the tetrahedral element: P1 = linear, P2 = quadratic (polynomial)
+element = fem.ElementTetP2() if element_order == 2 else fem.ElementTetP1()
+intorder = 5
 
 # Now define the FEMSystem
 femsystem = FEMSystem(mesh,element,intorder,boundary_condition=0,saveFigsDir=plotdir)

@@ -38,6 +38,7 @@ SIDELLENZ=${5:-20}
 PADDING=${6:-10}
 LC_SMALL=${7:-0.8}
 LC_LARGE=${8:-5}
+ELEMENT_ORDER=${9:-1}
 
 echo "Running with the following parameters:"
 echo "DIRNAME: ${DIRNAME}"
@@ -58,8 +59,8 @@ cd ./3D
 # Create the directory, need to do this at the start because you're piping the output to a file in this directory. 
 mkdir -p "./allplots/${DIRNAME}/"
 
-# Run the script
-python3 3DTwoModesOpt.py \
+# Run the script (python3 -u = unbuffered so log order matches execution)
+python3 -u 3DTwoModesOpt.py \
     --material=0.0106 \
     --plotdir="./allplots/${DIRNAME}/" \
     --separation=${SEPARATION} \
@@ -68,4 +69,5 @@ python3 3DTwoModesOpt.py \
     --sidelenX=${SIDELLENX} \
     --sidelenY=${SIDELLENY} \
     --sidelenZ=${SIDELLENZ} \
+    --element_order=${ELEMENT_ORDER} \
     --lc_large=${LC_LARGE} > "./allplots/${DIRNAME}/output.txt" 2>&1

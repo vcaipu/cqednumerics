@@ -267,22 +267,20 @@ class FEMSystem:
 
         plt.show()
     
-    def _plot_3d(self,coords,vals,plot_title="", vmin=None, vmax=None):
+    def _plot_3d(self, coords, vals, plot_title="", vmin=None, vmax=None, alpha=1.0, alpha_per_point=None):
         fig = plt.figure(figsize=(8, 8))
         ax = fig.add_subplot(111, projection='3d')
-        
-        # Plot the data with custom limits if provided
-        sc = ax.scatter(coords[0], coords[1], coords[2], c=vals, s=5, cmap='viridis', vmin=vmin, vmax=vmax)
-        
-        # Add colorbar and formatting
+        # alpha_per_point: optional array same length as vals → value-dependent opacity
+        # Convert to numpy array to ensure matplotlib compatibility
+        if alpha_per_point is not None:
+            use_alpha = np.asarray(alpha_per_point)
+        else:
+            use_alpha = alpha
+        sc = ax.scatter(coords[0], coords[1], coords[2], c=vals, s=5, cmap='viridis', vmin=vmin, vmax=vmax, alpha=use_alpha)
         plt.colorbar(sc)
         plt.title(plot_title)
-        
-        # Save Fig
-        self._save_fig(plt.gcf(),plot_title)
-        
+        self._save_fig(plt.gcf(), plot_title)
         plt.show()
-
         return fig, ax, sc
     
     def plot_3d_interior(self,u_interior,plot_title="", vmin=None, vmax=None):
@@ -291,27 +289,106 @@ class FEMSystem:
 
         self._plot_3d(coords,u,plot_title, vmin=vmin, vmax=vmax)
 
-    def plot_at_quad_3d(self,vals,plot_title="", vmin=None, vmax=None):
-
+    def plot_at_quad_3d(self,vals,plot_title="", vmin=None, vmax=None, alpha=1.0):
         coords = self.basis.mapping.F(self.X_ref) 
         flat_coords = coords.reshape(3, -1)
+        self._plot_3d(flat_coords,vals,plot_title, vmin=vmin, vmax=vmax, alpha=alpha)
 
-        self._plot_3d(flat_coords,vals,plot_title, vmin=vmin, vmax=vmax)
+    def plot_interior_at_quad_3d_heatmap(self, u_interior, plot_title="3D heat map (value-dependent opacity)", vmin=None, vmax=None, alpha_lo=0.0, alpha_hi=1.0, max_points=50000, value_threshold=None, opacity_power=4):
+        """Plot the 3D u field in a single figure: high values are opaque, low values transparent, so the shape is visible at a glance (no slices).
+        
+        Args:
+            u_interior: interior solution vector
+            plot_title: plot title
+            vmin, vmax: value range for colormap (default: min/max of data)
+            alpha_lo: alpha for lowest values (default 0.0 = fully transparent)
+            alpha_hi: alpha for highest values (default 1.0 = fully opaque)
+            max_points: maximum number of points to plot (subsamples if needed)
+            value_threshold: if set, only plot points with |value| > threshold (filters low values).
+                           If None, auto-filters points below 10% of max absolute value
+            opacity_power: power for opacity curve (default 4, higher = more aggressive fade for low values)
+        """
+        u_global = self._get_u_from_interior(u_interior)
+        u_quad = self._interpolate_values(u_global)
+        # Use coords_q_T so (x,y,z) order exactly matches u_quad.flatten() order (element, quad)
+        flat_coords = np.asarray(self.coords_q_T).reshape(3, -1)
+        flat_vals = np.asarray(u_quad).flatten()
+        
+        if vmin is None:
+            vmin = flat_vals.min()
+        if vmax is None:
+            vmax = flat_vals.max()
+        
+        # Auto-filter very low values if threshold not specified (removes bottom 10% of absolute values)
+        # This prevents accumulation of many transparent points that still appear opaque
+        if value_threshold is None:
+            abs_max = np.abs(flat_vals).max()
+            value_threshold = 0.1 * abs_max  # Only show points above 10% of max absolute value
+        
+        # Filter by value threshold (removes very low values entirely so they don't accumulate opacity)
+        mask = np.abs(flat_vals) > value_threshold
+        flat_coords = flat_coords[:, mask]
+        flat_vals = flat_vals[mask]
+        
+        # Recompute vmin/vmax after filtering for better colormap
+        if len(flat_vals) > 0:
+            vmin_filtered = flat_vals.min()
+            vmax_filtered = flat_vals.max()
+        else:
+            vmin_filtered = vmin
+            vmax_filtered = vmax
+        
+        # Subsample if too many points
+        n_points = flat_coords.shape[1]
+        if n_points > max_points:
+            indices = np.random.choice(n_points, max_points, replace=False)
+            flat_coords = flat_coords[:, indices]
+            flat_vals = flat_vals[indices]
+        
+        # Value-dependent opacity: low value -> transparent (alpha near 0), high value -> opaque (alpha near 1)
+        # Use a high power to make low values fade very aggressively
+        span = vmax_filtered - vmin_filtered
+        if span <= 0:
+            alpha_per_point = np.full_like(flat_vals, alpha_hi)
+        else:
+            normalized = (flat_vals - vmin_filtered) / span
+            # High power (default 4) makes low values fade very aggressively - only high values are visible
+            normalized_power = np.clip(normalized, 0.0, 1.0) ** opacity_power
+            alpha_per_point = alpha_lo + (alpha_hi - alpha_lo) * normalized_power
+        
+        # Depth-sort so back points are drawn first; otherwise mesh order puts surface elements
+        # on top and the interior (high values) is occluded, making the volume look "hollow"
+        depth = flat_coords[2]  # sort by z (back-to-front for default view)
+        sort_idx = np.argsort(depth)
+        flat_coords = flat_coords[:, sort_idx]
+        flat_vals = flat_vals[sort_idx]
+        alpha_per_point = alpha_per_point[sort_idx]
+        
+        self._plot_3d(flat_coords, flat_vals, plot_title=plot_title, vmin=vmin, vmax=vmax, alpha_per_point=alpha_per_point)
 
-    def plot_at_quad_3d_sliced(self, vals, plot_title="", slice_axis='z', slice_val=0.5, tol=0.05, vmin=None, vmax=None):
-        coords = self.basis.mapping.F(self.X_ref) 
-        flat_coords = coords.reshape(3, -1)
-        flat_vals = vals.flatten()
+    def plot_at_quad_3d_sliced(self, vals, plot_title="", slice_axis='z', slice_val=0.5, tol=0.05, vmin=None, vmax=None,
+                               slice_axis_2=None, slice_val_2=None):
+        # Use quadrature coordinates (same order as vals.flatten(): element, then quad within element)
+        flat_coords = np.asarray(self.coords_q_T).reshape(3, -1)
+        flat_vals = np.asarray(vals).flatten()
         
         x, y, z = flat_coords[0], flat_coords[1], flat_coords[2]
         
-        # Filter points based on slice
+        # Filter points based on slice(s)
         if slice_axis == 'z':
-            mask = jnp.abs(z - slice_val) < tol
+            mask = np.abs(z - slice_val) < tol
         elif slice_axis == 'y':
-            mask = jnp.abs(y - slice_val) < tol
-        else: # x
-            mask = jnp.abs(x - slice_val) < tol
+            mask = np.abs(y - slice_val) < tol
+        else:  # x
+            mask = np.abs(x - slice_val) < tol
+        
+        if slice_axis_2 is not None and slice_val_2 is not None:
+            if slice_axis_2 == 'z':
+                mask = mask & (np.abs(z - slice_val_2) < tol)
+            elif slice_axis_2 == 'y':
+                mask = mask & (np.abs(y - slice_val_2) < tol)
+            else:  # x
+                mask = mask & (np.abs(x - slice_val_2) < tol)
             
         # Apply mask
         xs, ys, zs = x[mask], y[mask], z[mask]
@@ -323,7 +400,10 @@ class FEMSystem:
         sc = ax.scatter(xs, ys, zs, c=vs, s=10, cmap='viridis', alpha=0.8, vmin=vmin, vmax=vmax)
 
         plt.colorbar(sc)
-        plt.title(f"{plot_title} (Slice @ {slice_axis}={slice_val:.3f})")
+        slice_desc = f"Slice @ {slice_axis}={slice_val:.3f}"
+        if slice_axis_2 is not None and slice_val_2 is not None:
+            slice_desc += f", {slice_axis_2}={slice_val_2:.3f}"
+        plt.title(f"{plot_title} ({slice_desc})")
         ax.set_xlim(x.min(), x.max()); ax.set_ylim(y.min(), y.max()); ax.set_zlim(z.min(), z.max())
         ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.set_zlabel('Z')
 
@@ -384,11 +464,13 @@ class FEMSystem:
         u_quad = self._interpolate_values(u_global)
         self.plot_at_quad_3d(u_quad,plot_title, vmin=vmin, vmax=vmax)  
     
-    def plot_interior_at_quad_3d_sliced(self,u_interior,slice_val,slice_axis="z",plot_title="Values at Quadratures, for a 3D Function Slice",tol=0.05, vmin=None, vmax=None):
+    def plot_interior_at_quad_3d_sliced(self,u_interior,slice_val,slice_axis="z",plot_title="Values at Quadratures, for a 3D Function Slice",tol=0.05, vmin=None, vmax=None,
+                                         slice_axis_2=None, slice_val_2=None):
         u_global = self._get_u_from_interior(u_interior)
         u_quad = self._interpolate_values(u_global)
 
-        self.plot_at_quad_3d_sliced(u_quad,plot_title=plot_title,slice_axis=slice_axis,slice_val=slice_val,tol=tol, vmin=vmin, vmax=vmax)
+        self.plot_at_quad_3d_sliced(u_quad,plot_title=plot_title,slice_axis=slice_axis,slice_val=slice_val,tol=tol, vmin=vmin, vmax=vmax,
+                                    slice_axis_2=slice_axis_2, slice_val_2=slice_val_2)
 
         
     '''
@@ -554,9 +636,12 @@ class FEMSystem:
         """Solve Ax = b using CG with a custom VJP to speed up JIT compilation and differentiation."""
         
         def _solve(A_mat, b_vec):
-            # Use a fixed tolerance and maxiter to keep compilation predictable.
-            # Tighter tol (1e-7) can improve gradient accuracy and reduce risk of bad local minima.
-            solution, _ = cg(A_mat, b_vec, tol=1e-7, maxiter=1000)
+            # JAX's cg requires A as a *function* (matvec), not a sparse matrix object.
+            # Passing BCOO directly can yield wrong matvec behavior and inf/nan.
+            b_vec = jnp.asarray(b_vec).ravel()
+            def matvec(x):
+                return A_mat @ x
+            solution, _ = cg(matvec, b_vec, tol=1e-7, maxiter=1000)
             return solution
 
         @jax.custom_vjp

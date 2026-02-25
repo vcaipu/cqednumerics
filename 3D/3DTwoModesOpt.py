@@ -24,6 +24,11 @@ import pickle
 import time
 
 
+# Only Needed for the Global Optimizer
+from scipy.optimize import basinhopping, OptimizeResult
+import numpy as np
+
+
 totalStartTime = time.time()
 
 '''
@@ -45,9 +50,8 @@ parser.add_argument("--n", type=int, help="Max number difference to be considere
 parser.add_argument("--lc_large", type=float, help="Element size for large elements. Default set to 10",default=10.0)
 parser.add_argument("--lc_small", type=float, help="Element size for small elements. Default set to 1",default=1)
 parser.add_argument("--intorder", type=int, help="Integration order. Default set to 4",default=4)
-parser.add_argument("--opt_tol", type=float, help="LBFGS gradient tolerance. Tighter (e.g. 1e-5) reduces risk of stopping at bad local minima. Default 1e-3", default=1e-3)
-parser.add_argument("--opt_maxiter", type=int, help="LBFGS max iterations. Higher (e.g. 1000) gives good runs time to converge. Default 500", default=500)
-parser.add_argument("--retry_bad_ejec", type=int, help="If EJ/EC is outside [0.01, 10000], retry optimization with different init this many times. Default 1", default=1)
+parser.add_argument("--opt_tol", type=float, help="LBFGS gradient tolerance. Tighter (e.g. 1e-5) reduces risk of stopping at bad local minima. Default 1e-5", default=1e-5)
+parser.add_argument("--opt_maxiter", type=int, help="LBFGS max iterations. Higher (e.g. 1000) gives good runs time to converge. Default 500", default=1000)
 parser.add_argument("--element_order", type=int, choices=[1, 2], default=1, help="Finite element order: 1 = linear (P1), 2 = quadratic (P2). Default 1.")
 
 args = parser.parse_args()
@@ -67,11 +71,7 @@ lc_small = args.lc_small
 intorder = args.intorder
 opt_tol = args.opt_tol
 opt_maxiter = args.opt_maxiter
-retry_bad_ejec = args.retry_bad_ejec
 element_order = args.element_order
-
-# Physical sanity bounds for EJ/EC (reject solution if outside this range)
-EJEC_RATIO_MIN, EJEC_RATIO_MAX = 0.01, 10000.0
 
 print(f"RUNNING WITH THE FOLLOWING PARAMETERS:")
 print(f"  plotdir = {plotdir}")
@@ -82,7 +82,7 @@ print(f"  Grid Dimensions: ({gridlenX}, {gridlenY}, {gridlenZ}) | Padding: {padd
 print(f"  n = {n}")
 print(f"  lc_large = {lc_large}")
 print(f"  lc_small = {lc_small}")
-print(f"  opt_tol = {opt_tol}  opt_maxiter = {opt_maxiter}  retry_bad_ejec = {retry_bad_ejec}")
+print(f"  opt_tol = {opt_tol}  opt_maxiter = {opt_maxiter}")
 print(f"  element_order = {element_order}  ({'P1 linear' if element_order == 1 else 'P2 quadratic'})")
 
 print("\n\n --------------- \n\n")
@@ -390,57 +390,54 @@ print("\n\n --------------- \n\n")
 '''
 Part 4: Run Optimization Loop (with optional retries if EJ/EC is unphysical)
 '''
+print(f"Starting Part 4: Running Optimization Loop")
 
-def make_initial_guess(init_type="gaussian"):
-    """Build (coeff_vec, u_interior) initial guess. init_type: 'gaussian', 'gaussian_narrow', 'sine'."""
-    if init_type == "gaussian":
-        c = guess_gaussian(n, stddevs=6) / 10
-    elif init_type == "gaussian_narrow":
-        c = guess_gaussian(n, stddevs=4) / 10
-    elif init_type == "sine":
-        c = guess_sine(n) * 0.1
-    else:
-        c = guess_gaussian(n, stddevs=6) / 10
-    u_init = femsystem.ones_on_island(theta_right_only_smoothed)
-    return jnp.concatenate((c, u_init), axis=0)
+def create_lbfgs_minimizer(**kwargs):
+
+    def helper(fun, x0, args=(), **kwargs2):
+        solver = LBFGS(fun=fun, **kwargs)
+        res = solver.run(x0, *args)
+        
+        print("\n\n Single Basinhopping Iteration Complete \n\n")
+
+        return OptimizeResult(
+            x=np.array(res.params),
+            fun=float(res.state.value),
+            success=True,  # You can check res.state.error < tol for more rigor
+            message="Local minimization finished via JAXOpt LBFGS",
+            nit=int(res.state.iter_num)
+        )
+    return helper
+
+optimizer_settings = {
+    "maxiter": opt_maxiter,
+    "tol": opt_tol,
+    "verbose": True
+}
+
+method = create_lbfgs_minimizer(**optimizer_settings)
+
+start_time = time.time()
 
 solver = LBFGS(fun=objective, tol=opt_tol, maxiter=opt_maxiter, verbose=True)
-init_types = ["gaussian", "gaussian_narrow", "sine"]
-best_result = None
-best_objective = jnp.inf   # we minimize objective (more negative = better)
-best_ejec_ok = False
-time5_total = 0.0
-attempt = 0
-max_attempts = 1 + retry_bad_ejec
+result = solver.run(initial_guess, A_int, P_int, phi_theta_int)
+result = result.params
 
-while attempt < max_attempts:
-    init_type = init_types[attempt % len(init_types)]
-    guess = make_initial_guess(init_type)
-    print(f"Starting Part 4: Running Optimization Loop (attempt {attempt + 1}/{max_attempts}, init={init_type})")
-    start_time = time.time()
-    result_cand = solver.run(guess, A_int, P_int, phi_theta_int)
-    result_cand = result_cand.params
-    time5_total += time.time() - start_time
-    coeffs_cand, u_interior_cand = unpack(result_cand, n)
-    E_J_cand, E_C_cand, e0_cand = ej_ec_e0(u_interior_cand, A_int, P_int, phi_theta_int)
-    ejec_ratio = float(E_J_cand / E_C_cand)
-    ejec_ok = (EJEC_RATIO_MIN <= ejec_ratio <= EJEC_RATIO_MAX)
-    obj_val = float(objective(result_cand, A_int, P_int, phi_theta_int))
-    print(f"  Attempt {attempt + 1}: objective={obj_val:.6f}  EJ/EC={ejec_ratio:.4f}  (physical range: {ejec_ok})")
-    if best_result is None or (ejec_ok and not best_ejec_ok) or (ejec_ok == best_ejec_ok and obj_val < best_objective):
-        best_result = result_cand
-        best_objective = obj_val
-        best_ejec_ok = ejec_ok
-    if ejec_ok or attempt >= max_attempts - 1:
-        break
-    print(f"  EJ/EC outside [{EJEC_RATIO_MIN}, {EJEC_RATIO_MAX}]; retrying with init={init_types[(attempt + 1) % len(init_types)]}.")
-    attempt += 1
+# resultObj = basinhopping(
+#     objective, 
+#     initial_guess, 
+#     niter=10, 
+#     minimizer_kwargs={
+#         "method": method, 
+#         "args": (A_int, P_int, phi_theta_int)
+#     }
+# )
+# result = resultObj.x
+# resultVal = resultObj.fun
 
-result = best_result
 coeffs, u_interior = unpack(result, n)
-time5 = time5_total
-if not best_ejec_ok:
-    print("WARNING: All attempts gave EJ/EC outside physical range; using best objective. Consider increasing retry_bad_ejec or tightening opt_tol.")
+end_time = time.time()
+time5 = end_time - start_time
 
 print(f"Time taken for optimization loop(s): {time5} seconds")
 print("Part 4 Finished: Ran Optimization Loop")

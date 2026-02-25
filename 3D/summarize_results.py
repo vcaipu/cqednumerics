@@ -63,6 +63,7 @@ def get_run_data(run_dir):
         params = data.get("parameters", {})
         ej = data.get("E_J", 0.0)
         ec = data.get("E_C", 1.0)
+        e0 = data.get("e0", 0.0)
         
         # Calculate Volume Error
         vol = params.get("sidelenX", 0) * params.get("sidelenY", 0) * params.get("sidelenZ", 0) * 2
@@ -74,6 +75,7 @@ def get_run_data(run_dir):
             "EJ/EC": f"{ej/ec:.4f}" if ec != 0 else "inf",
             "EJ": f"{ej:.6f}",
             "EC": f"{ec:.6f}",
+            "e0": f"{e0:.6f}",
             "Time": format_time(data.get("totalTime")),
             "Sep": params.get("separation"),
             "Island (X,Y,Z)": f"({params.get('sidelenX')}, {params.get('sidelenY')}, {params.get('sidelenZ')})",

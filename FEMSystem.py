@@ -279,9 +279,72 @@ class FEMSystem:
         sc = ax.scatter(coords[0], coords[1], coords[2], c=vals, s=5, cmap='viridis', vmin=vmin, vmax=vmax, alpha=use_alpha)
         plt.colorbar(sc)
         plt.title(plot_title)
-        self._save_fig(plt.gcf(), plot_title)
-        plt.show()
         return fig, ax, sc
+
+    def _draw_prism_wireframe_from_center(self, ax, center, side_lengths, color="white", linewidth=1.5):
+        """
+        Draw an axis-aligned rectangular prism wireframe.
+        center = (cx, cy, cz)
+        side_lengths = (Lx, Ly, Lz)
+        """
+        cx, cy, cz = center
+        Lx, Ly, Lz = side_lengths
+
+        xmin, xmax = cx - Lx / 2.0, cx + Lx / 2.0
+        ymin, ymax = cy - Ly / 2.0, cy + Ly / 2.0
+        zmin, zmax = cz - Lz / 2.0, cz + Lz / 2.0
+
+        xs = [xmin, xmax]
+        ys = [ymin, ymax]
+        zs = [zmin, zmax]
+
+        edges = [
+            # bottom rectangle (z = zmin)
+            ((xs[0], ys[0], zs[0]), (xs[1], ys[0], zs[0])),
+            ((xs[1], ys[0], zs[0]), (xs[1], ys[1], zs[0])),
+            ((xs[1], ys[1], zs[0]), (xs[0], ys[1], zs[0])),
+            ((xs[0], ys[1], zs[0]), (xs[0], ys[0], zs[0])),
+            # top rectangle (z = zmax)
+            ((xs[0], ys[0], zs[1]), (xs[1], ys[0], zs[1])),
+            ((xs[1], ys[0], zs[1]), (xs[1], ys[1], zs[1])),
+            ((xs[1], ys[1], zs[1]), (xs[0], ys[1], zs[1])),
+            ((xs[0], ys[1], zs[1]), (xs[0], ys[0], zs[1])),
+            # vertical edges
+            ((xs[0], ys[0], zs[0]), (xs[0], ys[0], zs[1])),
+            ((xs[1], ys[0], zs[0]), (xs[1], ys[0], zs[1])),
+            ((xs[1], ys[1], zs[0]), (xs[1], ys[1], zs[1])),
+            ((xs[0], ys[1], zs[0]), (xs[0], ys[1], zs[1])),
+        ]
+
+        for p0, p1 in edges:
+            x_line = [p0[0], p1[0]]
+            y_line = [p0[1], p1[1]]
+            z_line = [p0[2], p1[2]]
+            ax.plot3D(x_line, y_line, z_line, color=color, linewidth=linewidth)
+
+    def _draw_cylinder_wireframe_xaxis(self, ax, center, radius, length, n_segments=64, color="white", linewidth=1.5):
+        """
+        Draw a simple cylinder wireframe with axis along the x-axis.
+        Faces are circles in the yz-plane.
+        center = (cx, cy, cz), radius in (y,z), and total length along x.
+        """
+        cx, cy, cz = center
+        xmin = cx - length / 2.0
+        xmax = cx + length / 2.0
+
+        theta = np.linspace(0.0, 2.0 * np.pi, n_segments)
+        y_circle = cy + radius * np.cos(theta)
+        z_circle = cz + radius * np.sin(theta)
+
+        # Two circular faces at xmin and xmax
+        ax.plot3D(np.full_like(theta, xmin), y_circle, z_circle, color=color, linewidth=linewidth)
+        ax.plot3D(np.full_like(theta, xmax), y_circle, z_circle, color=color, linewidth=linewidth)
+
+        # A few axial lines to suggest the side surface
+        for t in np.linspace(0.0, 2.0 * np.pi, max(4, n_segments // 8), endpoint=False):
+            y0 = cy + radius * np.cos(t)
+            z0 = cz + radius * np.sin(t)
+            ax.plot3D([xmin, xmax], [y0, y0], [z0, z0], color=color, linewidth=linewidth)
     
     def plot_3d_interior(self,u_interior,plot_title="", vmin=None, vmax=None):
         u = self._get_u_from_interior(u_interior)
@@ -294,7 +357,10 @@ class FEMSystem:
         flat_coords = coords.reshape(3, -1)
         self._plot_3d(flat_coords,vals,plot_title, vmin=vmin, vmax=vmax, alpha=alpha)
 
-    def plot_interior_at_quad_3d_heatmap(self, u_interior, plot_title="3D heat map (value-dependent opacity)", vmin=None, vmax=None, alpha_lo=0.0, alpha_hi=1.0, max_points=50000, value_threshold=None, opacity_power=4):
+    def plot_interior_at_quad_3d_heatmap(self, u_interior, plot_title="3D heat map (value-dependent opacity)", vmin=None, vmax=None, alpha_lo=0.0, alpha_hi=1.0, max_points=50000, value_threshold=None, opacity_power=4,
+                                         prism_centers=None, prism_side_lengths=None,
+                                         cylinder_centers=None, cylinder_radii=None, cylinder_lengths=None,
+                                         wire_color="white", wire_linewidth=1.5):
         """Plot the 3D u field in a single figure: high values are opaque, low values transparent, so the shape is visible at a glance (no slices).
         
         Args:
@@ -307,6 +373,11 @@ class FEMSystem:
             value_threshold: if set, only plot points with |value| > threshold (filters low values).
                            If None, auto-filters points below 10% of max absolute value
             opacity_power: power for opacity curve (default 4, higher = more aggressive fade for low values)
+            prism_centers: optional list/array of rectangular prism centers (cx, cy, cz)
+            prism_side_lengths: optional list/array of (Lx, Ly, Lz) for each prism
+            cylinder_centers: optional list/array of cylinder centers (cx, cy, cz), axis along x
+            cylinder_radii: optional list/array of cylinder radii in the yz-plane
+            cylinder_lengths: optional list/array of cylinder lengths along the x-axis
         """
         u_global = self._get_u_from_interior(u_interior)
         u_quad = self._interpolate_values(u_global)
@@ -364,7 +435,34 @@ class FEMSystem:
         flat_vals = flat_vals[sort_idx]
         alpha_per_point = alpha_per_point[sort_idx]
         
-        self._plot_3d(flat_coords, flat_vals, plot_title=plot_title, vmin=vmin, vmax=vmax, alpha_per_point=alpha_per_point)
+        fig, ax, sc = self._plot_3d(flat_coords, flat_vals, plot_title=plot_title, vmin=vmin, vmax=vmax, alpha_per_point=alpha_per_point)
+
+        # Rectangular prisms: each defined by center and side lengths
+        if prism_centers is not None and prism_side_lengths is not None:
+            for center, side_lengths in zip(prism_centers, prism_side_lengths):
+                self._draw_prism_wireframe_from_center(
+                    ax,
+                    center=center,
+                    side_lengths=side_lengths,
+                    color=wire_color,
+                    linewidth=wire_linewidth,
+                )
+
+        # Cylinders along x-axis: each defined by center, radius and length
+        if (cylinder_centers is not None and
+            cylinder_radii is not None and
+            cylinder_lengths is not None):
+            for center, radius, length in zip(cylinder_centers, cylinder_radii, cylinder_lengths):
+                self._draw_cylinder_wireframe_xaxis(
+                    ax,
+                    center=center,
+                    radius=radius,
+                    length=length,
+                    color=wire_color,
+                    linewidth=wire_linewidth,
+                )
+
+        return fig, ax, sc
 
     def plot_at_quad_3d_sliced(self, vals, plot_title="", slice_axis='z', slice_val=0.5, tol=0.05, vmin=None, vmax=None,
                                slice_axis_2=None, slice_val_2=None):

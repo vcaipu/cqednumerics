@@ -51,6 +51,7 @@ def get_box_surface_loop(x, y, z, sidelenX, sidelenY, sidelenZ, lc_boundary, lc_
 # sidelens: dimensions of the rectangular islands (sidelenX, sidelenY, sidelenZ)
 # separation: separation between the two rectangular islands
 # inner_dims: dimensions of the inner box (inner_dimX, inner_dimY, inner_dimZ)
+#             if None, no inner boxes are created and each island has uniform granularity
 # lc_large: characteristic length of the outer box
 # lc_small: characteristic length of the islands
 # lc_small: characteristic length of the islands
@@ -58,9 +59,7 @@ def get_box_surface_loop(x, y, z, sidelenX, sidelenY, sidelenZ, lc_boundary, lc_
 def generate_mesh(gridlens, sidelens, inner_dims, separation, lc_large, lc_small, output_file="custommesh.msh", element_order=1):
     gridlenX, gridlenY, gridlenZ = gridlens
     sidelenX, sidelenY, sidelenZ = sidelens
-    inner_dimX, inner_dimY, inner_dimZ = inner_dims
-    
-    
+
     gmsh.initialize()
     gmsh.model.add("cube_mesh")
 
@@ -73,31 +72,45 @@ def generate_mesh(gridlens, sidelens, inner_dims, separation, lc_large, lc_small
     # lc_large = 20.0
     # lc_small = 1
 
+    print(gridlens,sidelens,inner_dims,separation,lc_large,lc_small,output_file,element_order)
+
     # Define surface loops for each box
     out_sl = get_box_surface_loop(0, 0, 0, gridlenX, gridlenY, gridlenZ, lc_large, lc_large)
     
     x_offset = (separation + sidelenX) / 2.0
     left_sl = get_box_surface_loop(-x_offset, 0, 0, sidelenX, sidelenY, sidelenZ, lc_small)
     right_sl = get_box_surface_loop(x_offset, 0, 0, sidelenX, sidelenY, sidelenZ, lc_small)
-    
-    left_inner_sl = get_box_surface_loop(-x_offset, 0, 0, inner_dimX, inner_dimY, inner_dimZ, lc_large, lc_large)
-    right_inner_sl = get_box_surface_loop(x_offset, 0, 0, inner_dimX, inner_dimY, inner_dimZ, lc_large, lc_large)
 
-    # Volumes equivalent to the 2D surfaces:
-    # 1. Outer volume (between big cube and two medium cubes)
-    gmsh.model.geo.addVolume([out_sl, left_sl, right_sl])
-    
-    # 2. Left shell (between medium cube and small inner cube)
-    gmsh.model.geo.addVolume([left_sl, left_inner_sl])
-    
-    # 3. Right shell (between medium cube and small inner cube)
-    gmsh.model.geo.addVolume([right_sl, right_inner_sl])
-    
-    # 4. Left core (inside small inner cube)
-    gmsh.model.geo.addVolume([left_inner_sl])
-    
-    # 5. Right core (inside small inner cube)
-    gmsh.model.geo.addVolume([right_inner_sl])
+    if inner_dims is not None:
+        inner_dimX, inner_dimY, inner_dimZ = inner_dims
+
+        left_inner_sl = get_box_surface_loop(-x_offset, 0, 0, inner_dimX, inner_dimY, inner_dimZ, lc_large, lc_large)
+        right_inner_sl = get_box_surface_loop(x_offset, 0, 0, inner_dimX, inner_dimY, inner_dimZ, lc_large, lc_large)
+
+        # Volumes equivalent to the 2D surfaces:
+        # 1. Outer volume (between big cube and two medium cubes)
+        gmsh.model.geo.addVolume([out_sl, left_sl, right_sl])
+
+        # 2. Left shell (between medium cube and small inner cube)
+        gmsh.model.geo.addVolume([left_sl, left_inner_sl])
+
+        # 3. Right shell (between medium cube and small inner cube)
+        gmsh.model.geo.addVolume([right_sl, right_inner_sl])
+
+        # 4. Left core (inside small inner cube)
+        gmsh.model.geo.addVolume([left_inner_sl])
+
+        # 5. Right core (inside small inner cube)
+        gmsh.model.geo.addVolume([right_inner_sl])
+    else:
+        # No inner boxes: just the outer domain and two solid islands,
+        # each with uniform granularity throughout.
+        # 1. Outer volume (between big cube and two medium cubes)
+        gmsh.model.geo.addVolume([out_sl, left_sl, right_sl])
+        # 2. Left island (solid)
+        gmsh.model.geo.addVolume([left_sl])
+        # 3. Right island (solid)
+        gmsh.model.geo.addVolume([right_sl])
 
     gmsh.model.geo.synchronize()
     
@@ -110,4 +123,16 @@ def generate_mesh(gridlens, sidelens, inner_dims, separation, lc_large, lc_small
     gmsh.write(output_file)
     gmsh.finalize()
 
-# generate_mesh((150, 60, 60), (40, 40, 40), (20,20,20), 30, 80, 5, "custommesh.msh")
+
+## Generate Example Mesh
+
+sidelenX,sidelenY,sidelenZ = 10,20,20
+separation = 1
+padding = 25
+gridlenX = sidelenX*2 + separation + 2 * padding
+gridlenY = sidelenY + 2 * padding
+gridlenZ = sidelenZ + 2 * padding
+inner_dimX,inner_dimY,inner_dimZ = sidelenX/2,sidelenY/2,sidelenZ/2
+lc_large,lc_small = 5,0.6
+
+generate_mesh((gridlenX,gridlenY,gridlenZ), (sidelenX,sidelenY,sidelenZ), None, separation, lc_large,lc_small, "sweepareamesh.msh",2)

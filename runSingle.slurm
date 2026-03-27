@@ -3,7 +3,7 @@
 #SBATCH --nodes=1                # node count
 #SBATCH --ntasks=1             # total number of tasks across all nodes
 #SBATCH --gres=gpu:1       # number of gpus per node
-#SBATCH --time=1:00:00          # total run time limit (HH:MM:SS)
+#SBATCH --time=4:00:00          # total run time limit (HH:MM:SS)
 #SBATCH --cpus-per-task=4           # 4 cores for mesh generation/linalg
 #SBATCH --mem=128G           # Request 128GB of total RAM for the job
 #SBATCH --output=/scratch/gpfs/AROD/vc9839/finite-island-cqed/currentoutput.txt
@@ -70,5 +70,10 @@ python3 -u 3DTwoModesOpt.py \
     --sidelenY=${SIDELLENY} \
     --sidelenZ=${SIDELLENZ} \
     --element_order=${ELEMENT_ORDER} \
-    --opt_tol=0.00001 \
-    --lc_large=${LC_LARGE} > "./allplots/${DIRNAME}/output.txt" 2>&1
+    --opt_tol=0.001 \
+    --opt_maxiter=500 \
+    --lc_large=${LC_LARGE} > "./allplots/${DIRNAME}/output.txt" 2>&1 \
+    --full_lambda_y=True
+
+
+# --mesh_file="./sweepareamesh.msh" \

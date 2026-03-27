@@ -48,5 +48,6 @@ python3 -u 3DTwoModesOpt.py \
     --sidelenY=${SIDELLENY} \
     --sidelenZ=${SIDELLENZ} \
     --element_order=${ELEMENT_ORDER} \
-    --opt_tol=0.00001 \
+    --opt_tol=0.0000001 \
+    --opt_maxiter=2000 \
     --lc_large=${LC_LARGE} > "./allplots/${DIRNAME}/output.txt" 2>&1

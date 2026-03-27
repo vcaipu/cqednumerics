@@ -53,6 +53,10 @@ parser.add_argument("--intorder", type=int, help="Integration order. Default set
 parser.add_argument("--opt_tol", type=float, help="LBFGS gradient tolerance. Tighter (e.g. 1e-5) reduces risk of stopping at bad local minima. Default 1e-5", default=1e-5)
 parser.add_argument("--opt_maxiter", type=int, help="LBFGS max iterations. Higher (e.g. 1000) gives good runs time to converge. Default 500", default=1000)
 parser.add_argument("--element_order", type=int, choices=[1, 2], default=1, help="Finite element order: 1 = linear (P1), 2 = quadratic (P2). Default 1.")
+parser.add_argument("--mesh_file", type=str, help="Path to the mesh file. Default is None, which will generate a new mesh.", default=None)
+
+parser.add_argument("--full_lambda_y", type=bool, help="Whether to include the lambda_y term in the objective function. Default is False.", default=False)
+
 
 args = parser.parse_args()
 plotdir = args.plotdir
@@ -72,6 +76,8 @@ intorder = args.intorder
 opt_tol = args.opt_tol
 opt_maxiter = args.opt_maxiter
 element_order = args.element_order
+mesh_file = args.mesh_file
+full_lambda_y = args.full_lambda_y
 
 print(f"RUNNING WITH THE FOLLOWING PARAMETERS:")
 print(f"  plotdir = {plotdir}")
@@ -84,7 +90,7 @@ print(f"  lc_large = {lc_large}")
 print(f"  lc_small = {lc_small}")
 print(f"  opt_tol = {opt_tol}  opt_maxiter = {opt_maxiter}")
 print(f"  element_order = {element_order}  ({'P1 linear' if element_order == 1 else 'P2 quadratic'})")
-
+print(f"  mesh_file = {mesh_file}")
 print("\n\n --------------- \n\n")
 sys.stdout.flush()  # ensure params appear first in log when stdout is redirected (e.g. runSingle.slurm)
 
@@ -100,22 +106,27 @@ Part 1: Creating the Mesh
 print("Starting Part 1: Creating the Mesh")
 
 # Generate the Custom Mesh, save to a File
-mesh_file_path = f"{plotdir}custommesh.msh"
 
 inner_dimX = sidelenX / 2
 inner_dimY = sidelenY / 2
 inner_dimZ = sidelenZ / 2
 
-generate_mesh(gridlens=(gridlenX, gridlenY, gridlenZ), sidelens=(sidelenX, sidelenY, sidelenZ), inner_dims=(inner_dimX, inner_dimY, inner_dimZ), separation=separation, lc_large=lc_large, lc_small=lc_small, output_file=mesh_file_path, element_order=element_order)
+# Generate Mesh, or use existing mesh file
+if mesh_file is None:
+    mesh_file = f"{plotdir}custommesh.msh"
+    generate_mesh(gridlens=(gridlenX, gridlenY, gridlenZ), sidelens=(sidelenX, sidelenY, sidelenZ), inner_dims=(inner_dimX, inner_dimY, inner_dimZ), separation=separation, lc_large=lc_large, lc_small=lc_small, output_file=mesh_file, element_order=element_order)
+else: 
+    print(f"Using Existing Mesh File: {mesh_file}")
+
 time1 = time.time() - totalStartTime
 print(f"Mesh Generatated | Time: {time1 / 60:.2f} mins {time1% 60:.2f} secs")
 
 # Load mesh (MeshTet2 for quadratic elements has 10 nodes per tet)
 if element_order == 2:
     from skfem.mesh import MeshTet2
-    mesh = MeshTet2.load(mesh_file_path)
+    mesh = MeshTet2.load(mesh_file)
 else:
-    mesh = fem.Mesh.load(mesh_file_path)
+    mesh = fem.Mesh.load(mesh_file)
 time2 = time.time() - totalStartTime
 print(f"Mesh Loaded | Time: {time2 / 60:.2f} mins {time2 % 60:.2f} secs")
 
@@ -170,7 +181,7 @@ def theta_right_only_smoothed(x_vec):
     return smoothed_box(x_vec, centerLeft, sidelenX, sidelenY, sidelenZ)
 
 
-theta_at_dofs = theta(femsystem.doflocs).astype(jnp.float32)
+theta_at_dofs = theta_smoothed(femsystem.doflocs).astype(jnp.float32)
 integrated_volume = femsystem.integrate(lambda u,grad_u,x: u,theta_at_dofs)
 print(f"Area: {volume} | Integrated Area Estimate: {integrated_volume}")
 
@@ -211,6 +222,9 @@ def beta(u1_arg,u2_arg,A_int,P_int):
 # U_{++--} = U{+-+-}
 def gamma(u1_arg,u2_arg,A_int,P_int):
     return 1/(material) * femsystem.double_integral_cg(lambda u1,a,u2,c,d: u1*u2, lambda u1,b,u2,c,d: u1*u2, A_int, P_int, u1_arg,u2_arg)
+
+def lambda_y(u1_arg,u2_arg,A_int,P_int):
+    return 2*beta(u1_arg,u2_arg,A_int,P_int) - alpha(u1_arg,A_int,P_int) - alpha(u2_arg,A_int,P_int)
 
 '''
 Helper Functions for Matrices
@@ -308,18 +322,24 @@ def ej_ec_e0(u_interior,A_int,P_int,phi_theta_int):
     gamma_val = gamma(u_even, u_odd, A_int, P_int)
     E_plus = E(u_even, A_int, P_int, phi_theta_int)
     E_minus = E(u_odd, A_int, P_int, phi_theta_int)
+    
 
     # Construct Objective
     e0 = ( E_plus + E_minus ) / 2 - gamma_val # Full Zero Point Energy
+    e0 *= N_val
 
     hz = ( E_plus - E_minus ) 
     lambda_x = 4 * gamma_val
 
     # Really E_J and E_C per particle (E_J/N, E_C/N)
-    E_J = -1*hz / 2
-    E_C = lambda_x / (N_val)
+    E_J = -1*hz / 2 * N_val
+    E_C = lambda_x
 
-    return E_J, E_C, e0
+    lambda_y_val = 0.0
+    if full_lambda_y:
+        lambda_y_val = lambda_y(u_even, u_odd, A_int, P_int)
+    
+    return E_J, E_C, e0, lambda_y_val
 
 @jax.jit
 def objective(vec, A_int, P_int, phi_theta_int):
@@ -329,8 +349,24 @@ def objective(vec, A_int, P_int, phi_theta_int):
     # Normalize Coeff Vector: 
     coeff_vec_norm = normalize_vec(coeff_vec)
 
+    E_J, E_C, e0, lambda_y_val = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
+
     # Get E_J, E_C, and e0
-    E_J, E_C, e0 = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
+    if full_lambda_y:
+        # 1. E_C correction
+        E_C -= lambda_y_val/2
+
+        # 2. Second Harmonic Correction
+        cos2 = cos_2phi(n)
+        second_harmonic = -1*lambda_y_val/2 * (N_val/2)*(N_val/2+1)* expval(cos2, coeff_vec_norm)
+        e0 += second_harmonic
+
+        # 3. ZPE Correction
+        zpe_correction = lambda_y_val /2 * (N_val/2)**2
+        e0 += zpe_correction
+
+        # Correction to e0 to account for the lambda_y term
+        e0 -= lambda_y_val /4 * N_val 
 
     # Josephson Tunneling Term
     cos1 = cos_phi(n)
@@ -452,7 +488,7 @@ u_even,u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_interior)
 u_even_interior,u_odd_interior = u_even[femsystem.interior_dofs],u_odd[femsystem.interior_dofs]
 
 energy = objective(result, A_int, P_int, phi_theta_int)
-E_J, E_C, e0 = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
+E_J, E_C, e0, lambda_y_val = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
 
 print(f"EJ: {E_J} | EC: {E_C} | e0: {e0}")
 print(f"EJ/EC RATIO: {E_J/E_C}")
@@ -494,7 +530,8 @@ pickle_obj = {
     "u_even": u_even,
     "u_odd": u_odd,
     "femsystem": femsystem,
-    "totalTime": totalTime
+    "totalTime": totalTime,
+    "lambda_y_val": lambda_y_val
 }
 with open(plotdir+"results.pkl", 'wb') as f:
     pickle.dump(pickle_obj,f)

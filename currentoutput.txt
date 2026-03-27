@@ -1,6 +1,24 @@
 Running with the following parameters:
-DIRNAME: sweep_sep3/sep50
-SEPARATION: 50
+Running with the following parameters:
+DIRNAME: sweep_area3/sidelen8
+DIRNAME: sweep_area3/sidelen9
+SEPARATION: 1
+SEPARATION: 1
+SIDELLENX: 10
+SIDELLENX: 10
+SIDELLENY: 8
+SIDELLENY: 9
+SIDELLENZ: 8
+SIDELLENZ: 9
+PADDING: 20
+PADDING: 20
+LC_SMALL: 0.2
+LC_SMALL: 0.2
+LC_LARGE: 3
+LC_LARGE: 3
+Running with the following parameters:
+DIRNAME: sweep_area3/sidelen10
+SEPARATION: 1
 SIDELLENX: 10
 SIDELLENY: 10
 SIDELLENZ: 10

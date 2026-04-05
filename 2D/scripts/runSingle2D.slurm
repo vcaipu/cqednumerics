@@ -51,10 +51,11 @@ echo "LC_SMALL: ${LC_SMALL}"
 echo "LC_LARGE: ${LC_LARGE}"
 
 # Set up
-module purge
-cd /scratch/gpfs/AROD/vc9839/finite-island-cqed
+# module purge
+# cd /scratch/gpfs/AROD/vc9839/finite-island-cqed
+cd /Users/vincentcai/Desktop/cqednumerics
 source start.sh
-cd ./3D
+cd ./2D
 
 # Create the directory, need to do this at the start because you're piping the output to a file in this directory. 
 mkdir -p "./allplots/${DIRNAME}/"

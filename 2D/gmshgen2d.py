@@ -101,22 +101,24 @@ def generate_mesh(
     gmsh.finalize()
 
 
-if __name__ == "__main__":
-    sidelenX, sidelenY = 10, 20
-    separation = 10
-    padding = 25
-    gridlenX = sidelenX * 2 + separation + 2 * padding
-    gridlenY = sidelenY + 2 * padding
-    inner_dimX, inner_dimY = sidelenX / 2, sidelenY / 2
-    lc_large, lc_small = 5, 0.6
+# Uncomment to Generate Mesh
 
-    generate_mesh(
-        (gridlenX, gridlenY),
-        (sidelenX, sidelenY),
-        None,
-        separation,
-        lc_large,
-        lc_small,
-        "custommesh.msh",
-        2,
-    )
+# if __name__ == "__main__":
+#     sidelenX, sidelenY = 10, 20
+#     separation = 10
+#     padding = 25
+#     gridlenX = sidelenX * 2 + separation + 2 * padding
+#     gridlenY = sidelenY + 2 * padding
+#     inner_dimX, inner_dimY = sidelenX / 2, sidelenY / 2
+#     lc_large, lc_small = 5, 0.6
+
+#     generate_mesh(
+#         (gridlenX, gridlenY),
+#         (sidelenX, sidelenY),
+#         None,
+#         separation,
+#         lc_large,
+#         lc_small,
+#         "./meshes/custommesh.msh",
+#         2,
+#     )

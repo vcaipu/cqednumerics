@@ -3,7 +3,7 @@ import os
 os.environ["JAX_NO_CONSTANT_FOLD"] = "true"
 
 # Second import the generate_mesh function, before changing directories, but after setting the environment variable above to stop constant folding. 
-from gmshgen3d import generate_mesh # Before changing directories.
+from gmshgen2d import generate_mesh # Before changing directories.
 import sys
 
 # Import the FEMSystem Class from directory above
@@ -11,6 +11,7 @@ current_dir = os.path.dirname(__file__)
 parent_dir = os.path.abspath(os.path.join(current_dir, '..'))
 sys.path.insert(0, parent_dir)
 from FEMSystem import FEMSystem
+from skfem.mesh import MeshTri1, MeshTri2
 
 # Remaining Imports
 import jax.numpy as jnp
@@ -48,7 +49,7 @@ parser.add_argument("--N", type=int, help="Total number of particles. Default is
 
 parser.add_argument("--lc_large", type=float, help="Element size for large elements. Default set to 10",default=10.0)
 parser.add_argument("--lc_small", type=float, help="Element size for small elements. Default set to 1",default=1)
-parser.add_argument("--intorder", type=int, help="Integration order. Default set to 4",default=4)
+parser.add_argument("--intorder", type=int, help="Integration order. Default set to 5",default=5)
 parser.add_argument("--opt_tol", type=float, help="LBFGS gradient tolerance. Tighter (e.g. 1e-5) reduces risk of stopping at bad local minima. Default 1e-5", default=1e-5)
 parser.add_argument("--opt_maxiter", type=int, help="LBFGS max iterations. Higher (e.g. 1000) gives good runs time to converge. Default 500", default=1000)
 parser.add_argument("--element_order", type=int, choices=[1, 2], default=1, help="Finite element order: 1 = linear (P1), 2 = quadratic (P2). Default 1.")
@@ -61,14 +62,12 @@ args = parser.parse_args()
 plotdir = args.plotdir
 sidelenX = args.sidelenX
 sidelenY = args.sidelenY
-sidelenZ = args.sidelenZ
 separation = args.separation
 n = args.n # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
-material = args.material #Total number of particles
+N_val = args.N #Total number of particles
 padding = args.padding
 gridlenX = sidelenX + separation + 2 * padding
 gridlenY = sidelenY + 2 * padding
-gridlenZ = sidelenZ + 2 * padding
 lc_large = args.lc_large
 lc_small = args.lc_small
 intorder = args.intorder
@@ -80,10 +79,10 @@ full_lambda_y = args.full_lambda_y
 
 print(f"RUNNING WITH THE FOLLOWING PARAMETERS:")
 print(f"  plotdir = {plotdir}")
-print(f"  material = {material}")
+print(f"  N_val = {N_val}")
 print(f"  separation = {separation}")
-print(f"  Island Dimensions: ({sidelenX}, {sidelenY}, {sidelenZ})")
-print(f"  Grid Dimensions: ({gridlenX}, {gridlenY}, {gridlenZ}) | Padding: {padding}")
+print(f"  Island Dimensions: ({sidelenX}, {sidelenY})")
+print(f"  Grid Dimensions: ({gridlenX}, {gridlenY}) | Padding: {padding}")
 print(f"  n = {n}")
 print(f"  lc_large = {lc_large}")
 print(f"  lc_small = {lc_small}")
@@ -92,7 +91,6 @@ print(f"  element_order = {element_order}  ({'P1 linear' if element_order == 1 e
 print(f"  mesh_file = {mesh_file}")
 print("\n\n --------------- \n\n")
 sys.stdout.flush()  # ensure params appear first in log when stdout is redirected (e.g. runSingle.slurm)
-
 
 # Make the plotdirs directory
 os.makedirs(plotdir, exist_ok=True)
@@ -106,12 +104,11 @@ print("Starting Part 1: Creating the Mesh")
 
 inner_dimX = sidelenX / 2
 inner_dimY = sidelenY / 2
-inner_dimZ = sidelenZ / 2
 
 # Generate Mesh, or use existing mesh file
 if mesh_file is None:
     mesh_file = f"{plotdir}custommesh.msh"
-    generate_mesh(gridlens=(gridlenX, gridlenY, gridlenZ), sidelens=(sidelenX, sidelenY, sidelenZ), inner_dims=(inner_dimX, inner_dimY, inner_dimZ), separation=separation, lc_large=lc_large, lc_small=lc_small, output_file=mesh_file, element_order=element_order)
+    generate_mesh(gridlens=(gridlenX, gridlenY), sidelens=(sidelenX, sidelenY), inner_dims=(inner_dimX, inner_dimY), separation=separation, lc_large=lc_large, lc_small=lc_small, output_file=mesh_file, element_order=element_order)
 else: 
     print(f"Using Existing Mesh File: {mesh_file}")
 
@@ -120,16 +117,14 @@ print(f"Mesh Generatated | Time: {time1 / 60:.2f} mins {time1% 60:.2f} secs")
 
 # Load mesh (MeshTet2 for quadratic elements has 10 nodes per tet)
 if element_order == 2:
-    from skfem.mesh import MeshTet2
-    mesh = MeshTet2.load(mesh_file)
+    mesh = MeshTri2.load(mesh_file)
 else:
-    mesh = fem.Mesh.load(mesh_file)
+    mesh = MeshTri1.load(mesh_file)
 time2 = time.time() - totalStartTime
 print(f"Mesh Loaded | Time: {time2 / 60:.2f} mins {time2 % 60:.2f} secs")
 
 # Define the tetrahedral element: P1 = linear, P2 = quadratic (polynomial)
-element = fem.ElementTetP2() if element_order == 2 else fem.ElementTetP1()
-intorder = 5
+element = fem.ElementTriP2() if element_order == 2 else fem.ElementTriP1()
 
 # Now define the FEMSystem
 femsystem = FEMSystem(mesh,element,intorder,boundary_condition=0,saveFigsDir=plotdir)
@@ -146,41 +141,40 @@ seps = jnp.arange(1,40,0.1)
 int_areas = []
 
 centerLeft,centerRight = ((sidelenX+separation)/2,0,0), (-(sidelenX+separation)/2,0,0)
-volume = 2 * (sidelenX * sidelenY * sidelenZ)
+area = 2 * (sidelenX * sidelenY)
 
 def theta(x_vec):
-    x,y,z = x_vec[0],x_vec[1],x_vec[2]
-    cond1 = (jnp.abs(x-centerLeft[0]) <= sidelenX / 2) & (jnp.abs(y-centerLeft[1]) <= sidelenY / 2) & (jnp.abs(z-centerLeft[2]) <= sidelenZ / 2)
-    cond2 = (jnp.abs(x-centerRight[0]) <= sidelenX / 2) & (jnp.abs(y-centerRight[1]) <= sidelenY / 2) & (jnp.abs(z-centerRight[2]) <= sidelenZ / 2)
+    x,y = x_vec[0],x_vec[1]
+    cond1 = (jnp.abs(x-centerLeft[0]) <= sidelenX / 2) & (jnp.abs(y-centerLeft[1]) <= sidelenY / 2) 
+    cond2 = (jnp.abs(x-centerRight[0]) <= sidelenX / 2) & (jnp.abs(y-centerRight[1]) <= sidelenY / 2) 
     return cond1 | cond2
 
 def theta_right_only(x_vec):
-    x,y,z= x_vec[0],x_vec[1],x_vec[2]
-    cond1 = (jnp.abs(x-centerLeft[0]) <= sidelenX / 2) & (jnp.abs(y-centerLeft[1]) <= sidelenY / 2) & (jnp.abs(z-centerLeft[2]) <= sidelenZ / 2)
+    x,y = x_vec[0],x_vec[1]
+    cond1 = (jnp.abs(x-centerLeft[0]) <= sidelenX / 2) & (jnp.abs(y-centerLeft[1]) <= sidelenY / 2)
     return cond1
 
-def smoothed_box(x_vec, center, sx, sy, sz, sharpness=10.0):
+def smoothed_box(x_vec, center, sx, sy, sharpness=10.0):
     # Distance from center in each dimension
     dx = jnp.abs(x_vec[0] - center[0]) - sx / 2
     dy = jnp.abs(x_vec[1] - center[1]) - sy / 2
-    dz = jnp.abs(x_vec[2] - center[2]) - sz / 2
     
     # Max distance to boundary (positive outside, negative inside)
-    dist = jnp.maximum(jnp.maximum(dx, dy), dz)
+    dist = jnp.maximum(dx, dy)
     
     # Sigmoid maps dist=0 to 0.5. Higher sharpness = steeper transition.
     return jax.nn.sigmoid(-sharpness * dist)
 
 def theta_smoothed(x_vec):
-    return smoothed_box(x_vec, centerLeft, sidelenX, sidelenY, sidelenZ) + smoothed_box(x_vec, centerRight, sidelenX, sidelenY, sidelenZ)
+    return smoothed_box(x_vec, centerLeft, sidelenX, sidelenY) + smoothed_box(x_vec, centerRight, sidelenX, sidelenY)
 
 def theta_right_only_smoothed(x_vec):
-    return smoothed_box(x_vec, centerLeft, sidelenX, sidelenY, sidelenZ)
+    return smoothed_box(x_vec, centerLeft, sidelenX, sidelenY)
 
-
-theta_at_dofs = theta_smoothed(femsystem.doflocs).astype(jnp.float32)
-integrated_volume = femsystem.integrate(lambda u,grad_u,x: u,theta_at_dofs)
-print(f"Area: {volume} | Integrated Area Estimate: {integrated_volume}")
+theta_at_dofs = theta(femsystem.doflocs).astype(jnp.float32)
+theta_smoothed_at_dofs = theta_smoothed(femsystem.doflocs).astype(jnp.float32)
+integrated_area = femsystem.integrate(lambda u,grad_u,x: u,theta_at_dofs)
+print(f"Area: {area} | Integrated Area Estimate: {integrated_area}")
 
 print("Part 2 Finished: Defined Geometry")
 print("\n\n --------------- \n\n")
@@ -189,8 +183,8 @@ print("\n\n --------------- \n\n")
 Part 3: Define Objective Function
 '''
 
-# Set constants
-N_val = material * integrated_volume # The Value of "N", number of particles, in terms of quantities we know
+material = N_val / integrated_area
+# So 1/Material gives the correct coefficient.
 
 '''
 Helper Functions for Integrals
@@ -300,7 +294,6 @@ def epsilon_func(u_global, P_int, phi_theta_int):
 def E(u_global, A_int, P_int, phi_theta_int):
     return epsilon_func(u_global, P_int, phi_theta_int) + (N_val - 1)*alpha(u_global, A_int, P_int)
 
-
 '''
 Before you start the optimization loop:
 1. Define Objective
@@ -308,9 +301,7 @@ Before you start the optimization loop:
 3. Get Initial Guess
 '''
 
-
 # 1. Defining Objective
-
 def ej_ec_e0(u_interior,A_int,P_int,phi_theta_int):
     # Unpack even and odd modes
     u_even, u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_interior)
@@ -319,7 +310,6 @@ def ej_ec_e0(u_interior,A_int,P_int,phi_theta_int):
     gamma_val = gamma(u_even, u_odd, A_int, P_int)
     E_plus = E(u_even, A_int, P_int, phi_theta_int)
     E_minus = E(u_odd, A_int, P_int, phi_theta_int)
-    
 
     # Construct Objective
     e0 = ( E_plus + E_minus ) / 2 - gamma_val # Full Zero Point Energy
@@ -501,11 +491,9 @@ pickle_obj = {
         "separation": separation,
         "sidelenX": sidelenX,
         "sidelenY": sidelenY,
-        "sidelenZ": sidelenZ,
         "padding": padding,
         "gridlenX": gridlenX,
         "gridlenY": gridlenY,
-        "gridlenZ": gridlenZ,
         "lc_large": lc_large,
         "lc_small": lc_small
     },

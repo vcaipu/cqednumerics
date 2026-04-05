@@ -7,3 +7,5 @@ test*
 
 /3D/*.md
 *.png
+currentoutput.txt
+currenterror.txt

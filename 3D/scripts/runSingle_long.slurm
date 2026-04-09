@@ -1,11 +1,17 @@
 #!/bin/bash
 # Same as runSingle.slurm but with 2 hr time limit for tall islands (e.g. height 40).
 # Use for height sweeps so jobs land in the >=62 min QOS and can run in parallel.
+#
+# sweep_height3 used: opt_tol=0.001, opt_maxiter=500, material=0.0106, n=100 (default),
+# separation=20, island (5,5,Z), padding=20, lc_small=0.6, lc_large=3, element_order=2.
+# For the same geometry/mesh settings with a new material: export MATERIAL before sbatch
+# (e.g. MATERIAL=0.0033784 sbatch ...), or rely on default below.
+#SBATCH --export=ALL
 #SBATCH --job-name=TwoModes3D_long
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
-#SBATCH --time=4:00:00
+#SBATCH --time=2:30:00
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=256G
 #SBATCH --output=/scratch/gpfs/AROD/vc9839/finite-island-cqed/currentoutput.txt
@@ -39,7 +45,7 @@ cd ./3D
 mkdir -p "./allplots/${DIRNAME}/"
 
 python3 -u 3DTwoModesOpt.py \
-    --material=0.0106 \
+    --material=0.0033784 \
     --plotdir="./allplots/${DIRNAME}/" \
     --separation=${SEPARATION} \
     --padding=${PADDING} \
@@ -48,6 +54,6 @@ python3 -u 3DTwoModesOpt.py \
     --sidelenY=${SIDELLENY} \
     --sidelenZ=${SIDELLENZ} \
     --element_order=${ELEMENT_ORDER} \
-    --opt_tol=0.0000001 \
-    --opt_maxiter=2000 \
+    --opt_tol=0.001 \
+    --opt_maxiter=500 \
     --lc_large=${LC_LARGE} > "./allplots/${DIRNAME}/output.txt" 2>&1

@@ -44,7 +44,7 @@ parser.add_argument("--sidelenX", type=float, help="sidelength of island, X dire
 parser.add_argument("--sidelenY", type=float, help="sidelength of island, Y direction. Default set to 20",default=20.0)
 
 parser.add_argument("--padding", type=float, help="Padding between the outer box and the islands. Default set to 10",default=10.0)
-parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 100",default=100)
+parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 50",default=50)
 parser.add_argument("--N", type=int, help="Total number of particles. Default is 70",default=70)
 
 parser.add_argument("--lc_large", type=float, help="Element size for large elements. Default set to 10",default=10.0)
@@ -66,7 +66,7 @@ separation = args.separation
 n = args.n # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
 N_val = args.N #Total number of particles
 padding = args.padding
-gridlenX = sidelenX + separation + 2 * padding
+gridlenX = 2*sidelenX + separation + 2 * padding
 gridlenY = sidelenY + 2 * padding
 lc_large = args.lc_large
 lc_small = args.lc_small
@@ -487,7 +487,7 @@ print(f"Total Time Taken: {totalTime} seconds")
 # Pickle the results
 pickle_obj = {
     "parameters": {
-        "material": material,
+        "N": N_val,
         "separation": separation,
         "sidelenX": sidelenX,
         "sidelenY": sidelenY,
@@ -510,7 +510,7 @@ pickle_obj = {
     "e0": e0,
     "objective": energy, # Final objective value
     "theta_at_dofs": theta_at_dofs,
-    "integrated_volume": integrated_volume,
+    "integrated_area": integrated_area,
     "coeffs": coeffs,
     "u_even": u_even,
     "u_odd": u_odd,
@@ -531,3 +531,50 @@ femsystem._save_fig(plt.gcf(),"Coefficients")
 
 print("Part 5 Finished: Saving Plots")
 
+
+# Create the Hamiltonian Operator over Truncated Basis, to find eigenvectors for first excited state
+def get_matrixel_and_qubit_freq(n,E_J,E_C,plot=False,coeffs=None):
+    # Copy these three matrix construction functions from 3DTwoModesOpt.py
+    x = (n-1)/2 - jnp.arange(n) # Charge Imbalance Eigenvalue, centered at 0
+
+    def Jz2(n):
+        j = (n-1)/2
+        diagonals = j - jnp.arange(n)
+        return jnp.diag(diagonals**2)
+
+    def off_diag(n,k):
+        ones_super, ones_sub = jnp.ones(n - k, dtype=jnp.int32),jnp.ones(n - k, dtype=jnp.int32)
+        super_diag_matrix,sub_diag_matrix= jnp.diag(ones_super, k=k),jnp.diag(ones_sub, k=-1*k)
+        result = super_diag_matrix + sub_diag_matrix
+        return result
+
+    def cos_phi(n):
+        return off_diag(n,1) / 2
+
+    hamiltonian = E_C * Jz2(n) - E_J * cos_phi(n) # No need for e_0 term, since we are only interested in eigenvectors
+
+    # Find Eigenvalues and Eigenvectors
+    eigenvalues,eigenvectors = jnp.linalg.eigh(hamiltonian)
+
+    # Plot the ground state, first eigenvector
+    ground_state_coeffs = eigenvectors[:,0] / jnp.sqrt(jnp.sum(eigenvectors[:,0]**2))
+    first_excited_coeffs = eigenvectors[:,1] / jnp.sqrt(jnp.sum(eigenvectors[:,1]**2))
+
+    if plot:
+        ground_state_coeffs_from_optimization = coeffs / jnp.sqrt(jnp.sum(coeffs**2))
+        plt.plot(x,ground_state_coeffs**2,".",color="red",label="Ground State (Solving Eigenvalue Problem)")
+        plt.plot(x,ground_state_coeffs_from_optimization**2,"x",color="grey",label="Ground State (Optimization Loop)")
+        plt.plot(x,first_excited_coeffs**2,".",color="green",label="First Excited State")
+        plt.xlabel("Charge Imbalance Eigenvalue")
+        plt.ylabel("Coefficient")
+        plt.legend()
+        plt.show()
+
+    # Get the frequency of the qubit
+    sorted_eigenvalues = jnp.sort(eigenvalues)
+    omega_q = sorted_eigenvalues[1] - sorted_eigenvalues[0]
+
+    return jnp.sum(first_excited_coeffs * ground_state_coeffs * x), omega_q # x is the charge imbalance eigenvalue
+
+mat_el,E_q = get_matrixel_and_qubit_freq(n,E_J,E_C,plot=False,coeffs=coeffs)
+print(f"Qubit Frequency: {E_q}")

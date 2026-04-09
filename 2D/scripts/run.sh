@@ -1,15 +1,15 @@
-DIRNAME="Run $(date +'%Y-%m-%d %H:%M:%S')"
-SEPARATION=10
+DIRNAME="square10sep20num100"
+SEPARATION=20
 SIDELLENX=10
-SIDELLENY=20
-PADDING=25
-LC_SMALL=0.6
+SIDELLENY=10
+PADDING=20
+LC_SMALL=1
 LC_LARGE=5
 ELEMENT_ORDER=2
-N=200
+N=100
 echo ${N}
 
-cd /Users/vincentcai/Desktop/cqednumerics/2D
+cd /home/ubuntu/cqednumerics/2D
 
 python3 -u 2DTwoModesOpt.py \
     --plotdir="./allplots/${DIRNAME}/" \
@@ -24,4 +24,3 @@ python3 -u 2DTwoModesOpt.py \
     --opt_maxiter=500 \
     --lc_large=${LC_LARGE} \
     --full_lambda_y=True \
-    --mesh_file="./meshes/custommesh.msh"

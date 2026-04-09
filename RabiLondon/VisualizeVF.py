@@ -128,11 +128,23 @@ class VisualizeVF:
         B_nodes = self._project_bz_to_nodes(A_sol)
         x, y, tri = self._p1_plot_triangulation()
         z = np.asarray(B_nodes).ravel()
+        finite_z = z[np.isfinite(z)]
+        nonfinite_count = int(z.size - finite_z.size)
+        if nonfinite_count > 0:
+            raise ValueError(
+                f"Projected B_z contains {nonfinite_count} non-finite value(s) (NaN/Inf). "
+                "This usually indicates the Helmholtz solve produced invalid A_sol."
+            )
+        if finite_z.size == 0:
+            raise ValueError(
+                "All projected B_z values are non-finite (NaN/Inf). "
+                "This usually indicates the Helmholtz solve produced invalid A."
+            )
 
         z_plot = z
         if surface_z_clip_percentile is not None:
-            lim_p = np.percentile(np.abs(z), surface_z_clip_percentile)
-            if lim_p > 0:
+            lim_p = np.percentile(np.abs(finite_z), surface_z_clip_percentile)
+            if np.isfinite(lim_p) and lim_p > 0:
                 z_plot = np.clip(z, -float(lim_p), float(lim_p))
 
         fig = plt.figure(figsize=figsize)
@@ -142,15 +154,17 @@ class VisualizeVF:
 
         norm = None
         if bz_symmetric_percentile is not None and color_norm is not None:
-            lim_c = np.percentile(np.abs(z), bz_symmetric_percentile)
-            if lim_c <= 0:
+            lim_c = np.percentile(np.abs(finite_z), bz_symmetric_percentile)
+            if (not np.isfinite(lim_c)) or lim_c <= 0:
                 pass
             elif color_norm == "linear":
                 norm = Normalize(vmin=-float(lim_c), vmax=float(lim_c))
             elif color_norm == "symlog":
                 if symlog_linthresh is None:
-                    p60 = np.percentile(np.abs(z), 60)
+                    p60 = np.percentile(np.abs(finite_z), 60)
                     symlog_linthresh = max(float(p60) * 0.25, float(lim_c) * 1e-4)
+                if not np.isfinite(symlog_linthresh) or symlog_linthresh <= 0:
+                    symlog_linthresh = float(lim_c) * 1e-4
                 symlog_linthresh = min(symlog_linthresh, float(lim_c) * 0.5)
                 norm = SymLogNorm(
                     linthresh=symlog_linthresh,
@@ -188,8 +202,8 @@ class VisualizeVF:
             Zg = interp_z(Xg, Yg)
             masked = np.ma.masked_invalid(Zg)
             if surface_z_clip_percentile is not None:
-                lim_p = np.percentile(np.abs(z), surface_z_clip_percentile)
-                if lim_p > 0:
+                lim_p = np.percentile(np.abs(finite_z), surface_z_clip_percentile)
+                if np.isfinite(lim_p) and lim_p > 0:
                     masked = np.ma.clip(masked, -float(lim_p), float(lim_p))
             surf = ax3.plot_surface(
                 Xg,
@@ -211,8 +225,8 @@ class VisualizeVF:
         ax3.set_title(r"Magnetic field $B_z = (\nabla \times \mathbf{A})_z$ (3D)")
         ax3.view_init(elev=elev, azim=azim)
         if surface_z_clip_percentile is not None:
-            lim_z_ax = np.percentile(np.abs(z), surface_z_clip_percentile)
-            if lim_z_ax > 0:
+            lim_z_ax = np.percentile(np.abs(finite_z), surface_z_clip_percentile)
+            if np.isfinite(lim_z_ax) and lim_z_ax > 0:
                 ax3.set_zlim(-float(lim_z_ax), float(lim_z_ax))
 
         if interactive_view_sliders:

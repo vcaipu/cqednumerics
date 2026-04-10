@@ -43,6 +43,7 @@ class RabiLondon2D:
         self.E_J,self.E_C = pickled_obj["E_J"],pickled_obj["E_C"]
         self.integrated_area = pickled_obj["integrated_area"]
         self.area = pickled_obj["parameters"]["sidelenX"] * pickled_obj["parameters"]["sidelenY"] * 2
+        
 
         print(f"---- Successfully initialed RabiLondon2D Object ----")
         print(f"Integrated Area: {self.integrated_area} | Area: {self.area} | Error: {abs(self.integrated_area - self.area)/self.integrated_area*100:.2f}%")

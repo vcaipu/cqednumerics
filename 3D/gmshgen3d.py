@@ -135,4 +135,4 @@ gridlenZ = sidelenZ + 2 * padding
 inner_dimX,inner_dimY,inner_dimZ = sidelenX/2,sidelenY/2,sidelenZ/2
 lc_large,lc_small = 5,0.6
 
-generate_mesh((gridlenX,gridlenY,gridlenZ), (sidelenX,sidelenY,sidelenZ), None, separation, lc_large,lc_small, "sweepareamesh.msh",2)
+# generate_mesh((gridlenX,gridlenY,gridlenZ), (sidelenX,sidelenY,sidelenZ), None, separation, lc_large,lc_small, "sweepareamesh.msh",2)

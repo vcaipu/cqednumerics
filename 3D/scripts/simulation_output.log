@@ -1,0 +1,7 @@
+Running with the follo./runSingleAWS.sh: line 24: module: command not found
+
+CondaError: Run 'conda init' before 'conda deactivate'
+
+ 20
+LC_SMALL: 1
+LC_LARGE: 15

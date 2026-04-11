@@ -1,0 +1,9 @@
+nohup: ignoring input
+./runSingleAWS.sh: line 24: module: command not found
+
+CondaError: Run 'conda init' before 'conda deactivate'
+
+./runSingleAWS.sh: line 24: module: command not found
+
+CondaError: Run 'conda init' before 'conda deactivate'
+

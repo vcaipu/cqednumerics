@@ -1,0 +1,13 @@
+nohup: ignoring input
+Running with the following parameters:
+DIRNAME: awstest
+SEPARATION: 20
+SIDELLENX: 5
+SIDELLENY: 5
+SIDELLENZ: 5
+PADDING: 20
+LC_SMALL: 0.6
+LC_LARGE: 5
+
+CondaError: Run 'conda init' before 'conda deactivate'
+

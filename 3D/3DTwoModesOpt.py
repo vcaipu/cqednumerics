@@ -45,7 +45,7 @@ parser.add_argument("--sidelenY", type=float, help="sidelength of island, Y dire
 parser.add_argument("--sidelenZ", type=float, help="sidelength of island, Z direction. Default set to 20",default=20.0)
 
 parser.add_argument("--padding", type=float, help="Padding between the outer box and the islands. Default set to 10",default=10.0)
-parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 100",default=100)
+parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 40",default=40)
 
 parser.add_argument("--lc_large", type=float, help="Element size for large elements. Default set to 10",default=10.0)
 parser.add_argument("--lc_small", type=float, help="Element size for small elements. Default set to 1",default=1)
@@ -261,11 +261,13 @@ def normalize_vec(vec):
     normalized_v = jnp.where(jnp.isclose(norm_v, 0.0), vec, vec / norm_v )
     return normalized_v
 
+# More stddevs, sharper peaked gaussian
 def guess_gaussian(n,stddevs=4):
     x = jnp.linspace(-stddevs, stddevs, n)
     mu,sigma = 0.0,1.0
     exponent = -jnp.square(x - mu) / (2.0 * jnp.square(sigma))
     gaussian_array = jnp.exp(exponent)
+    gaussian_array /= jnp.linalg.norm(gaussian_array)
     return gaussian_array
 
 def guess_sine(n):
@@ -396,7 +398,7 @@ print(f"Time taken to compute Stiffness Matrix and Precompute Potential: {time3}
 
 # 3. Getting Initial Guess
 print("Guessing a Gaussian")
-coeff_vector_init = guess_gaussian(n,stddevs=6) / 10
+coeff_vector_init = guess_gaussian(n,stddevs=30)  # 30 stddevs is very peaked
 
 # Plotting Coefficients
 x = (n-1)/2 - jnp.arange(n)

@@ -13,9 +13,9 @@
 #SBATCH --gres=gpu:1
 #SBATCH --time=2:30:00
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=256G
-#SBATCH --output=/scratch/gpfs/AROD/vc9839/finite-island-cqed/currentoutput.txt
-#SBATCH --error=/scratch/gpfs/AROD/vc9839/finite-island-cqed/currenterror.txt
+#SBATCH --mem=32G
+#SBATCH --output=~/cqednumerics/currentoutput.txt
+#SBATCH --error=~/cqednumerics/currenterror.txt
 
 DIRNAME=${1:-"Run $(date +'%Y-%m-%d %H:%M:%S')"}
 SEPARATION=${2:-200}
@@ -38,7 +38,7 @@ echo "LC_SMALL: ${LC_SMALL}"
 echo "LC_LARGE: ${LC_LARGE}"
 
 module purge
-cd /scratch/gpfs/AROD/vc9839/finite-island-cqed
+cd ~/cqednumerics
 source start.sh
 cd ./3D
 

@@ -2,8 +2,10 @@
 import os
 os.environ["JAX_NO_CONSTANT_FOLD"] = "true"
 
-# Second import the generate_mesh function, before changing directories, but after setting the environment variable above to stop constant folding. 
-from gmshgen2d import generate_mesh # Before changing directories.
+# Second import the generate_mesh functions, before changing directories, but after setting the
+# environment variable above to stop constant folding.
+from gmshgen2d import generate_mesh as generate_mesh_rect
+from gmshgen2d_composite import generate_mesh as generate_mesh_composite
 import sys
 
 # Import the FEMSystem Class from directory above
@@ -42,6 +44,16 @@ parser.add_argument("--separation", type=float, help="Gap between islands. Defau
 
 parser.add_argument("--sidelenX", type=float, help="sidelength of island, X direction. Default set to 20",default=20.0)
 parser.add_argument("--sidelenY", type=float, help="sidelength of island, Y direction. Default set to 20",default=20.0)
+parser.add_argument("--geometry", type=str, choices=["rect", "composite"], default="rect",
+                    help="Island geometry mode. 'rect' = original two rectangles, "
+                         "'composite' = reflected 8-sided islands from two touching rectangles.")
+parser.add_argument("--sidelen2X", type=float, default=10.0,
+                    help="Second rectangle X length for composite geometry.")
+parser.add_argument("--sidelen2Y", type=float, default=10.0,
+                    help="Second rectangle Y length for composite geometry.")
+parser.add_argument("--inner_dim", type=float, default=None,
+                    help="Inset distance for composite geometry inner coarse region. "
+                         "Default None uses min(sidelens)/4.")
 
 parser.add_argument("--padding", type=float, help="Padding between the outer box and the islands. Default set to 10",default=10.0)
 parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 50",default=50)
@@ -62,12 +74,20 @@ args = parser.parse_args()
 plotdir = args.plotdir
 sidelenX = args.sidelenX
 sidelenY = args.sidelenY
+geometry = args.geometry
+sidelen2X = args.sidelen2X
+sidelen2Y = args.sidelen2Y
+inner_dim_arg = args.inner_dim
 separation = args.separation
 n = args.n # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
 N_val = args.N #Total number of particles
 padding = args.padding
-gridlenX = 2*sidelenX + separation + 2 * padding
-gridlenY = sidelenY + 2 * padding
+if geometry == "composite":
+    gridlenX = 2 * sidelenX + 2 * sidelen2X + separation + 2 * padding
+    gridlenY = max(sidelenY, sidelen2Y) + 2 * padding
+else:
+    gridlenX = 2 * sidelenX + separation + 2 * padding
+    gridlenY = sidelenY + 2 * padding
 lc_large = args.lc_large
 lc_small = args.lc_small
 intorder = args.intorder
@@ -82,6 +102,9 @@ print(f"  plotdir = {plotdir}")
 print(f"  N_val = {N_val}")
 print(f"  separation = {separation}")
 print(f"  Island Dimensions: ({sidelenX}, {sidelenY})")
+print(f"  geometry = {geometry}")
+if geometry == "composite":
+    print(f"  Composite Second Dimensions: ({sidelen2X}, {sidelen2Y})")
 print(f"  Grid Dimensions: ({gridlenX}, {gridlenY}) | Padding: {padding}")
 print(f"  n = {n}")
 print(f"  lc_large = {lc_large}")
@@ -104,11 +127,36 @@ print("Starting Part 1: Creating the Mesh")
 
 inner_dimX = sidelenX / 2
 inner_dimY = sidelenY / 2
+inner_dim = inner_dim_arg
+if inner_dim is None:
+    inner_dim = min(sidelenX, sidelenY, sidelen2X, sidelen2Y) / 4.0
 
 # Generate Mesh, or use existing mesh file
 if mesh_file is None:
     mesh_file = f"{plotdir}custommesh.msh"
-    generate_mesh(gridlens=(gridlenX, gridlenY), sidelens=(sidelenX, sidelenY), inner_dims=(inner_dimX, inner_dimY), separation=separation, lc_large=lc_large, lc_small=lc_small, output_file=mesh_file, element_order=element_order)
+    if geometry == "composite":
+        generate_mesh_composite(
+            gridlens=(gridlenX, gridlenY),
+            first_dims=(sidelenX, sidelenY),
+            second_dims=(sidelen2X, sidelen2Y),
+            inner_dim=inner_dim,
+            separation=separation,
+            lc_large=lc_large,
+            lc_small=lc_small,
+            output_file=mesh_file,
+            element_order=element_order,
+        )
+    else:
+        generate_mesh_rect(
+            gridlens=(gridlenX, gridlenY),
+            sidelens=(sidelenX, sidelenY),
+            inner_dims=(inner_dimX, inner_dimY),
+            separation=separation,
+            lc_large=lc_large,
+            lc_small=lc_small,
+            output_file=mesh_file,
+            element_order=element_order,
+        )
 else: 
     print(f"Using Existing Mesh File: {mesh_file}")
 
@@ -141,16 +189,72 @@ seps = jnp.arange(1,40,0.1)
 int_areas = []
 
 centerLeft,centerRight = ((sidelenX+separation)/2,0,0), (-(sidelenX+separation)/2,0,0)
-area = 2 * (sidelenX * sidelenY)
+if geometry == "composite":
+    area = 2 * (sidelenX * sidelenY + sidelen2X * sidelen2Y)
+else:
+    area = 2 * (sidelenX * sidelenY)
+
+
+def _composite_bounds(center_x):
+    # "First" rectangle is centered at center_x. "Second" is attached on the outside.
+    first_xmin = center_x - sidelenX / 2
+    first_xmax = center_x + sidelenX / 2
+    first_ymin = -sidelenY / 2
+    first_ymax = sidelenY / 2
+
+    if center_x > 0:
+        second_xmin = first_xmax
+        second_xmax = second_xmin + sidelen2X
+    else:
+        second_xmax = first_xmin
+        second_xmin = second_xmax - sidelen2X
+
+    second_ymin = -sidelen2Y / 2
+    second_ymax = sidelen2Y / 2
+    return (
+        first_xmin,
+        first_xmax,
+        first_ymin,
+        first_ymax,
+        second_xmin,
+        second_xmax,
+        second_ymin,
+        second_ymax,
+    )
 
 def theta(x_vec):
     x,y = x_vec[0],x_vec[1]
-    cond1 = (jnp.abs(x-centerLeft[0]) <= sidelenX / 2) & (jnp.abs(y-centerLeft[1]) <= sidelenY / 2) 
-    cond2 = (jnp.abs(x-centerRight[0]) <= sidelenX / 2) & (jnp.abs(y-centerRight[1]) <= sidelenY / 2) 
+    if geometry == "composite":
+        (
+            l1_xmin, l1_xmax, l1_ymin, l1_ymax,
+            l2_xmin, l2_xmax, l2_ymin, l2_ymax,
+        ) = _composite_bounds(centerLeft[0])
+        (
+            r1_xmin, r1_xmax, r1_ymin, r1_ymax,
+            r2_xmin, r2_xmax, r2_ymin, r2_ymax,
+        ) = _composite_bounds(centerRight[0])
+
+        left_first = (x >= l1_xmin) & (x <= l1_xmax) & (y >= l1_ymin) & (y <= l1_ymax)
+        left_second = (x >= l2_xmin) & (x <= l2_xmax) & (y >= l2_ymin) & (y <= l2_ymax)
+        right_first = (x >= r1_xmin) & (x <= r1_xmax) & (y >= r1_ymin) & (y <= r1_ymax)
+        right_second = (x >= r2_xmin) & (x <= r2_xmax) & (y >= r2_ymin) & (y <= r2_ymax)
+        return left_first | left_second | right_first | right_second
+
+    cond1 = (jnp.abs(x-centerLeft[0]) <= sidelenX / 2) & (jnp.abs(y-centerLeft[1]) <= sidelenY / 2)
+    cond2 = (jnp.abs(x-centerRight[0]) <= sidelenX / 2) & (jnp.abs(y-centerRight[1]) <= sidelenY / 2)
     return cond1 | cond2
 
 def theta_right_only(x_vec):
     x,y = x_vec[0],x_vec[1]
+    if geometry == "composite":
+        (
+            l1_xmin, l1_xmax, l1_ymin, l1_ymax,
+            l2_xmin, l2_xmax, l2_ymin, l2_ymax,
+        ) = _composite_bounds(centerLeft[0])
+        left_first = (x >= l1_xmin) & (x <= l1_xmax) & (y >= l1_ymin) & (y <= l1_ymax)
+        left_second = (x >= l2_xmin) & (x <= l2_xmax) & (y >= l2_ymin) & (y <= l2_ymax)
+        return left_first | left_second
+
     cond1 = (jnp.abs(x-centerLeft[0]) <= sidelenX / 2) & (jnp.abs(y-centerLeft[1]) <= sidelenY / 2)
     return cond1
 
@@ -166,9 +270,28 @@ def smoothed_box(x_vec, center, sx, sy, sharpness=10.0):
     return jax.nn.sigmoid(-sharpness * dist)
 
 def theta_smoothed(x_vec):
-    return smoothed_box(x_vec, centerLeft, sidelenX, sidelenY) + smoothed_box(x_vec, centerRight, sidelenX, sidelenY)
+    if geometry == "composite":
+        second_center_left = (centerLeft[0] + (sidelenX + sidelen2X) / 2.0, 0.0, 0.0)
+        second_center_right = (centerRight[0] - (sidelenX + sidelen2X) / 2.0, 0.0, 0.0)
+        left_val = smoothed_box(x_vec, centerLeft, sidelenX, sidelenY) + smoothed_box(
+            x_vec, second_center_left, sidelen2X, sidelen2Y
+        )
+        right_val = smoothed_box(x_vec, centerRight, sidelenX, sidelenY) + smoothed_box(
+            x_vec, second_center_right, sidelen2X, sidelen2Y
+        )
+        return left_val + right_val
+
+    return smoothed_box(x_vec, centerLeft, sidelenX, sidelenY) + smoothed_box(
+        x_vec, centerRight, sidelenX, sidelenY
+    )
 
 def theta_right_only_smoothed(x_vec):
+    if geometry == "composite":
+        second_center_left = (centerLeft[0] + (sidelenX + sidelen2X) / 2.0, 0.0, 0.0)
+        return smoothed_box(x_vec, centerLeft, sidelenX, sidelenY) + smoothed_box(
+            x_vec, second_center_left, sidelen2X, sidelen2Y
+        )
+
     return smoothed_box(x_vec, centerLeft, sidelenX, sidelenY)
 
 theta_at_dofs = theta(femsystem.doflocs).astype(jnp.float32)
@@ -488,9 +611,13 @@ print(f"Total Time Taken: {totalTime} seconds")
 pickle_obj = {
     "parameters": {
         "N": N_val,
+        "geometry": geometry,
         "separation": separation,
         "sidelenX": sidelenX,
         "sidelenY": sidelenY,
+        "sidelen2X": sidelen2X,
+        "sidelen2Y": sidelen2Y,
+        "inner_dim": inner_dim,
         "padding": padding,
         "gridlenX": gridlenX,
         "gridlenY": gridlenY,

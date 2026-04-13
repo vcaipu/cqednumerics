@@ -2,8 +2,9 @@ import numpy as np
 class Units2D:
     fco = {}
 
-    def __init__(self): 
-        # Of a COOPER PAIR, in SI UNITS
+    def __init__(self,xi=None,kappa=None): 
+
+        # Of a COOPER PAIR, in SI UNITS, get effective mass if needed
         M_CP = 1.82e-30 #kg
         Q_CP = -3.204e-19 #Coulombs
 
@@ -21,6 +22,29 @@ class Units2D:
             "h_bar": h_bar
         }
         self.fco = fco
+
+        # Change FCO if needed
+        if (xi is not None) and (kappa is not None):
+            m_eff = self.get_m_eff(kappa,xi)
+            print(f"Effective mass: {m_eff} kg | {m_eff/M_CP} times (2m_e)")
+            M_CP = m_eff
+            fco = {
+                "M_CP": M_CP,
+                "Q_CP": Q_CP,
+                "mu_0": mu_0,
+                "epsilon_0": epsilon_0,
+                "h_bar": h_bar
+            }
+            self.fco = fco
+
+    # Run before everything else, and effective mass 
+    def get_m_eff(self,kappa,xi):
+        m,q,mu_0,epsilon_0,hbar = self.fco["M_CP"],self.fco["Q_CP"],self.fco["mu_0"],self.fco["epsilon_0"],self.fco["h_bar"]
+        c = 1/np.sqrt(mu_0*epsilon_0)
+        m_eff = hbar / (2*c)* kappa / xi
+
+        return m_eff
+    
     
     # n_s from \xi
     def n_sfromxi(self,xi):

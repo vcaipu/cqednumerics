@@ -267,21 +267,28 @@ class FEMSystem:
 
         plt.show()
     
-    def _plot_3d(self, coords, vals, plot_title="", vmin=None, vmax=None, alpha=1.0, alpha_per_point=None):
-        fig = plt.figure(figsize=(8, 8))
-        ax = fig.add_subplot(111, projection='3d')
+    def _plot_3d(self, coords, vals, plot_title="", vmin=None, vmax=None, alpha=1.0, alpha_per_point=None, ax=None, add_colorbar=True, scatter_zorder=None):
+        if ax is None:
+            fig = plt.figure(figsize=(8, 8))
+            ax = fig.add_subplot(111, projection='3d')
+        else:
+            fig = ax.figure
         # alpha_per_point: optional array same length as vals → value-dependent opacity
         # Convert to numpy array to ensure matplotlib compatibility
         if alpha_per_point is not None:
             use_alpha = np.asarray(alpha_per_point)
         else:
             use_alpha = alpha
-        sc = ax.scatter(coords[0], coords[1], coords[2], c=vals, s=5, cmap='viridis', vmin=vmin, vmax=vmax, alpha=use_alpha)
-        plt.colorbar(sc)
-        plt.title(plot_title)
+        scatter_kwargs = dict(c=vals, s=5, cmap='viridis', vmin=vmin, vmax=vmax, alpha=use_alpha)
+        if scatter_zorder is not None:
+            scatter_kwargs["zorder"] = scatter_zorder
+        sc = ax.scatter(coords[0], coords[1], coords[2], **scatter_kwargs)
+        if add_colorbar:
+            fig.colorbar(sc, ax=ax)
+        ax.set_title(plot_title)
         return fig, ax, sc
 
-    def _draw_prism_wireframe_from_center(self, ax, center, side_lengths, color="white", linewidth=1.5):
+    def _draw_prism_wireframe_from_center(self, ax, center, side_lengths, color="white", linewidth=1.5, zorder=None):
         """
         Draw an axis-aligned rectangular prism wireframe.
         center = (cx, cy, cz)
@@ -320,9 +327,12 @@ class FEMSystem:
             x_line = [p0[0], p1[0]]
             y_line = [p0[1], p1[1]]
             z_line = [p0[2], p1[2]]
-            ax.plot3D(x_line, y_line, z_line, color=color, linewidth=linewidth)
+            if zorder is None:
+                ax.plot3D(x_line, y_line, z_line, color=color, linewidth=linewidth)
+            else:
+                ax.plot3D(x_line, y_line, z_line, color=color, linewidth=linewidth, zorder=zorder)
 
-    def _draw_cylinder_wireframe_xaxis(self, ax, center, radius, length, n_segments=64, color="white", linewidth=1.5):
+    def _draw_cylinder_wireframe_xaxis(self, ax, center, radius, length, n_segments=64, color="white", linewidth=1.5, zorder=None):
         """
         Draw a simple cylinder wireframe with axis along the x-axis.
         Faces are circles in the yz-plane.
@@ -337,14 +347,21 @@ class FEMSystem:
         z_circle = cz + radius * np.sin(theta)
 
         # Two circular faces at xmin and xmax
-        ax.plot3D(np.full_like(theta, xmin), y_circle, z_circle, color=color, linewidth=linewidth)
-        ax.plot3D(np.full_like(theta, xmax), y_circle, z_circle, color=color, linewidth=linewidth)
+        if zorder is None:
+            ax.plot3D(np.full_like(theta, xmin), y_circle, z_circle, color=color, linewidth=linewidth)
+            ax.plot3D(np.full_like(theta, xmax), y_circle, z_circle, color=color, linewidth=linewidth)
+        else:
+            ax.plot3D(np.full_like(theta, xmin), y_circle, z_circle, color=color, linewidth=linewidth, zorder=zorder)
+            ax.plot3D(np.full_like(theta, xmax), y_circle, z_circle, color=color, linewidth=linewidth, zorder=zorder)
 
         # A few axial lines to suggest the side surface
         for t in np.linspace(0.0, 2.0 * np.pi, max(4, n_segments // 8), endpoint=False):
             y0 = cy + radius * np.cos(t)
             z0 = cz + radius * np.sin(t)
-            ax.plot3D([xmin, xmax], [y0, y0], [z0, z0], color=color, linewidth=linewidth)
+            if zorder is None:
+                ax.plot3D([xmin, xmax], [y0, y0], [z0, z0], color=color, linewidth=linewidth)
+            else:
+                ax.plot3D([xmin, xmax], [y0, y0], [z0, z0], color=color, linewidth=linewidth, zorder=zorder)
     
     def plot_3d_interior(self,u_interior,plot_title="", vmin=None, vmax=None):
         u = self._get_u_from_interior(u_interior)
@@ -360,7 +377,8 @@ class FEMSystem:
     def plot_interior_at_quad_3d_heatmap(self, u_interior, plot_title="3D heat map (value-dependent opacity)", vmin=None, vmax=None, alpha_lo=0.0, alpha_hi=1.0, max_points=50000, value_threshold=None, opacity_power=4,
                                          prism_centers=None, prism_side_lengths=None,
                                          cylinder_centers=None, cylinder_radii=None, cylinder_lengths=None,
-                                         wire_color="white", wire_linewidth=1.5):
+                                         wire_color="white", wire_linewidth=1.5,
+                                         ax=None, add_colorbar=True, scatter_zorder=None, wire_zorder=None):
         """Plot the 3D u field in a single figure: high values are opaque, low values transparent, so the shape is visible at a glance (no slices).
         
         Args:
@@ -435,7 +453,17 @@ class FEMSystem:
         flat_vals = flat_vals[sort_idx]
         alpha_per_point = alpha_per_point[sort_idx]
         
-        fig, ax, sc = self._plot_3d(flat_coords, flat_vals, plot_title=plot_title, vmin=vmin, vmax=vmax, alpha_per_point=alpha_per_point)
+        fig, ax, sc = self._plot_3d(
+            flat_coords,
+            flat_vals,
+            plot_title=plot_title,
+            vmin=vmin,
+            vmax=vmax,
+            alpha_per_point=alpha_per_point,
+            ax=ax,
+            add_colorbar=add_colorbar,
+            scatter_zorder=scatter_zorder,
+        )
 
         # Rectangular prisms: each defined by center and side lengths
         if prism_centers is not None and prism_side_lengths is not None:
@@ -446,6 +474,7 @@ class FEMSystem:
                     side_lengths=side_lengths,
                     color=wire_color,
                     linewidth=wire_linewidth,
+                    zorder=wire_zorder,
                 )
 
         # Cylinders along x-axis: each defined by center, radius and length
@@ -460,6 +489,7 @@ class FEMSystem:
                     length=length,
                     color=wire_color,
                     linewidth=wire_linewidth,
+                    zorder=wire_zorder,
                 )
 
         return fig, ax, sc

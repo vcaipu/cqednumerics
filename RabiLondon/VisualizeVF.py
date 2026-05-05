@@ -246,8 +246,12 @@ class VisualizeVF:
 
         plt.show()
         return fig, ax3
+    
 
-    def visualize_vf(self, A_sol, bz_symmetric_percentile=None, quiver_scale="auto"):
+    
+    # Plots the vector potential on ax1
+    # Plots the magnetic field on ax2
+    def visualize_vf(self, A_sol, ax1, ax2, bz_symmetric_percentile=None, quiver_scale="auto"):
         # --- Step A: Project A_edge to Nodal Ax, Ay ---
         basis_vec = self._basis_vec_p1_paired()
 
@@ -266,8 +270,6 @@ class VisualizeVF:
 
         B_nodes = self._project_bz_to_nodes(A_sol)
 
-        fig, ax = plt.subplots(1, 2, figsize=(16, 7))
-
         x_p1, y_p1, tris_p1 = self._p1_plot_triangulation()
         tri_p1_plot = Triangulation(x_p1, y_p1, triangles=tris_p1)
 
@@ -280,57 +282,62 @@ class VisualizeVF:
 
         # --- Left: Vector Potential A (Vectors Only) ---
         # Nedelec -> nodal projection can leave |A| << axis span; fixed scale=500 made arrows invisible.
-        Axm, Aym = Ax[mask], Ay[mask]
-        xm, ym = x_coords[mask], y_coords[mask]
-        mag = np.hypot(Axm, Aym)
-        xy_span = float(max(x_coords.max() - x_coords.min(), y_coords.max() - y_coords.min()))
-        if quiver_scale == "auto":
-            m_ref = float(np.percentile(mag[mag > 0], 95)) if np.any(mag > 0) else float(np.max(mag))
-            if m_ref <= 0:
-                fac = 1.0
+        if ax1 is not None:
+            Axm, Aym = Ax[mask], Ay[mask]
+            xm, ym = x_coords[mask], y_coords[mask]
+            mag = np.hypot(Axm, Aym)
+            xy_span = float(max(x_coords.max() - x_coords.min(), y_coords.max() - y_coords.min()))
+            if quiver_scale == "auto":
+                m_ref = float(np.percentile(mag[mag > 0], 95)) if np.any(mag > 0) else float(np.max(mag))
+                if m_ref <= 0:
+                    fac = 1.0
+                else:
+                    # longest arrow ~ 7% of domain span (purely visual)
+                    fac = 0.07 * xy_span / m_ref
+                Qx, Qy = Axm * fac, Aym * fac
+                ax1.quiver(
+                    xm, ym, Qx, Qy,
+                    color="blue", alpha=0.85, angles="xy", scale_units="xy", scale=1, width=0.0045,
+                )
+                title_A = rf"$\mathbf{{A}}(x,y)$ (interior; arrows $\times {fac:.3g}$ for visibility)"
             else:
-                # longest arrow ~ 7% of domain span (purely visual)
-                fac = 0.07 * xy_span / m_ref
-            Qx, Qy = Axm * fac, Aym * fac
-            ax[0].quiver(
-                xm, ym, Qx, Qy,
-                color="blue", alpha=0.85, angles="xy", scale_units="xy", scale=1, width=0.0045,
-            )
-            title_A = rf"$\mathbf{{A}}(x,y)$ (interior; arrows $\times {fac:.3g}$ for visibility)"
-        else:
-            fac = float(quiver_scale)
-            ax[0].quiver(
-                xm, ym, Axm * fac, Aym * fac,
-                color="blue", alpha=0.85, angles="xy", scale_units="xy", scale=1, width=0.0045,
-            )
-            title_A = rf"$\mathbf{{A}}(x,y)$ (interior; arrows $\times {fac:.3g}$)"
+                fac = float(quiver_scale)
+                ax1.quiver(
+                    xm, ym, Axm * fac, Aym * fac,
+                    color="blue", alpha=0.85, angles="xy", scale_units="xy", scale=1, width=0.0045,
+                )
+                title_A = rf"$\mathbf{{A}}(x,y)$ (interior; arrows $\times {fac:.3g}$)"
 
-        # Background mesh for structural context (P1 skeleton on quadratic meshes)
-        ax[0].triplot(tri_p1_plot, color='gray', alpha=0.1, linewidth=0.5)
+            # Background mesh for structural context (P1 skeleton on quadratic meshes)
+            ax1.triplot(tri_p1_plot, color='gray', alpha=0.1, linewidth=0.5)
 
-        ax[0].set_title(title_A)
-        ax[0].set_aspect('equal')
-        ax[0].set_xlabel("x")
-        ax[0].set_ylabel("y")
+            ax1.set_title(title_A)
+            ax1.set_aspect('equal')
+            ax1.set_xlabel("x")
+            ax1.set_ylabel("y")
 
         # --- Right: Magnetic Field B_z (Heatmap) ---
-        kw = dict(shading='gouraud', cmap='magma')
-        if bz_symmetric_percentile is not None:
-            lim = np.percentile(np.abs(B_nodes), bz_symmetric_percentile)
-            if lim > 0:
-                kw['vmin'], kw['vmax'] = -float(lim), float(lim)
-        tpc = ax[1].tripcolor(tri_p1_plot, B_nodes, **kw)
-        fig.colorbar(tpc, ax=ax[1], label="$B_z$")
-        ax[1].set_title(r"Magnetic Field $B_z = (\nabla \times \mathbf{A})_z$")
-        ax[1].set_aspect('equal')
-        ax[1].set_xlabel("x")
-        ax[1].set_ylabel("y")
-
-        plt.tight_layout()
-        plt.show()
-
-        return fig, ax
+        if ax2 is not None:
+            kw = dict(shading='gouraud', cmap='magma')
+            if bz_symmetric_percentile is not None:
+                lim = np.percentile(np.abs(B_nodes), bz_symmetric_percentile)
+                if lim > 0:
+                    kw['vmin'], kw['vmax'] = -float(lim), float(lim)
+            tpc = ax2.tripcolor(tri_p1_plot, B_nodes, **kw)
+            # Explicit colorbar geometry avoids overlap in dense multi-panel layouts.
+            plt.colorbar(tpc, ax=ax2, label="$B_z$", fraction=0.046, pad=0.04)
     
+            # Keep true geometry (equal data aspect), but ask matplotlib to size
+            # the axes box from the domain ratio so the middle panel uses space
+            # better in multi-panel figures.
+            x_span = float(np.max(x_p1) - np.min(x_p1))
+            y_span = float(np.max(y_p1) - np.min(y_p1))
+            if x_span > 0 and y_span > 0:
+                ax2.set_box_aspect(y_span / x_span)  # height / width
+            ax2.set_aspect('equal', adjustable='box')
+            ax2.set_xlabel("x")
+            ax2.set_ylabel("y")
+
     def visualize_vf_mag(self, A_sol, bz_symmetric_percentile=None):
         # 1. Scalar P1 basis, same quadrature as basis_edge (high intorder / P2 mesh OK)
         basis_p1 = self._basis_p1_paired()

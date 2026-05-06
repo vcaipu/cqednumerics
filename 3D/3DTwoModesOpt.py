@@ -398,7 +398,7 @@ print(f"Time taken to compute Stiffness Matrix and Precompute Potential: {time3}
 
 # 3. Getting Initial Guess
 print("Guessing a Gaussian")
-coeff_vector_init = guess_gaussian(n,stddevs=30)  # 30 stddevs is very peaked
+coeff_vector_init = guess_gaussian(n,stddevs=17)  # 30 stddevs is very peaked
 
 # Plotting Coefficients
 x = (n-1)/2 - jnp.arange(n)

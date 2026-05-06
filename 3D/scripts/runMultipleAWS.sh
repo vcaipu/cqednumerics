@@ -1,1 +1,1 @@
-./runSingleAWS.sh 20 >  simulation_output.log
+./runSingleAWS.sh 9 >  simulation_output.log

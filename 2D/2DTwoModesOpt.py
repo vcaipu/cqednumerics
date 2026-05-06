@@ -1,6 +1,7 @@
 # First set to no constant folding 
 import os
 os.environ["JAX_NO_CONSTANT_FOLD"] = "true"
+os.environ["JAX_ENABLE_X64"] = "true"
 
 # Second import the generate_mesh functions, before changing directories, but after setting the
 # environment variable above to stop constant folding.
@@ -68,6 +69,9 @@ parser.add_argument("--element_order", type=int, choices=[1, 2], default=1, help
 parser.add_argument("--mesh_file", type=str, help="Path to the mesh file. Default is None, which will generate a new mesh.", default=None)
 
 parser.add_argument("--full_lambda_y", type=bool, help="Whether to include the lambda_y term in the objective function. Default is False.", default=False)
+parser.add_argument("--coeff_norm_penalty", type=float,
+                    help="Small penalty to keep raw coeff norm near 1 (stabilizes LBFGS null direction).",
+                    default=1e-6)
 
 
 args = parser.parse_args()
@@ -96,6 +100,7 @@ opt_maxiter = args.opt_maxiter
 element_order = args.element_order
 mesh_file = args.mesh_file
 full_lambda_y = args.full_lambda_y
+coeff_norm_penalty = args.coeff_norm_penalty
 
 print(f"RUNNING WITH THE FOLLOWING PARAMETERS:")
 print(f"  plotdir = {plotdir}")
@@ -110,6 +115,7 @@ print(f"  n = {n}")
 print(f"  lc_large = {lc_large}")
 print(f"  lc_small = {lc_small}")
 print(f"  opt_tol = {opt_tol}  opt_maxiter = {opt_maxiter}")
+print(f"  coeff_norm_penalty = {coeff_norm_penalty}")
 print(f"  element_order = {element_order}  ({'P1 linear' if element_order == 1 else 'P2 quadratic'})")
 print(f"  mesh_file = {mesh_file}")
 print("\n\n --------------- \n\n")
@@ -380,6 +386,7 @@ def guess_gaussian(n,stddevs=4):
     mu,sigma = 0.0,1.0
     exponent = -jnp.square(x - mu) / (2.0 * jnp.square(sigma))
     gaussian_array = jnp.exp(exponent)
+    gaussian_array /= jnp.linalg.norm(gaussian_array)
     return gaussian_array
 
 def guess_sine(n):
@@ -425,9 +432,9 @@ Before you start the optimization loop:
 '''
 
 # 1. Defining Objective
-def ej_ec_e0(u_interior,A_int,P_int,phi_theta_int):
+def ej_ec_e0(u_right_interior,A_int,P_int,phi_theta_int):
     # Unpack even and odd modes
-    u_even, u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_interior)
+    u_even, u_odd = femsystem.get_even_odd_modes(u_right_interior)
     
     # Precompute shared terms to minimize CG solves
     gamma_val = gamma(u_even, u_odd, A_int, P_int)
@@ -454,12 +461,12 @@ def ej_ec_e0(u_interior,A_int,P_int,phi_theta_int):
 @jax.jit
 def objective(vec, A_int, P_int, phi_theta_int):
     # Unpack the modes from the coefficients
-    coeff_vec, u_interior = unpack(vec, n)
+    coeff_vec, u_right_interior = unpack(vec, n)
 
     # Normalize Coeff Vector: 
     coeff_vec_norm = normalize_vec(coeff_vec)
 
-    E_J, E_C, e0, lambda_y_val = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
+    E_J, E_C, e0, lambda_y_val = ej_ec_e0(u_right_interior, A_int, P_int, phi_theta_int)
 
     # Get E_J, E_C, and e0
     if full_lambda_y:
@@ -486,7 +493,11 @@ def objective(vec, A_int, P_int, phi_theta_int):
     jz2 = Jz2(n)
     capacitive = E_C * expval(jz2, coeff_vec_norm)
 
-    return capacitive + first_harmonic + e0
+    # Objective is scale-invariant in coeff direction; tiny radial penalty
+    # removes the null direction so LBFGS doesn't blow up raw coeff magnitudes.
+    coeff_norm = jnp.linalg.norm(coeff_vec)
+    radial_penalty = coeff_norm_penalty * (coeff_norm - 1.0) ** 2
+    return capacitive + first_harmonic + e0 + radial_penalty
 
 
 # 2. Computing Interaction Kernel
@@ -506,7 +517,7 @@ print(f"Time taken to compute Stiffness Matrix and Precompute Potential: {time3}
 
 # 3. Getting Initial Guess
 print("Guessing a Gaussian")
-coeff_vector_init = guess_gaussian(n,stddevs=6) / 10
+coeff_vector_init = guess_gaussian(n,stddevs=30)
 
 # Plotting Coefficients
 x = (n-1)/2 - jnp.arange(n)
@@ -581,7 +592,8 @@ result = result.params
 # result = resultObj.x
 # resultVal = resultObj.fun
 
-coeffs, u_interior = unpack(result, n)
+coeffs, u_right_interior = unpack(result, n)
+coeffs = normalize_vec(coeffs)
 end_time = time.time()
 time5 = end_time - start_time
 
@@ -594,11 +606,11 @@ Part 5: Plot and Visualize Results
 '''
 
 # Get Even and Odd Modes
-u_even,u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_interior)
+u_even,u_odd = femsystem.get_even_odd_modes(u_right_interior)
 u_even_interior,u_odd_interior = u_even[femsystem.interior_dofs],u_odd[femsystem.interior_dofs]
 
 energy = objective(result, A_int, P_int, phi_theta_int)
-E_J, E_C, e0, lambda_y_val = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
+E_J, E_C, e0, lambda_y_val = ej_ec_e0(u_right_interior, A_int, P_int, phi_theta_int)
 
 print(f"EJ: {E_J} | EC: {E_C} | e0: {e0}")
 print(f"EJ/EC RATIO: {E_J/E_C}")

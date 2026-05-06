@@ -313,8 +313,8 @@ class VisualizeVF:
 
             ax1.set_title(title_A)
             ax1.set_aspect('equal')
-            ax1.set_xlabel("x")
-            ax1.set_ylabel("y")
+            ax1.set_xlabel(r"$x/\xi$")
+            ax1.set_ylabel(r"$y/\xi$")
 
         # --- Right: Magnetic Field B_z (Heatmap) ---
         if ax2 is not None:
@@ -325,7 +325,7 @@ class VisualizeVF:
                     kw['vmin'], kw['vmax'] = -float(lim), float(lim)
             tpc = ax2.tripcolor(tri_p1_plot, B_nodes, **kw)
             # Explicit colorbar geometry avoids overlap in dense multi-panel layouts.
-            plt.colorbar(tpc, ax=ax2, label="$B_z$", fraction=0.046, pad=0.04)
+            plt.colorbar(tpc, ax=ax2, label="$B_z$ $[B_0]$", fraction=0.046, pad=0.04)
     
             # Keep true geometry (equal data aspect), but ask matplotlib to size
             # the axes box from the domain ratio so the middle panel uses space
@@ -335,8 +335,8 @@ class VisualizeVF:
             if x_span > 0 and y_span > 0:
                 ax2.set_box_aspect(y_span / x_span)  # height / width
             ax2.set_aspect('equal', adjustable='box')
-            ax2.set_xlabel("x")
-            ax2.set_ylabel("y")
+            ax2.set_xlabel(r"$x/\xi$")
+            ax2.set_ylabel(r"$y/\xi$")
 
     def visualize_vf_mag(self, A_sol, bz_symmetric_percentile=None):
         # 1. Scalar P1 basis, same quadrature as basis_edge (high intorder / P2 mesh OK)

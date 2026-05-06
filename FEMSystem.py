@@ -902,6 +902,28 @@ class FEMSystem:
         u_odd = jnp.where(u_odd_norm > 0, u_odd / jnp.sqrt(safe_odd_norm),u_odd)
         
         return u_even,u_odd
+
+    def get_even_odd_modes(self, u_right_interior):
+        # Build left mode from only left interior DOFs, then mirror to construct right mode.
+        u_right = jnp.ones(self.dofs) * self.boundary_condition
+        u_right = u_right.at[self.interior_dofs].set(u_right_interior)
+        # Normalize u_right
+        u_right_norm = self.integrate(lambda u, a, b: u**2, u_right)
+        safe_u_right_norm = jnp.where(u_right_norm > 0, u_right_norm, 1.0)
+        u_right = u_right / jnp.sqrt(safe_u_right_norm)
+
+        u_left = u_right[self.flip_map]
+
+        u_even = (u_right + u_left) / jnp.sqrt(2.0)
+        u_odd = (u_right - u_left) / jnp.sqrt(2.0)
+        even_norm = self.integrate(lambda u, a, b: u**2, u_even)
+        odd_norm = self.integrate(lambda u, a, b: u**2, u_odd)
+        safe_even_norm = jnp.where(even_norm > 0, even_norm, 1.0)
+        safe_odd_norm = jnp.where(odd_norm > 0, odd_norm, 1.0)
+        u_even = jnp.where(even_norm > 0, u_even / jnp.sqrt(safe_even_norm), u_even)
+        u_odd = jnp.where(odd_norm > 0, u_odd / jnp.sqrt(safe_odd_norm), u_odd)
+
+        return u_even, u_odd
     
     def get_initial_ones_interior(self):
         return jnp.ones(len(self.interior_dofs))

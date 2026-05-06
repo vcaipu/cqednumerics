@@ -1,0 +1,4 @@
+nohup: ignoring input
+100
+/home/ubuntu/cqednumerics/jax-gpu/lib/python3.14/site-packages/jax/_src/ops/scatter.py:104: FutureWarning: scatter inputs have incompatible types: cannot safely cast value from dtype=int64 to dtype=int32 with jax_numpy_dtype_promotion=standard. In future JAX releases this will result in an error.
+  warnings.warn(

@@ -1,11 +1,11 @@
 #!/bin/bash
 #!/bin/bash
 
-DIRNAME="heightsweep/height${1}"
-SEPARATION=1
+DIRNAME="sepsweep/sep${1}"
+SEPARATION=${1}
 SIDELLENX=10
 SIDELLENY=20
-SIDELLENZ=${1}
+SIDELLENZ=20
 PADDING=20
 LC_SMALL=1
 LC_LARGE=15
@@ -39,5 +39,5 @@ python3 -u 3DTwoModesOpt.py \
     --sidelenZ=${SIDELLENZ} \
     --element_order=${ELEMENT_ORDER} \
     --opt_tol=0.001 \
-    --opt_maxiter=1000 \
+    --opt_maxiter=500 \
     --lc_large=${LC_LARGE} > "./allplots/${DIRNAME}/output.txt" 2>&1

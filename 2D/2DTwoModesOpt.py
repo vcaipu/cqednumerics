@@ -496,8 +496,7 @@ def objective(vec, A_int, P_int, phi_theta_int):
     # Objective is scale-invariant in coeff direction; tiny radial penalty
     # removes the null direction so LBFGS doesn't blow up raw coeff magnitudes.
     coeff_norm = jnp.linalg.norm(coeff_vec)
-    radial_penalty = coeff_norm_penalty * (coeff_norm - 1.0) ** 2
-    return capacitive + first_harmonic + e0 + radial_penalty
+    return capacitive + first_harmonic + e0 
 
 
 # 2. Computing Interaction Kernel

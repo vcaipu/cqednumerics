@@ -1,22 +1,3 @@
-<<<<<<< HEAD
-DIRNAME="testlargeisland3"
-SEPARATION=300
-SIDELLENX=200
-SIDELLENY=50
-PADDING=0
-LC_SMALL=3
-LC_LARGE=15
-=======
-DIRNAME="rabilondonfinal4"
-SEPARATION=20
-SIDELLENX=10
-SIDELLENY=10
-SIDELLEN2X=100
-SIDELLEN2Y=100  # Set to 0 for square geometry
-PADDING=20
-LC_SMALL=1
-LC_LARGE=2
->>>>>>> awsbranch
 ELEMENT_ORDER=2
 GEOMETRY="rect"
 INNER_DIM=30
@@ -26,6 +7,7 @@ echo ${N}
 cd /home/ubuntu/cqednumerics/2D
 
 mkdir -p "./allplots/${DIRNAME}/"
+
 python3 -u 2DTwoModesOpt.py \
     --plotdir="./allplots/${DIRNAME}/" \
     --separation=${SEPARATION} \

@@ -2,7 +2,7 @@
 import sys
 import os
 current_dir = os.path.dirname(__file__)
-parent_dir = os.path.abspath(os.path.join(current_dir, '..'))
+parent_dir = os.path.abspath(os.path.join(current_dir, '../../'))
 sys.path.insert(0, parent_dir)
 from FEMSystem import FEMSystem
 
@@ -45,7 +45,7 @@ Part 1: Create Mesh
 
 print("Starting Part 1: Creating the Mesh")
 # Create the FEMSystem Object
-mesh = fem.MeshTri.init_sqsymmetric().refined(4)
+mesh = fem.MeshTri.init_sqsymmetric().refined(5)
 L = 60.0
 mesh = mesh.scaled(2 * L).translated((-L, -L))
 element = fem.ElementTriP1()

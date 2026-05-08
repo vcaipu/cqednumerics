@@ -52,6 +52,8 @@ parser.add_argument("--sidelen2X", type=float, default=10.0,
                     help="Second rectangle X length for composite geometry.")
 parser.add_argument("--sidelen2Y", type=float, default=10.0,
                     help="Second rectangle Y length for composite geometry.")
+parser.add_argument("--inner_dimX", type=float, default=None)
+parser.add_argument("--inner_dimY", type=float, default=None)
 parser.add_argument("--inner_dim", type=float, default=None,
                     help="Inset distance for composite geometry inner coarse region. "
                          "Default None uses min(sidelens)/4.")
@@ -68,7 +70,7 @@ parser.add_argument("--opt_maxiter", type=int, help="LBFGS max iterations. Highe
 parser.add_argument("--element_order", type=int, choices=[1, 2], default=1, help="Finite element order: 1 = linear (P1), 2 = quadratic (P2). Default 1.")
 parser.add_argument("--mesh_file", type=str, help="Path to the mesh file. Default is None, which will generate a new mesh.", default=None)
 
-parser.add_argument("--full_lambda_y", type=bool, help="Whether to include the lambda_y term in the objective function. Default is False.", default=False)
+parser.add_argument("--full_lambda_y", action=argparse.BooleanOptionalAction, help="Whether to include the lambda_y term in the objective function. Default is False.", default=False)
 parser.add_argument("--coeff_norm_penalty", type=float,
                     help="Small penalty to keep raw coeff norm near 1 (stabilizes LBFGS null direction).",
                     default=1e-6)
@@ -82,6 +84,8 @@ geometry = args.geometry
 sidelen2X = args.sidelen2X
 sidelen2Y = args.sidelen2Y
 inner_dim_arg = args.inner_dim
+inner_dimX = args.inner_dimX
+inner_dimY = args.inner_dimY
 separation = args.separation
 n = args.n # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
 N_val = args.N #Total number of particles
@@ -101,6 +105,11 @@ element_order = args.element_order
 mesh_file = args.mesh_file
 full_lambda_y = args.full_lambda_y
 coeff_norm_penalty = args.coeff_norm_penalty
+
+if full_lambda_y:
+    print(f"Full Lambda Y: {full_lambda_y}")
+else:
+    print(f"No Lambda Y, Truly False: {full_lambda_y}")
 
 print(f"RUNNING WITH THE FOLLOWING PARAMETERS:")
 print(f"  plotdir = {plotdir}")
@@ -131,8 +140,11 @@ print("Starting Part 1: Creating the Mesh")
 
 # Generate the Custom Mesh, save to a File
 
-inner_dimX = sidelenX / 2
-inner_dimY = sidelenY / 2
+
+if inner_dimX is None:
+    inner_dimX = sidelenX / 2
+if inner_dimY is None:
+    inner_dimY = sidelenY / 2
 inner_dim = inner_dim_arg
 if inner_dim is None:
     inner_dim = min(sidelenX, sidelenY, sidelen2X, sidelen2Y) / 4.0
@@ -434,7 +446,7 @@ Before you start the optimization loop:
 # 1. Defining Objective
 def ej_ec_e0(u_right_interior,A_int,P_int,phi_theta_int):
     # Unpack even and odd modes
-    u_even, u_odd = femsystem.get_even_odd_modes(u_right_interior)
+    u_even, u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_right_interior)
     
     # Precompute shared terms to minimize CG solves
     gamma_val = gamma(u_even, u_odd, A_int, P_int)
@@ -461,12 +473,12 @@ def ej_ec_e0(u_right_interior,A_int,P_int,phi_theta_int):
 @jax.jit
 def objective(vec, A_int, P_int, phi_theta_int):
     # Unpack the modes from the coefficients
-    coeff_vec, u_right_interior = unpack(vec, n)
+    coeff_vec, u_interior = unpack(vec, n)
 
     # Normalize Coeff Vector: 
     coeff_vec_norm = normalize_vec(coeff_vec)
 
-    E_J, E_C, e0, lambda_y_val = ej_ec_e0(u_right_interior, A_int, P_int, phi_theta_int)
+    E_J, E_C, e0, lambda_y_val = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
 
     # Get E_J, E_C, and e0
     if full_lambda_y:
@@ -493,11 +505,7 @@ def objective(vec, A_int, P_int, phi_theta_int):
     jz2 = Jz2(n)
     capacitive = E_C * expval(jz2, coeff_vec_norm)
 
-    # Objective is scale-invariant in coeff direction; tiny radial penalty
-    # removes the null direction so LBFGS doesn't blow up raw coeff magnitudes.
-    coeff_norm = jnp.linalg.norm(coeff_vec)
-    radial_penalty = coeff_norm_penalty * (coeff_norm - 1.0) ** 2
-    return capacitive + first_harmonic + e0 + radial_penalty
+    return capacitive + first_harmonic + e0 
 
 
 # 2. Computing Interaction Kernel

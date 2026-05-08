@@ -2,7 +2,7 @@
 import sys
 import os
 current_dir = os.path.dirname(__file__)
-parent_dir = os.path.abspath(os.path.join(current_dir, '..'))
+parent_dir = os.path.abspath(os.path.join(current_dir, '../../'))
 sys.path.insert(0, parent_dir)
 from FEMSystem import FEMSystem
 
@@ -26,13 +26,17 @@ parser.add_argument("--sidelen", type=float, help="Sidelength of island. Default
 parser.add_argument("--separation", type=float, help="Gap between islands. Default set to 20",default=20.0)
 parser.add_argument("--N", type=int, help="Total number of particles. Default is 70",default=70)
 parser.add_argument("--n", type=int, help="Max number difference to be considered, in computational domain. Default is 100",default=100)
+parser.add_argument("--opt_maxiter", type=int, help="Max iterations for optimization. Default is 500",default=500)
+parser.add_argument("--opt_tol", type=float, help="Tolerance for optimization. Default is 5e-6",default=5e-6)
+
 args = parser.parse_args()
 plotdir = args.plotdir
 sidelen = args.sidelen
 separation = args.separation
 n = args.n # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
 N = args.N #Total number of particles
-
+opt_maxiter = args.opt_maxiter
+opt_tol = args.opt_tol
 print(f"RUNNING WITH SEPARATION {separation}")
 
 # Make the plotdirs directory
@@ -45,7 +49,7 @@ Part 1: Create Mesh
 
 print("Starting Part 1: Creating the Mesh")
 # Create the FEMSystem Object
-mesh = fem.MeshTri.init_sqsymmetric().refined(4)
+mesh = fem.MeshTri.init_sqsymmetric().refined(5)
 L = 60.0
 mesh = mesh.scaled(2 * L).translated((-L, -L))
 element = fem.ElementTriP1()
@@ -187,7 +191,7 @@ def epsilon_func(u_global,G_mat,P_int,theta_at_dofs):
     return kinetic  + potential
 
 def E(u_global,G_mat,P_int,theta_at_dofs):
-    return epsilon_func(u_global,G_mat,P_int,theta_at_dofs) + alpha(u_global,G_mat,P_int)
+    return epsilon_func(u_global,G_mat,P_int,theta_at_dofs) + alpha(u_global,G_mat,P_int) * (N - 1)/ N
 
 def zeropoint(u_even,u_odd,G_mat,P_int,theta_at_dofs):
     E_plus,E_minus = E(u_even,G_mat,P_int,theta_at_dofs), E(u_odd,G_mat,P_int,theta_at_dofs)
@@ -260,7 +264,7 @@ Part 4: Run Optimizaton Loop
 '''
 
 print("Starting Part 4: Running Optimization Loop")
-solver = LBFGS(fun=objective,tol=1e-6,verbose=True)
+solver = LBFGS(fun=objective,tol=opt_tol,maxiter=opt_maxiter,verbose=True)
 result = solver.run(initial_guess,G_mat,P_int,theta_at_dofs)
 result = result.params 
 coeffs,u_interior = unpack(result,n)

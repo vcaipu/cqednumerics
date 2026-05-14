@@ -2,13 +2,15 @@ FILENAME="firsttest"
 KAPPA=3
 XI=0.39e-10
 SOURCE_X=0
-SOURCE_Y=40
+SOURCE_Y=30
 SIGMA=10
 M=100
 NUM_RABI_PERIODS=0.5
 STEPS_PER_DRIVE_PERIOD=5
 
-cd ~/Desktop/cqednumerics/RabiLondon
+export JAX_ENABLE_X64=true
+
+cd /scratch/gpfs/AROD/vc9839/finite-island-cqed/RabiLondon
 
 python3 -u 2DRabiLondon.py \
     --savefile="./allplots/${FILENAME}.pkl" \

@@ -1,4 +1,9 @@
 # Import the FEMSystem Class from directory above
+import os
+
+# Match 2DTwoModesOpt: full float64 in JAX (avoids float64→float32 truncation warnings).
+os.environ.setdefault("JAX_ENABLE_X64", "true")
+
 import sys
 from VisualizeVF import VisualizeVF
 sys.path.append('..')

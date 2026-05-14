@@ -1,18 +1,20 @@
-DIRNAME="rabilondonfine11"
-N=100
+DIRNAME="rabilondonscaletest26"
+SCALE=20
+# Bash arithmetic: $(( ... )); ** is power (^ is XOR, not exponentiation)
+N=$((100 * SCALE*2))
 n=50
-SEPARATION=20
-SIDELLEN=40
+SEPARATION=$((20 * SCALE * 4))
+SIDELLEN=$((20 * SCALE))
 
-LC_LARGE=5
-LC_SMALL=1
+LC_LARGE=$((5 * SCALE))
+LC_SMALL=$((1 * SCALE))
 ELEMENT_ORDER=2
-PADDING=30
+PADDING=$((30 * SCALE))
 GEOMETRY="rect"
-INNER_DIMX=5
-INNER_DIMY=5
-OPT_TOL_NEW=5e-4 # Remember it is full Hamiltonian, vs old is per particle Hamiltonian
-OPT_MAXITER=500
+INNER_DIMX=$((10 * SCALE))
+INNER_DIMY=$((10 * SCALE))
+OPT_TOL_NEW=$(awk "BEGIN {printf \"%.8f\", 0.1 * $SCALE}") 
+OPT_MAXITER=1500
 
 # 1. Run NEW Script
 cd /scratch/gpfs/AROD/vc9839/finite-island-cqed/2D
@@ -33,4 +35,4 @@ python3 -u 2DTwoModesOpt.py \
     --element_order=${ELEMENT_ORDER} \
     --opt_tol=${OPT_TOL_NEW} \
     --opt_maxiter=${OPT_MAXITER} \
-    --no-full_lambda_y
+    --no-full_lambda_y > "./allplots/${DIRNAME}/output.txt" 2>&1

@@ -548,3 +548,50 @@ femsystem._save_fig(plt.gcf(),"Coefficients")
 
 print("Part 5 Finished: Saving Plots")
 
+
+# Create the Hamiltonian Operator over Truncated Basis, to find eigenvectors for first excited state
+def get_matrixel_and_qubit_freq(n,E_J,E_C,plot=False,coeffs=None):
+    # Copy these three matrix construction functions from 3DTwoModesOpt.py
+    x = (n-1)/2 - jnp.arange(n) # Charge Imbalance Eigenvalue, centered at 0
+
+    def Jz2(n):
+        j = (n-1)/2
+        diagonals = j - jnp.arange(n)
+        return jnp.diag(diagonals**2)
+
+    def off_diag(n,k):
+        ones_super, ones_sub = jnp.ones(n - k, dtype=jnp.int32),jnp.ones(n - k, dtype=jnp.int32)
+        super_diag_matrix,sub_diag_matrix= jnp.diag(ones_super, k=k),jnp.diag(ones_sub, k=-1*k)
+        result = super_diag_matrix + sub_diag_matrix
+        return result
+
+    def cos_phi(n):
+        return off_diag(n,1) / 2
+
+    hamiltonian = E_C * Jz2(n) - E_J * cos_phi(n) # No need for e_0 term, since we are only interested in eigenvectors
+
+    # Find Eigenvalues and Eigenvectors
+    eigenvalues,eigenvectors = jnp.linalg.eigh(hamiltonian)
+
+    # Plot the ground state, first eigenvector
+    ground_state_coeffs = eigenvectors[:,0] / jnp.sqrt(jnp.sum(eigenvectors[:,0]**2))
+    first_excited_coeffs = eigenvectors[:,1] / jnp.sqrt(jnp.sum(eigenvectors[:,1]**2))
+
+    if plot:
+        ground_state_coeffs_from_optimization = coeffs / jnp.sqrt(jnp.sum(coeffs**2))
+        plt.plot(x,ground_state_coeffs**2,".",color="red",label="Ground State (Solving Eigenvalue Problem)")
+        plt.plot(x,ground_state_coeffs_from_optimization**2,"x",color="grey",label="Ground State (Optimization Loop)")
+        plt.plot(x,first_excited_coeffs**2,".",color="green",label="First Excited State")
+        plt.xlabel("Charge Imbalance Eigenvalue")
+        plt.ylabel("Coefficient")
+        plt.legend()
+        plt.show()
+
+    # Get the frequency of the qubit
+    sorted_eigenvalues = jnp.sort(eigenvalues)
+    omega_q = sorted_eigenvalues[1] - sorted_eigenvalues[0]
+
+    return jnp.sum(first_excited_coeffs * ground_state_coeffs * x), omega_q # x is the charge imbalance eigenvalue
+
+mat_el,E_q = get_matrixel_and_qubit_freq(n,E_J,E_C,plot=False,coeffs=coeffs)
+print(f"Qubit Frequency: {E_q}")

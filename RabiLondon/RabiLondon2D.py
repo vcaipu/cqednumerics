@@ -3,6 +3,7 @@ from skfem import  ElementTriN1, ElementTriP1, Basis, BilinearForm, LinearForm, 
 from skfem.helpers import curl, dot, div, grad
 import numpy as np
 from FEMSystem import FEMSystem
+import jax
 import jax.numpy as jnp
 import pickle
 from scipy.linalg import expm
@@ -467,7 +468,38 @@ class RabiLondon2D:
         return jnp.array([c0, c1, c2, c3], dtype=mat_c.dtype)
         
     
-    def evolve_piecewise_progress(self,c0, t_grid, H_of_t, schrodinger=True):
+    def evolve_piecewise_progress(self, c0, t_grid, H_of_t, schrodinger=True):
+        # Time evolution only: use JAX+GPU if a GPU is visible; otherwise SciPy on CPU.
+        use_gpu = len(jax.devices("gpu")) > 0
+
+        if use_gpu:
+
+            print("*****************************************Using JAX/GPU for time evolution*****************************************\n\n")
+            from jax.scipy.linalg import expm as jax_expm
+
+            # One JIT compile per process for this matrix shape (not per time step).
+            expm_jit = jax.jit(jax_expm)
+
+            c = jnp.asarray(c0, dtype=jnp.complex128)
+            if schrodinger:
+                c = c / jnp.linalg.norm(c)
+
+            # Append (n,) states then stack once — avoids O(steps) full (T,n) .at updates.
+            states = [c]
+            for k in tqdm(range(len(t_grid) - 1), desc="Time evolution (JAX/GPU)"):
+                dt = t_grid[k + 1] - t_grid[k]
+                tm = 0.5 * (t_grid[k] + t_grid[k + 1])
+                Hm = jnp.asarray(H_of_t(tm), dtype=jnp.complex128)
+                A = (-1j * dt) * Hm if schrodinger else (dt * Hm)
+                U = expm_jit(A)
+                c = U @ c
+                if schrodinger:
+                    c = c / jnp.linalg.norm(c)
+                states.append(c)
+
+            out = jnp.stack(states, axis=0)
+            return np.asarray(out)
+
         c = np.asarray(c0, dtype=np.complex128)
         if schrodinger:
             c = c / np.linalg.norm(c)
@@ -475,16 +507,16 @@ class RabiLondon2D:
         out = np.zeros((len(t_grid), len(c0)), dtype=np.complex128)
         out[0] = c
 
-        for k in tqdm(range(len(t_grid)-1), desc="Time evolution"):
-            dt = t_grid[k+1] - t_grid[k]
-            tm = 0.5 * (t_grid[k] + t_grid[k+1])
+        for k in tqdm(range(len(t_grid) - 1), desc="Time evolution"):
+            dt = t_grid[k + 1] - t_grid[k]
+            tm = 0.5 * (t_grid[k] + t_grid[k + 1])
             Hm = np.asarray(H_of_t(tm), dtype=np.complex128)
             A = (-1j * dt) * Hm if schrodinger else (dt * Hm)
             U = expm(A)
             c = U @ c
             if schrodinger:
                 c = c / np.linalg.norm(c)
-            out[k+1] = c
+            out[k + 1] = c
         return out
 
     def check_hermiticity_and_norm(self,H, t_grid, output, atol_H=1e-10, atol_norm=1e-10):

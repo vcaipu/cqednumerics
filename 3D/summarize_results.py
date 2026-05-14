@@ -29,21 +29,6 @@ if sp:
 # Also add workspace root
 sys.path.insert(0, '/scratch/gpfs/AROD/vc9839/finite-island-cqed')
 
-# Import FEMSystem which is needed to unpickle the results
-FEMSystem_available = False
-try:
-    from FEMSystem import FEMSystem
-    FEMSystem_available = True
-except ImportError as e:
-    print(f"ERROR: Could not import FEMSystem: {e}", file=sys.stderr)
-    print("This script requires skfem and jax to be installed.", file=sys.stderr)
-    print("Make sure you activate the jax-gpu virtual environment first:", file=sys.stderr)
-    print("  cd /scratch/gpfs/AROD/vc9839/finite-island-cqed", file=sys.stderr)
-    print("  source start.sh", file=sys.stderr)
-    print("  cd 3D", file=sys.stderr)
-    print("  python summarize_results.py --runs 40", file=sys.stderr)
-    sys.exit(1)
-
 def format_time(seconds):
     if seconds is None:
         return "N/A"
@@ -63,7 +48,6 @@ def get_run_data(run_dir):
         params = data.get("parameters", {})
         ej = data.get("E_J", 0.0)
         ec = data.get("E_C", 1.0)
-        e0 = data.get("e0", 0.0)
         
         # Calculate Volume Error
         vol = params.get("sidelenX", 0) * params.get("sidelenY", 0) * params.get("sidelenZ", 0) * 2
@@ -75,7 +59,6 @@ def get_run_data(run_dir):
             "EJ/EC": f"{ej/ec:.4f}" if ec != 0 else "inf",
             "EJ": f"{ej:.6f}",
             "EC": f"{ec:.6f}",
-            "e0": f"{e0:.6f}",
             "Time": format_time(data.get("totalTime")),
             "Sep": params.get("separation"),
             "Island (X,Y,Z)": f"({params.get('sidelenX')}, {params.get('sidelenY')}, {params.get('sidelenZ')})",
@@ -85,10 +68,7 @@ def get_run_data(run_dir):
             "Vol Err": f"{vol_err:.2f}%"
         }
     except Exception as e:
-        import traceback
-        print(f"Error reading {run_dir}: {e}", file=sys.stderr)
-        print(f"Full traceback:", file=sys.stderr)
-        traceback.print_exc(file=sys.stderr)
+        # print(f"Error reading {run_dir}: {e}")
         return None
 
 def print_table(data):
@@ -110,13 +90,10 @@ def main():
     parser = argparse.ArgumentParser(description="Summarize run results from allplots/run*")
     parser.add_argument("--base", type=str, default="3D/allplots", help="Base directory containing run folders")
     parser.add_argument("--runs", type=int, nargs='+', help="Specific run numbers to include")
-    parser.add_argument("--dirnames", type=str, nargs='+', help="Specific directory names to include")
     args = parser.parse_args()
 
     table_data = []
-    if args.dirnames:
-        run_dirs = [os.path.join(args.base, d) for d in args.dirnames]
-    elif args.runs:
+    if args.runs:
         run_dirs = [os.path.join(args.base, f"run{r}") for r in args.runs]
     else:
         if not os.path.exists(args.base):

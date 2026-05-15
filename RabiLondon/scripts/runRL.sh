@@ -1,11 +1,11 @@
-FILENAME="firsttest"
+FILENAME="testrun"
 KAPPA=3
 XI=0.39e-10
 SOURCE_X=0
-SOURCE_Y=30
+SOURCE_Y=40
 SIGMA=10
-M=100
-NUM_RABI_PERIODS=0.5
+M=200
+NUM_RABI_PERIODS=0.3
 STEPS_PER_DRIVE_PERIOD=5
 
 export JAX_ENABLE_X64=true
@@ -21,4 +21,4 @@ python3 -u 2DRabiLondon.py \
     --sigma=${SIGMA} \
     --m=${M} \
     --num_rabi_periods=${NUM_RABI_PERIODS} \
-    --steps_per_drive_period=${STEPS_PER_DRIVE_PERIOD} 2>&1
+    --steps_per_drive_period=${STEPS_PER_DRIVE_PERIOD} > "./allplots/${FILENAME}.log" 2>&1

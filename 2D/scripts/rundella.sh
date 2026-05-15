@@ -1,4 +1,4 @@
-DIRNAME="rabilondonscaletest26"
+DIRNAME="rabilondonscaletest2"
 SCALE=20
 # Bash arithmetic: $(( ... )); ** is power (^ is XOR, not exponentiation)
 N=$((100 * SCALE*2))

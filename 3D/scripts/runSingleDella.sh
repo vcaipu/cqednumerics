@@ -1,15 +1,18 @@
 #!/bin/bash
 #!/bin/bash
 
-DIRNAME="rabilondon/rl1"
-SEPARATION=30
-SIDELLENX=20
-SIDELLENY=20
-SIDELLENZ=20
-PADDING=30
-LC_SMALL=1
-LC_LARGE=15
+SCALE=1
+
+DIRNAME="rabilondon/rl12"   
+SEPARATION=$((20 * SCALE))
+SIDELLENX=$((20 * SCALE))
+SIDELLENY=$((20 * SCALE))
+SIDELLENZ=$((20 * SCALE))
+PADDING=$((40 * SCALE))
+LC_SMALL=$((2 * SCALE))
+LC_LARGE=$((5 * SCALE))
 ELEMENT_ORDER=2
+
 
 echo "Running with the following parameters:"
 echo "DIRNAME: ${DIRNAME}"

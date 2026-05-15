@@ -13,6 +13,7 @@ class VisualizeVF:
         self.basis_edge = basis_edge
         # If None, infer from basis_edge so P1 / vector-P1 assemblies match Nedelec quadrature.
         self._viz_intorder = intorder
+        self.A_sol = A_sol
 
     def _intorder_matching_edge(self):
         """intorder for scalar/vector P1 bases used with ``basis_edge.interpolate`` in ``asm``."""
@@ -45,7 +46,7 @@ class VisualizeVF:
         tris = np.ascontiguousarray(b.element_dofs.T, dtype=np.int64)
         return b.doflocs[0], b.doflocs[1], tris
 
-    def _project_bz_to_nodes(self, A_sol):
+    def _project_bz_to_nodes(self):
         """L2-project curl_z(A) onto P1 nodes (same as heatmap plots)."""
         basis_p1 = self._basis_p1_paired()
 
@@ -58,12 +59,11 @@ class VisualizeVF:
             return curl(w['A_edge']) * v
 
         M_s = asm(mass_matrix_scalar, basis_p1)
-        b_s = asm(rhs_curl_A, basis_p1, A_edge=self.basis_edge.interpolate(A_sol))
+        b_s = asm(rhs_curl_A, basis_p1, A_edge=self.basis_edge.interpolate(self.A_sol))
         return spsolve(M_s, b_s)
 
     def visualize_bz_surface(
         self,
-        A_sol,
         *,
         cmap="coolwarm",
         grid_size=None,
@@ -125,7 +125,7 @@ class VisualizeVF:
             default ``inline`` backend shows a static snapshot, so the sliders cannot
             respond to mouse input.
         """
-        B_nodes = self._project_bz_to_nodes(A_sol)
+        B_nodes = self._project_bz_to_nodes()
         x, y, tri = self._p1_plot_triangulation()
         z = np.asarray(B_nodes).ravel()
         finite_z = z[np.isfinite(z)]
@@ -251,7 +251,7 @@ class VisualizeVF:
     
     # Plots the vector potential on ax1
     # Plots the magnetic field on ax2
-    def visualize_vf(self, A_sol, ax1, ax2, bz_symmetric_percentile=None, quiver_scale="auto"):
+    def visualize_vf(self, ax1, ax2, bz_symmetric_percentile=None, quiver_scale="auto"):
         # --- Step A: Project A_edge to Nodal Ax, Ay ---
         basis_vec = self._basis_vec_p1_paired()
 
@@ -262,13 +262,13 @@ class VisualizeVF:
         def rhs_project_A(v, w): return dot(w['A_edge'], v)
 
         M_v = asm(mass_matrix_vec, basis_vec)
-        b_v = asm(rhs_project_A, basis_vec, A_edge=self.basis_edge.interpolate(A_sol))
+        b_v = asm(rhs_project_A, basis_vec, A_edge=self.basis_edge.interpolate(self.A_sol))
         A_nodal_sol = spsolve(M_v, b_v)
 
         Ax = A_nodal_sol[basis_vec.nodal_dofs[0]]
         Ay = A_nodal_sol[basis_vec.nodal_dofs[1]]
 
-        B_nodes = self._project_bz_to_nodes(A_sol)
+        B_nodes = self._project_bz_to_nodes()
 
         x_p1, y_p1, tris_p1 = self._p1_plot_triangulation()
         tri_p1_plot = Triangulation(x_p1, y_p1, triangles=tris_p1)
@@ -338,7 +338,7 @@ class VisualizeVF:
             ax2.set_xlabel(r"$x/\xi$")
             ax2.set_ylabel(r"$y/\xi$")
 
-    def visualize_vf_mag(self, A_sol, bz_symmetric_percentile=None):
+    def visualize_vf_mag(self, bz_symmetric_percentile=None):
         # 1. Scalar P1 basis, same quadrature as basis_edge (high intorder / P2 mesh OK)
         basis_p1 = self._basis_p1_paired()
 
@@ -349,7 +349,7 @@ class VisualizeVF:
             return u * v
 
         M_scalar = asm(mass_matrix_scalar, basis_p1)
-        B_nodes = self._project_bz_to_nodes(A_sol)
+        B_nodes = self._project_bz_to_nodes()
 
         # 4. Also compute a scalar nodal field for |A| via L2 projection
         @LinearForm
@@ -357,7 +357,7 @@ class VisualizeVF:
             # Project |A|^2 onto P1, then take sqrt at nodes later
             return dot(w['A_edge'], w['A_edge']) * v
 
-        b_Amag = asm(rhs_A_mag, basis_p1, A_edge=self.basis_edge.interpolate(A_sol))
+        b_Amag = asm(rhs_A_mag, basis_p1, A_edge=self.basis_edge.interpolate(self.A_sol))
         Amag2_nodes = spsolve(M_scalar, b_Amag)
         Amag_nodes = np.sqrt(np.maximum(Amag2_nodes, 0.0))
 

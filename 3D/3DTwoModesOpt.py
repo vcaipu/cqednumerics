@@ -67,7 +67,7 @@ separation = args.separation
 n = args.n # Number of coefficients. NOTE: Just set this to an outside variable. Lots of trouble trying to pass into a dynamical argument, since JAX doesn't like when array indices are dynamical. 
 material = args.material #Total number of particles
 padding = args.padding
-gridlenX = sidelenX + separation + 2 * padding
+gridlenX = sidelenX *2 + separation + 2 * padding
 gridlenY = sidelenY + 2 * padding
 gridlenZ = sidelenZ + 2 * padding
 lc_large = args.lc_large
@@ -341,7 +341,11 @@ def ej_ec_e0(u_interior,A_int,P_int,phi_theta_int):
     if full_lambda_y:
         lambda_y_val = lambda_y(u_even, u_odd, A_int, P_int)
     
-    return E_J, E_C, e0, lambda_y_val
+    ### Regularizer
+    reg_func = (u_even**2 - u_odd**2)
+    reg = femsystem.integrate(lambda u,grad_u,x: u**2,reg_func)
+    
+    return E_J, E_C, e0, lambda_y_val,reg
 
 @jax.jit
 def objective(vec, A_int, P_int, phi_theta_int):
@@ -351,7 +355,7 @@ def objective(vec, A_int, P_int, phi_theta_int):
     # Normalize Coeff Vector: 
     coeff_vec_norm = normalize_vec(coeff_vec)
 
-    E_J, E_C, e0, lambda_y_val = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
+    E_J, E_C, e0, lambda_y_val,reg = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
 
     # Get E_J, E_C, and e0
     if full_lambda_y:
@@ -378,7 +382,11 @@ def objective(vec, A_int, P_int, phi_theta_int):
     jz2 = Jz2(n)
     capacitive = E_C * expval(jz2, coeff_vec_norm)
 
-    return capacitive + first_harmonic + e0
+    ### Regularizer
+    lambda_hyp = 1e9
+    reg = lambda_hyp * reg
+
+    return capacitive + first_harmonic + e0 + reg
 
 
 # 2. Computing Interaction Kernel
@@ -428,6 +436,7 @@ print("\n\n --------------- \n\n")
 '''
 Part 4: Run Optimization Loop (with optional retries if EJ/EC is unphysical)
 '''
+print(f"********* Using Regularizer *********")
 print(f"Starting Part 4: Running Optimization Loop")
 
 def create_lbfgs_minimizer(**kwargs):
@@ -490,7 +499,7 @@ u_even,u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_interior)
 u_even_interior,u_odd_interior = u_even[femsystem.interior_dofs],u_odd[femsystem.interior_dofs]
 
 energy = objective(result, A_int, P_int, phi_theta_int)
-E_J, E_C, e0, lambda_y_val = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
+E_J, E_C, e0, lambda_y_val, reg = ej_ec_e0(u_interior, A_int, P_int, phi_theta_int)
 
 print(f"EJ: {E_J} | EC: {E_C} | e0: {e0}")
 print(f"EJ/EC RATIO: {E_J/E_C}")
@@ -526,6 +535,7 @@ pickle_obj = {
     "E_C": E_C,
     "e0": e0,
     "objective": energy, # Final objective value
+    "reg": reg,
     "theta_at_dofs": theta_at_dofs,
     "integrated_volume": integrated_volume,
     "coeffs": coeffs,

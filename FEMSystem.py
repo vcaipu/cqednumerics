@@ -2,6 +2,9 @@ import numpy.typing as npt
 
 import skfem as fem
 from skfem.models.poisson import laplace
+from skfem.models.general import dot
+from skfem.helpers import grad
+from skfem import BilinearForm
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -799,8 +802,18 @@ class FEMSystem:
         Returns the sparse stiffness matrix A_int and interpolation matrix P_int
         in JAX BCOO format, suitable for double_integral_cg.
         """
+
+        # Use TF Screening??
+        k_tf_sq = 0.01
+
+        @BilinearForm
+        def screened_poisson(u, v, w):
+            return dot(grad(u), grad(v)) + k_tf_sq * (u * v)
+
+        print(f"********** USING TF SCREENING WITH k_tf_sq = {k_tf_sq} **********")
+        
         # Assemble the Laplacian stiffness matrix
-        A = fem.asm(laplace, self.basis)
+        A = fem.asm(screened_poisson, self.basis)
         
         # Apply Dirichlet boundary conditions (condense the system)
         A_int, xI, I = fem.condense(A, D=self.boundary_dofs, expand=True)

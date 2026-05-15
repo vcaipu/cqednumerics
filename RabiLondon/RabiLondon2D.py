@@ -471,6 +471,9 @@ class RabiLondon2D:
     def evolve_piecewise_progress(self, c0, t_grid, H_of_t, schrodinger=True):
         # Time evolution only: use JAX+GPU if a GPU is visible; otherwise SciPy on CPU.
         use_gpu = len(jax.devices("gpu")) > 0
+        total_steps = len(t_grid) - 1
+        # Limit progress updates to ~1% increments to avoid noisy logs when redirected.
+        progress_step = max(1, total_steps // 100)
 
         if use_gpu:
 
@@ -486,7 +489,11 @@ class RabiLondon2D:
 
             # Append (n,) states then stack once — avoids O(steps) full (T,n) .at updates.
             states = [c]
-            for k in tqdm(range(len(t_grid) - 1), desc="Time evolution (JAX/GPU)"):
+            for k in tqdm(
+                range(total_steps),
+                desc="Time evolution (JAX/GPU)",
+                miniters=progress_step,
+            ):
                 dt = t_grid[k + 1] - t_grid[k]
                 tm = 0.5 * (t_grid[k] + t_grid[k + 1])
                 Hm = jnp.asarray(H_of_t(tm), dtype=jnp.complex128)
@@ -507,7 +514,11 @@ class RabiLondon2D:
         out = np.zeros((len(t_grid), len(c0)), dtype=np.complex128)
         out[0] = c
 
-        for k in tqdm(range(len(t_grid) - 1), desc="Time evolution"):
+        for k in tqdm(
+            range(total_steps),
+            desc="Time evolution",
+            miniters=progress_step,
+        ):
             dt = t_grid[k + 1] - t_grid[k]
             tm = 0.5 * (t_grid[k] + t_grid[k + 1])
             Hm = np.asarray(H_of_t(tm), dtype=np.complex128)

@@ -17,6 +17,7 @@ from Units2D import Units2D
 from RabiLondon2D import RabiLondon2D
 import pickle
 import argparse
+import time
 
 parser = argparse.ArgumentParser(description="")
 parser.add_argument("--savefile", type=str, help="File Name to Save it to. Default is rabilondonsave.pkl",default="rabilondonsave.pkl")
@@ -55,6 +56,8 @@ steps_per_drive_period = args.steps_per_drive_period
 '''
 Step 1: Define System and All Units
 '''
+
+time_start = time.time()
 print("========Step 1: Define System and All Units =========")
 pickled_obj = {}
 #./../2D/allplots/rabilondonfine11/results.pkl
@@ -87,6 +90,10 @@ lambda_L = units2d.london_from_n_s(n_s)
 print(f"lambda_L: {lambda_L}")
 print("========Step 1 Finished =========\n\n")
 
+time_end1 = time.time()
+print(f"Time Taken 1: {time_end1 - time_start}")
+
+
 '''
 Step 2: Solve Helmholtz Equation
 '''
@@ -112,6 +119,12 @@ source_obj = {
 # Run Solver
 A_sol, basis_edge = rabilondon.helmholtz_solver(omega_d_rad_s,c_bar,kappa,source_obj)
 print("========Step 2 Finished =========\n\n")
+time_end2 = time.time()
+print(f"Time Taken 2: {time_end2 - time_end1}")
+
+
+
+
 
 '''
 Step 3: Construct Rabi Hamiltonian
@@ -148,9 +161,19 @@ print(f"Drive Period (nondim): {drive_period} s")
 print(f"Iterations: {rabi_period/drive_period*30}\n\n")
 
 print(f"Direct Detuning from A2Z Only (Since A2 has DC term): {a2z_detuning} | Fixing Drive Frequency by Adding Detuning")
-omega_d_nondim_new = omega_d_nondim - 2*a2z_detuning
+detuning = 2*a2z_detuning # The actual correction to the detuning
+
+omega_d_nondim_new = omega_d_nondim - detuning
 H_of_t_new, A1_mat_new, A2_mat_new = rabilondon.rabi_hamiltonian(basis_edge,A_sol,omega_d_nondim_new)
 print("========Step 3 Finished =========\n\n")
+time_end3 = time.time()
+print(f"Time Taken 3: {time_end3 - time_end2}")
+
+
+
+
+
+
 
 
 '''
@@ -167,6 +190,15 @@ t_grid = np.linspace(0, end_time, int(end_time/dt))   # dt = 0.1
 output = rabilondon.evolve_piecewise_progress(c0, t_grid, H_of_t_new)
 rabilondon.check_hermiticity_and_norm(H_of_t_new, t_grid, output)
 print("========Step 4 Finished =========\n\n")
+time_end4 = time.time()
+print(f"Time Taken 4: {time_end4 - time_end3}")
+
+
+
+
+
+
+
 
 
 '''
@@ -175,10 +207,19 @@ Step 5: Save Results
 print("========Step 5: Save Results =========")
 pickled_obj = {
     "rabioutput": output,
+    "rabi_freq": rabi_freq,
     "t_grid": t_grid,
     "A_sol": A_sol,
     "rabilondon": rabilondon,
+    "basis_edge": basis_edge,
+    "source_obj": source_obj,
+    "a1_tls_decomposed": A1_mat_TLS_decomposed,
+    "a2_tls_decomposed": A2_mat_TLS_decomposed,
+    "detuning": detuning,
 }
 with open(savefile, 'wb') as f:
     pickle.dump(pickled_obj, f)
 print("========Step 5 Finished =========\n\n")
+time_end5 = time.time()
+print(f"Time Taken 5: {time_end5 - time_end4}")
+print(f"Total Time Taken: {time_end5 - time_start}")

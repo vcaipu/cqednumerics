@@ -1,4 +1,4 @@
-from skfem import ElementVector, ElementTriP1, Basis, BilinearForm, LinearForm, asm
+from skfem import ElementVector, ElementTriP1, ElementTetP1, Basis, BilinearForm, LinearForm, asm
 from skfem.helpers import dot, curl
 from scipy.sparse.linalg import spsolve
 import matplotlib.pyplot as plt
@@ -6,6 +6,7 @@ from matplotlib.colors import Normalize, SymLogNorm
 from matplotlib.tri import LinearTriInterpolator, Triangulation
 from matplotlib.widgets import Slider
 import numpy as np
+import warnings
 
 class VisualizeVF:
     def __init__(self, mesh, basis_edge, A_sol, *, intorder=None):
@@ -389,4 +390,71 @@ class VisualizeVF:
         plt.tight_layout()
         plt.show()
         
+        return fig, ax
+
+    def visualize_bz_slice_z0_3d(self, z0=0.0, tol=1.0, bz_symmetric_percentile=99.0, cmap="magma"):
+        """Plot a 2D heatmap of B_z from a 3D solve on a slice near z=z0.
+
+        This is intentionally simple: project B_z to scalar P1 nodes in 3D, keep
+        nodes with |z-z0| <= tol, and render in the x-y plane via tripcolor.
+        """
+        if self.mesh.p.shape[0] != 3:
+            raise ValueError("visualize_bz_slice_z0_3d is only for 3D meshes.")
+
+        # Use the exact quadrature rule from the edge basis so interpolated
+        # A_edge has matching integration points during assembly.
+        basis_p1 = Basis(self.mesh, ElementTetP1(), quadrature=self.basis_edge.quadrature)
+
+        @BilinearForm
+        def mass_matrix_scalar(u, v, w):
+            return u * v
+
+        @LinearForm
+        def rhs_bz(v, w):
+            # In 3D, curl(A) is a vector; B_z is component index 2.
+            return curl(w["A_edge"])[2] * v
+
+        M_s = asm(mass_matrix_scalar, basis_p1)
+        b_s = asm(rhs_bz, basis_p1, A_edge=self.basis_edge.interpolate(self.A_sol))
+        Bz_nodes = spsolve(M_s, b_s)
+
+        x = np.asarray(basis_p1.doflocs[0]).ravel()
+        y = np.asarray(basis_p1.doflocs[1]).ravel()
+        z = np.asarray(basis_p1.doflocs[2]).ravel()
+        Bz_nodes = np.asarray(Bz_nodes).ravel()
+
+        mask = np.abs(z - float(z0)) <= float(tol)
+        if np.count_nonzero(mask) < 3:
+            raise ValueError(
+                f"Slice has too few points (n={np.count_nonzero(mask)}). "
+                f"Increase tol (current tol={tol})."
+            )
+
+        xs = x[mask]
+        ys = y[mask]
+        bs = Bz_nodes[mask]
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+        try:
+            tri = Triangulation(xs, ys)
+            kw = dict(shading="gouraud", cmap=cmap)
+            if bz_symmetric_percentile is not None:
+                lim = np.percentile(np.abs(bs), bz_symmetric_percentile)
+                if lim > 0:
+                    kw["vmin"], kw["vmax"] = -float(lim), float(lim)
+            tpc = ax.tripcolor(tri, bs, **kw)
+        except Exception:
+            warnings.warn(
+                "Triangulation failed for slice points; falling back to scatter.",
+                RuntimeWarning,
+            )
+            tpc = ax.scatter(xs, ys, c=bs, s=10, cmap=cmap)
+
+        plt.colorbar(tpc, ax=ax, label=r"$B_z$")
+        ax.set_title(rf"3D slice heatmap of $B_z$ at $z={z0}$ (|z-z0|<={tol})")
+        ax.set_xlabel(r"$x/\xi$")
+        ax.set_ylabel(r"$y/\xi$")
+        ax.set_aspect("equal")
+        plt.tight_layout()
+        plt.show()
         return fig, ax

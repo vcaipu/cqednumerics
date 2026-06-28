@@ -24,6 +24,15 @@ import pickle
 import time
 
 
+# Set JAX to use 64-bit floats
+jax.config.update("jax_enable_x64", True)
+
+# Verify
+print(jax.devices())
+print("x64 enabled:", jax.config.read("jax_enable_x64"))
+print("dtype:", jnp.asarray(1.0).dtype)
+
+
 # Only Needed for the Global Optimizer
 from scipy.optimize import basinhopping, OptimizeResult
 import numpy as np
@@ -56,6 +65,7 @@ parser.add_argument("--element_order", type=int, choices=[1, 2], default=1, help
 parser.add_argument("--mesh_file", type=str, help="Path to the mesh file. Default is None, which will generate a new mesh.", default=None)
 
 parser.add_argument("--full_lambda_y", type=bool, help="Whether to include the lambda_y term in the objective function. Default is False.", default=False)
+parser.add_argument("--apply_cutoff", type=bool, help="Whether to apply a cutoff to left and right modes. Default is False.", default=False)
 
 
 args = parser.parse_args()
@@ -78,6 +88,9 @@ opt_maxiter = args.opt_maxiter
 element_order = args.element_order
 mesh_file = args.mesh_file
 full_lambda_y = args.full_lambda_y
+apply_cutoff = args.apply_cutoff
+
+cutoff_x = separation/5
 
 print(f"RUNNING WITH THE FOLLOWING PARAMETERS:")
 print(f"  plotdir = {plotdir}")
@@ -91,6 +104,7 @@ print(f"  lc_small = {lc_small}")
 print(f"  opt_tol = {opt_tol}  opt_maxiter = {opt_maxiter}")
 print(f"  element_order = {element_order}  ({'P1 linear' if element_order == 1 else 'P2 quadratic'})")
 print(f"  mesh_file = {mesh_file}")
+print(f"  apply_cutoff = {apply_cutoff} | cutoff_x = {cutoff_x}")
 print("\n\n --------------- \n\n")
 sys.stdout.flush()  # ensure params appear first in log when stdout is redirected (e.g. runSingle.slurm)
 
@@ -181,7 +195,7 @@ def theta_right_only_smoothed(x_vec):
     return smoothed_box(x_vec, centerLeft, sidelenX, sidelenY, sidelenZ)
 
 
-theta_at_dofs = theta_smoothed(femsystem.doflocs).astype(jnp.float32)
+theta_at_dofs = theta_smoothed(femsystem.doflocs).astype(jnp.float64)
 integrated_volume = femsystem.integrate(lambda u,grad_u,x: u,theta_at_dofs)
 print(f"Area: {volume} | Integrated Area Estimate: {integrated_volume}")
 
@@ -318,7 +332,10 @@ Before you start the optimization loop:
 
 def ej_ec_e0(u_interior,A_int,P_int,phi_theta_int):
     # Unpack even and odd modes
-    u_even, u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_interior)
+    if apply_cutoff:
+        u_even, u_odd = femsystem.separate_even_odd_apply_by_and_norm_strict_zero(u_interior,cutoff_x=cutoff_x)
+    else:
+        u_even, u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_interior)
     
     # Precompute shared terms to minimize CG solves
     gamma_val = gamma(u_even, u_odd, A_int, P_int)
@@ -341,9 +358,10 @@ def ej_ec_e0(u_interior,A_int,P_int,phi_theta_int):
     if full_lambda_y:
         lambda_y_val = lambda_y(u_even, u_odd, A_int, P_int)
     
-    ### Regularizer
-    reg_func = (u_even**2 - u_odd**2)
-    reg = femsystem.integrate(lambda u,grad_u,x: u**2,reg_func)
+    # ### Regularizer
+    # reg_func = (u_even**2 - u_odd**2)
+    # reg = femsystem.integrate(lambda u,grad_u,x: u**2,reg_func)
+    reg = 0
     
     return E_J, E_C, e0, lambda_y_val,reg
 
@@ -436,7 +454,7 @@ print("\n\n --------------- \n\n")
 '''
 Part 4: Run Optimization Loop (with optional retries if EJ/EC is unphysical)
 '''
-print(f"********* Using Regularizer *********")
+print(f"********* NOT Using Regularizer *********")
 print(f"Starting Part 4: Running Optimization Loop")
 
 def create_lbfgs_minimizer(**kwargs):
@@ -495,7 +513,11 @@ Part 5: Plot and Visualize Results
 '''
 
 # Get Even and Odd Modes
-u_even,u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_interior)
+if apply_cutoff:
+    print(f"**** Applying Cutoff to Left and Right Modes, of {cutoff_x} ****")
+    u_even,u_odd = femsystem.separate_even_odd_apply_by_and_norm_strict_zero(u_interior,cutoff_x=cutoff_x)
+else:
+    u_even,u_odd = femsystem.separate_even_odd_apply_by_and_norm(u_interior)
 u_even_interior,u_odd_interior = u_even[femsystem.interior_dofs],u_odd[femsystem.interior_dofs]
 
 energy = objective(result, A_int, P_int, phi_theta_int)

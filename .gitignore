@@ -10,3 +10,4 @@ test*
 *.png
 currentoutput.txt
 currenterror.txt
+*.pkl

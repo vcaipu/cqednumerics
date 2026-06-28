@@ -1,16 +1,24 @@
-from scipy.sparse.linalg import spsolve
-from skfem import  ElementTriN1, ElementTriP1, Basis, BilinearForm, LinearForm, asm, condense, ElementVector
+from scipy.sparse.linalg import minres
+from skfem import  ElementTriN1, ElementTriP1, ElementTetN1, ElementTetP1, Basis, BilinearForm, LinearForm, asm, condense, ElementVector
 from skfem.helpers import curl, dot, div, grad
 import numpy as np
 from FEMSystem import FEMSystem
 import jax
 import jax.numpy as jnp
-import pickle
 from scipy.linalg import expm
 from tqdm.auto import tqdm
 from scipy.sparse import bmat
+import time
 
-class RabiLondon2D:
+try:
+    import psutil
+except ImportError:
+    psutil = None
+
+import os
+import resource
+
+class RabiLondonSystem:
     
     # Statics Solution
     femsystem:FEMSystem = None
@@ -34,22 +42,42 @@ class RabiLondon2D:
     eigenvalues:jnp.ndarray = None
     charge_imbalance_eigenvalues:jnp.ndarray = None
 
-    def __init__(self, pickled_obj):
+    def __init__(self, pickled_obj, minres_rtol=1e-8, minres_maxiter=50000, minres_shift=0.0, minres_check_convergence=True, minres_verbose=True):
         # Get Modes, Coefficients, and EJ/EC, and n/N + FEMSystem
         femsystem:FEMSystem = pickled_obj["femsystem"]
+
+        print(f"DOFs: {femsystem.dofs}")
+
+        # FEMSystem stores DOF coordinates as (spatial_dim, n_dofs).
+        # This is the reliable source of spatial dimension in this codebase.
+        spatial_dim = int(femsystem.doflocs.shape[0])
+        self.is2D = (spatial_dim == 2)
+
         femsystem.saveFigsDir = None # Turn OFF saving plots
         self.femsystem = femsystem
         self.mesh = femsystem.mesh
         self.u_even,self.u_odd = pickled_obj["u_even"],pickled_obj["u_odd"]
         self.u_left,self.u_right = 1/jnp.sqrt(2)*(self.u_even - self.u_odd), 1/jnp.sqrt(2)* (self.u_even + self.u_odd)
         self.u_even_interior,self.u_odd_interior = self.u_even[femsystem.interior_dofs],self.u_odd[femsystem.interior_dofs]
-        self.n,self.N,self.coeffs = pickled_obj["n"],pickled_obj["parameters"]["N"],pickled_obj["coeffs"]
+        self.n,self.coeffs = pickled_obj["n"],pickled_obj["coeffs"]
         self.E_J,self.E_C = pickled_obj["E_J"],pickled_obj["E_C"]
-        self.integrated_area = pickled_obj["integrated_area"]
-        self.area = pickled_obj["parameters"]["sidelenX"] * pickled_obj["parameters"]["sidelenY"] * 2
+
+        if self.is2D:
+            self.integrated_area = pickled_obj["integrated_area"]
+            self.area = pickled_obj["parameters"]["sidelenX"] * pickled_obj["parameters"]["sidelenY"] * 2
+            self.N = pickled_obj["parameters"]["N"]
+        else: 
+            self.integrated_volume = pickled_obj["integrated_volume"]
+            self.volume = pickled_obj["parameters"]["sidelenX"] * pickled_obj["parameters"]["sidelenY"] * pickled_obj["parameters"]["sidelenZ"] * 2
+            self.material = pickled_obj["parameters"]["material"]
+            self.N = self.material * self.volume
+        
 
         print(f"---- Successfully initialed RabiLondon2D Object ----")
-        print(f"Integrated Area: {self.integrated_area} | Area: {self.area} | Error: {abs(self.integrated_area - self.area)/self.integrated_area*100:.2f}%")
+        if self.is2D:
+            print(f"Integrated Area: {self.integrated_area} | Area: {self.area} | Error: {abs(self.integrated_area - self.area)/self.integrated_area*100:.2f}%")
+        else:
+            print(f"Integrated Volume: {self.integrated_volume} | Volume: {self.volume} | Error: {abs(self.integrated_volume - self.volume)/self.integrated_volume*100:.2f}%")
         print(f"EJ: {self.E_J} | EC: {self.E_C} | EJ/EC: {self.E_J/self.E_C}")
 
         # Now run eigensolver
@@ -59,6 +87,61 @@ class RabiLondon2D:
         # Keep scalar as plain float for downstream scipy/skfem assembly code.
         self.omega_q = float(self.eigenvalues[1] - self.eigenvalues[0])
         print(f"Qubit Frequency: {self.omega_q} (non-dimensional energy units)")
+
+        # Global MINRES settings used by all SciPy MINRES solves in this class.
+        # Defaults are tuned for the large 3D saddle systems used here.
+        self.minres_rtol = float(minres_rtol)
+        self.minres_maxiter = int(minres_maxiter)
+        self.minres_shift = float(minres_shift)
+        self.minres_check_convergence = bool(minres_check_convergence)
+        self.minres_verbose = bool(minres_verbose)
+        print(
+            "[minres] config:"
+            f" rtol={self.minres_rtol},"
+            f" maxiter={self.minres_maxiter},"
+            f" shift={self.minres_shift},"
+            f" check_convergence={self.minres_check_convergence},"
+            f" verbose={self.minres_verbose}"
+        )
+
+    def set_minres_params(self, *, rtol=None, maxiter=None, shift=None, check_convergence=None, verbose=None):
+        """Update global MINRES settings used in this class."""
+        if rtol is not None:
+            self.minres_rtol = float(rtol)
+        if maxiter is not None:
+            self.minres_maxiter = int(maxiter)
+        if shift is not None:
+            self.minres_shift = float(shift)
+        if check_convergence is not None:
+            self.minres_check_convergence = bool(check_convergence)
+        if verbose is not None:
+            self.minres_verbose = bool(verbose)
+        print(
+            "[minres] updated config:"
+            f" rtol={self.minres_rtol},"
+            f" maxiter={self.minres_maxiter},"
+            f" shift={self.minres_shift},"
+            f" check_convergence={self.minres_check_convergence},"
+            f" verbose={self.minres_verbose}"
+        )
+
+    def _solve_minres(self, A, b, label):
+        x, info = minres(
+            A,
+            b,
+            rtol=self.minres_rtol,
+            maxiter=self.minres_maxiter,
+            shift=self.minres_shift,
+        )
+        if self.minres_verbose:
+            print(f"[minres] {label}: info={info}")
+        if self.minres_check_convergence and info != 0:
+            raise RuntimeError(
+                f"MINRES did not converge for '{label}' (info={info}). "
+                f"Current params: rtol={self.minres_rtol}, maxiter={self.minres_maxiter}, shift={self.minres_shift}. "
+                "Increase maxiter, loosen rtol, or add preconditioning."
+            )
+        return x, info
 
 
 
@@ -88,9 +171,57 @@ class RabiLondon2D:
         # Normalize eigenvectors
         eigenvectors = eigenvectors / jnp.sqrt(jnp.sum(jnp.abs(eigenvectors)**2, axis=0, keepdims=True))
         return hamiltonian, eigenvectors, eigenvalues, charge_imbalance_eigenvalues
+    
+
+    def _current_rss_gb(self):
+        if psutil is not None:
+            rss_bytes = psutil.Process(os.getpid()).memory_info().rss
+            return rss_bytes / (1024 ** 3)
+        # Fallback: ru_maxrss is in KiB on Linux.
+        maxrss_kib = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        return (maxrss_kib * 1024) / (1024 ** 3)
+
+    def _print_sparse_stats(self, name, mat):
+        if not hasattr(mat, "shape"):
+            print(f"[matrix] {name}: no shape metadata")
+            return
+        nrows, ncols = mat.shape
+        nnz = getattr(mat, "nnz", None)
+        if nnz is None:
+            print(f"[matrix] {name}: shape={nrows}x{ncols}, nnz=unknown")
+            return
+        total = nrows * ncols
+        density = (nnz / total) if total else 0.0
+        storage_bytes = 0
+        for attr in ("data", "indices", "indptr"):
+            arr = getattr(mat, attr, None)
+            if arr is not None:
+                storage_bytes += arr.nbytes
+        print(
+            f"[matrix] {name}: shape={nrows}x{ncols}, nnz={nnz}, "
+            f"density={density:.3e}, storage~{storage_bytes / (1024 ** 2):.2f} MiB"
+        )
 
 
     def helmholtz_solver(self,omega_d,c_bar,kappa,source_obj,epsilon=1e-4,use_coulomb_gauge=True):
+        t_start = time.perf_counter()
+        t_prev = t_start
+
+        def _stage_done(label):
+            nonlocal t_prev
+            now = time.perf_counter()
+            dt = now - t_prev
+            total = now - t_start
+            rss_gb = self._current_rss_gb()
+            print(f"[timing] {label:<28} {dt:8.3f} s | total {total:8.3f} s | RSS {rss_gb:6.2f} GB")
+            t_prev = now
+
+        print(
+            f"[solver] Starting Helmholtz solve | dim={'2D' if self.is2D else '3D'} "
+            f"| use_coulomb_gauge={use_coulomb_gauge}"
+        )
+        print(f"[solver] Initial RSS: {self._current_rss_gb():.2f} GB")
+
         # Coerce potential JAX scalars into plain floats before skfem/scipy usage.
         omega_d = float(omega_d)
         c_bar = float(c_bar)
@@ -98,28 +229,37 @@ class RabiLondon2D:
         source_coord = source_obj["source_coord"]
         sigma = float(source_obj["sigma"])
         m = float(source_obj["m"])
+        _stage_done("input coercion")
 
 
         # Define Coefficients
         a_coeff = - (omega_d/c_bar)**2
-        b_coeff = 1/(kappa**2) * float(self.area) / float(self.N)
+        areaOrVolume = self.area if self.is2D else self.volume
+        b_coeff = 1/(kappa**2) * areaOrVolume / self.N
+        _stage_done("coefficient setup")
 
         # Define Nedelic Basis
         nedelic_element = ElementTriN1()
+        if not self.is2D: nedelic_element = ElementTetN1()
         basis_edge = Basis(self.mesh, nedelic_element, intorder=self.femsystem.intorder)
+        print(f"[solver] edge basis dofs: {basis_edge.N}")
+        _stage_done("edge basis build")
 
         # Approximated Time-Indendent Charge Density, in Nodal Basis
         psi_exp = (self.u_left **2 + self.u_right**2) * self.N / 2 + epsilon
+        psi_exp_interp = self.femsystem.basis.interpolate(np.asarray(psi_exp, dtype=np.float64))
+        _stage_done("psi field prep")
 
         # Define Bilinear Form
         @BilinearForm
         def bilinear_form(u,v,w):
             second_term_coeff = a_coeff + b_coeff * w['psi_exp']
-            return curl(u) * curl(v) + second_term_coeff * dot(u, v)
+            curl_term = curl(u) * curl(v) if self.is2D else dot(curl(u), curl(v))
+            return curl_term + second_term_coeff * dot(u, v)
 
         # Define Linear Form, the Divergence-Free Dipole Source
         @LinearForm
-        def dipole_source(v, w):
+        def dipole_source2D(v, w):
             x = w.x[0]
             y = w.x[1]
             x0, y0 = source_coord
@@ -128,25 +268,60 @@ class RabiLondon2D:
             Jy =  M * 2 * (x - x0) / sigma**2
             J_vec = np.array([Jx, Jy])
             return dot(J_vec, v)
+        
+        @LinearForm
+        def dipole_source3D(v, w):
+            x = w.x[0]
+            y = w.x[1]
+            z = w.x[2]
+            x0, y0, z0 = source_coord
+            M = (m / (np.pi * sigma**2)) * np.exp(-((x - x0)**2 + (y - y0)**2 + (z - z0)**2) / sigma**2)
+            Jx = M * 2 * ((y - y0) - (z-z0))/ sigma**2
+            Jy =  M * 2 * ((z - z0) - (x-x0)) / sigma**2
+            Jz = M * 2 * ((x - x0) - (y-y0)) / sigma**2
+            J_vec = np.array([Jx, Jy, Jz])
+            return dot(J_vec, v)
+        
+        dipole_source = dipole_source2D if self.is2D else dipole_source3D
 
         # Assemble Matrices
         A_matrix = asm(bilinear_form, basis_edge,
-                    psi_exp=self.femsystem.basis.interpolate(np.asarray(psi_exp, dtype=np.float64)))      
+                    psi_exp=psi_exp_interp)
+        self._print_sparse_stats("A_matrix", A_matrix)
+        _stage_done("assemble A_matrix")
+
         b_vector = asm(dipole_source, basis_edge)
+        print(
+            f"[vector] b_vector: shape={b_vector.shape}, "
+            f"n={b_vector.size}, storage~{b_vector.nbytes / (1024 ** 2):.2f} MiB"
+        )
+        _stage_done("assemble b_vector")
 
         if not use_coulomb_gauge:
             A_sol = np.zeros(basis_edge.N)
             D = basis_edge.get_dofs().all()
             A_int, b_int, x_int, I = condense(A_matrix, b_vector, D=D)
+            self._print_sparse_stats("A_int (condensed)", A_int)
+            print(
+                f"[vector] b_int: shape={b_int.shape}, "
+                f"n={b_int.size}, storage~{b_int.nbytes / (1024 ** 2):.2f} MiB"
+            )
+            print(f"[solver] Interior unknowns: {len(I)} (boundary fixed: {len(D)})")
+            _stage_done("condense")
 
             # Solve 
-            A_sol[I] = spsolve(A_int, b_int)
+            A_sol[I], info = self._solve_minres(A_int, b_int, "helmholtz (no gauge)")
+            _stage_done("solve A_int x = b_int")
+            print(f"[solver] Helmholtz solve complete in {time.perf_counter() - t_start:.3f} s")
             return A_sol, basis_edge
         else:
 
             # Baiscally adds another basis to add Lagrange multiplier to weak form. 
             # Essentially another degree of freedom to solver for, in a large matrix. 
-            basis_lam = Basis(self.mesh, ElementTriP1(), intorder=self.femsystem.intorder)
+            scalar_element = ElementTriP1() if self.is2D else ElementTetP1()
+            basis_lam = Basis(self.mesh, scalar_element, intorder=self.femsystem.intorder)
+            print(f"[solver] lambda basis dofs: {basis_lam.N}")
+            _stage_done("lambda basis build")
 
             @BilinearForm
             def G_form(lam, v, w):
@@ -154,18 +329,40 @@ class RabiLondon2D:
                 return dot(v, grad(lam))
             
             Gmat = asm(G_form, basis_lam, basis_edge).T
+            self._print_sparse_stats("Gmat", Gmat)
+            _stage_done("assemble Gmat")
+
             DA = np.asarray(basis_edge.get_dofs().all(), dtype=np.int64)
             IA = np.setdiff1d(np.arange(basis_edge.N), DA)
             A_int = A_matrix[IA][:,IA]
             b_int = b_vector[IA]
             G_int = Gmat[:,IA]
+            self._print_sparse_stats("A_int", A_int)
+            self._print_sparse_stats("G_int", G_int)
+            print(
+                f"[vector] b_int: shape={b_int.shape}, "
+                f"n={b_int.size}, storage~{b_int.nbytes / (1024 ** 2):.2f} MiB"
+            )
+            print(f"[solver] Interior unknowns: {len(IA)} (boundary fixed: {len(DA)})")
+            _stage_done("indexing/slicing")
 
             lam_keep = np.arange(1, basis_lam.N)
             Gir = G_int[lam_keep, :]
+            self._print_sparse_stats("Gir", Gir)
+            _stage_done("build Gir")
+
             S = bmat([[A_int, Gir.T],
                 [Gir, None]], format='csr')
+            self._print_sparse_stats("S saddle system", S)
             rhs = np.concatenate([b_int, np.zeros(lam_keep.size)])
-            sol = spsolve(S, rhs)
+            print(
+                f"[vector] rhs: shape={rhs.shape}, "
+                f"n={rhs.size}, storage~{rhs.nbytes / (1024 ** 2):.2f} MiB"
+            )
+            _stage_done("assemble saddle system")
+
+            sol, info = self._solve_minres(S, rhs, "helmholtz saddle system")
+            _stage_done("solve saddle system")
             A_i = sol[:IA.size]
             A_sol = np.zeros(basis_edge.N)
             A_sol[IA] = A_i
@@ -176,6 +373,8 @@ class RabiLondon2D:
             rA = np.linalg.norm(A_int @ A_i + Gir.T @ lam - b_int)
             rG = np.linalg.norm(Gir @ A_i)
             print("saddle residual A:", rA, "gauge residual:", rG)
+            _stage_done("post-check")
+            print(f"[solver] Helmholtz solve complete in {time.perf_counter() - t_start:.3f} s")
 
             return A_sol, basis_edge
     
@@ -226,25 +425,22 @@ class RabiLondon2D:
 
         # Step 1: L2 project edge field -> vector-P1
         rhs_A = asm(rhs_proj_A, basis_vec_p1, A_edge=A_edge_disc)
-        A_vec_coeff = spsolve(M_vec, rhs_A)
+        A_vec_coeff, info = self._solve_minres(M_vec, rhs_A, "coulomb cleanup 1/4 (project A)")
         A_vec_disc = basis_vec_p1.interpolate(A_vec_coeff)
 
         # Step 2: solve Delta phi = div(A) with homogeneous Dirichlet BC
         M_s = asm(mass_scalar, basis_p1)
         rhs_div = asm(rhs_divA, basis_p1, A_vec=A_vec_disc)
-        divA_nodes = spsolve(M_s, rhs_div)
-
+        divA_nodes, info = self._solve_minres(M_s, rhs_div, "coulomb cleanup 2/4 (div A)")
         K_s = asm(stiffness_scalar, basis_p1)
         phi = np.zeros(basis_p1.N)
         D = basis_p1.get_dofs().all()
         K_int, f_int, x_int, I = condense(K_s, divA_nodes, D=D)
-        phi[I] = spsolve(K_int, f_int)
-
+        phi[I], info = self._solve_minres(K_int, f_int, "coulomb cleanup 3/4 (solve phi)")
         # Step 3: A_df = A - grad(phi)
         rhs_grad = asm(rhs_gradphi, basis_vec_p1, phi=basis_p1.interpolate(phi))
-        gradphi_coeff = spsolve(M_vec, rhs_grad)
+        gradphi_coeff, info = self._solve_minres(M_vec, rhs_grad, "coulomb cleanup 4/4 (grad phi)")
         A_df_coeff = A_vec_coeff - gradphi_coeff
-
         return A_df_coeff, basis_vec_p1
 
     def divergence_report(self, basis_edge, A_sol):
@@ -295,7 +491,7 @@ class RabiLondon2D:
             A_disc = basis_edge.interpolate(np.asarray(A_sol, dtype=np.float64))
             M = asm(mass_vec, basis_vec_p1)
             rhs = asm(rhs_proj, basis_vec_p1, A=A_disc)
-            coeffs = spsolve(M, rhs)
+            coeffs, info = self._solve_minres(M, rhs, "project Nedelec -> vector P1")
             A_p1_disc = basis_vec_p1.interpolate(coeffs)
 
         val = np.asarray(A_p1_disc.value)
@@ -530,12 +726,28 @@ class RabiLondon2D:
             out[k + 1] = c
         return out
 
-    def check_hermiticity_and_norm(self,H, t_grid, output, atol_H=1e-10, atol_norm=1e-10):
+    def check_hermiticity_and_norm(
+        self,
+        H,
+        t_grid,
+        output,
+        atol_H=1e-10,
+        atol_norm=1e-10,
+        max_H_checks=2000,
+    ):
         # --- Hermiticity check ---
         herm_abs_err = []
         herm_rel_err = []
+        # Evaluating H(t) can be expensive; cap checks to a representative subset.
+        nt = len(t_grid)
+        if max_H_checks is not None and max_H_checks > 0 and nt > max_H_checks:
+            check_idx = np.linspace(0, nt - 1, num=max_H_checks, dtype=np.int64)
+        else:
+            check_idx = np.arange(nt, dtype=np.int64)
 
-        for t in t_grid:
+        has_bad_H = False
+        for idx in check_idx:
+            t = t_grid[idx]
             Ht = np.asarray(H(t) if callable(H) else H, dtype=np.complex128)
             anti = Ht - Ht.conj().T
             abs_err = np.linalg.norm(anti, ord='fro')
@@ -543,6 +755,8 @@ class RabiLondon2D:
             rel_err = abs_err / denom
             herm_abs_err.append(abs_err)
             herm_rel_err.append(rel_err)
+            if not np.all(np.isfinite(Ht)):
+                has_bad_H = True
 
         herm_abs_err = np.array(herm_abs_err)
         herm_rel_err = np.array(herm_rel_err)
@@ -553,16 +767,11 @@ class RabiLondon2D:
         norm_err = np.abs(probs - 1.0)
 
         # --- NaN/Inf checks ---
-        has_bad_H = False
-        for t in t_grid:
-            Ht = np.asarray(H(t) if callable(H) else H, dtype=np.complex128)
-            if not np.all(np.isfinite(Ht)):
-                has_bad_H = True
-                break
         has_bad_output = not np.all(np.isfinite(C))
 
         # --- Report ---
         print("Hermiticity:")
+        print(f"  checked H(t) at {len(check_idx)}/{nt} time points")
         print(f"  max ||H-H†||_F              = {herm_abs_err.max():.3e}")
         print(f"  max relative hermiticity err = {herm_rel_err.max():.3e}")
         print(f"  all times Hermitian (abs<{atol_H})? {np.all(herm_abs_err < atol_H)}")
@@ -578,7 +787,8 @@ class RabiLondon2D:
         print(f"  output contains only finite values? {not has_bad_output}")
 
         # Optional: return indices where checks fail
-        bad_H_idx = np.where(herm_abs_err >= atol_H)[0]
+        bad_H_idx_local = np.where(herm_abs_err >= atol_H)[0]
+        bad_H_idx = check_idx[bad_H_idx_local]
         bad_norm_idx = np.where(norm_err >= atol_norm)[0]
         return {
             "herm_abs_err": herm_abs_err,
@@ -587,4 +797,5 @@ class RabiLondon2D:
             "norm_err": norm_err,
             "bad_H_idx": bad_H_idx,
             "bad_norm_idx": bad_norm_idx,
+            "checked_H_idx": check_idx,
         }

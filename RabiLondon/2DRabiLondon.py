@@ -1,9 +1,31 @@
 # Import the FEMSystem Class from directory above
 import os
+import subprocess
 
 # Match 2DTwoModesOpt: full float64 in JAX (avoids float64→float32 truncation warnings).
 os.environ.setdefault("JAX_ENABLE_X64", "true")
 
+
+def _gpu_detected() -> bool:
+    """Return True if at least one NVIDIA GPU is visible."""
+    try:
+        result = subprocess.run(
+            ["nvidia-smi", "-L"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        return False
+    return result.returncode == 0 and bool(result.stdout.strip())
+
+
+# If user did not explicitly choose a JAX platform and no GPU is present, force CPU.
+if "JAX_PLATFORMS" not in os.environ and "JAX_PLATFORM_NAME" not in os.environ:
+    if not _gpu_detected():
+        os.environ["JAX_PLATFORMS"] = "cpu"
+
+import jax
 import sys
 from VisualizeVF import VisualizeVF
 sys.path.append('..')
@@ -18,6 +40,7 @@ from RabiLondon2D import RabiLondon2D
 import pickle
 import argparse
 import time
+jax.config.update("jax_enable_x64", True)
 
 parser = argparse.ArgumentParser(description="")
 parser.add_argument("--savefile", type=str, help="File Name to Save it to. Default is rabilondonsave.pkl",default="rabilondonsave.pkl")
@@ -51,6 +74,27 @@ sigma = args.sigma
 m = args.m
 num_rabi_periods = args.num_rabi_periods
 steps_per_drive_period = args.steps_per_drive_period
+
+
+
+
+
+print(f"RUNNING WITH THE FOLLOWING PARAMETERS:")
+print(f"  savefile = {savefile}")
+print(f"  readfile = {readfile}")
+print(f"  kappa = {kappa}")
+print(f"  xi = {xi}")
+print(f"  source_coord = {source_coord}")
+print(f"  sigma = {sigma}")
+print(f"  m = {m}")
+print(f"  num_rabi_periods = {num_rabi_periods}")
+print(f"  steps_per_drive_period = {steps_per_drive_period}")
+print("\n\n --------------- \n\n")
+sys.stdout.flush()  # ensure params appear first in log when stdout is redirected (e.g. runSingle.slurm)
+
+
+
+
 
 
 '''
@@ -165,6 +209,45 @@ detuning = 2*a2z_detuning # The actual correction to the detuning
 
 omega_d_nondim_new = omega_d_nondim - detuning
 H_of_t_new, A1_mat_new, A2_mat_new = rabilondon.rabi_hamiltonian(basis_edge,A_sol,omega_d_nondim_new)
+
+print("========Step 3.1: Construct Rabi Hamiltonian with New Detuning =========")   
+# All for the new Hamiltonian, should all be the same decomposition at least
+A1_mat_TLS_new = rabilondon.TLS_matrix(A1_mat_new)
+A2_mat_TLS_new = rabilondon.TLS_matrix(A2_mat_new)
+print(f"A1_mat_TLS: {A1_mat_TLS_new}")
+print(f"A2_mat_TLS: {A2_mat_TLS_new}")
+
+# Get Pauli Decomposition
+A1_mat_TLS_decomposed_new = rabilondon.pauli_decompose(A1_mat_TLS_new)
+A2_mat_TLS_decomposed_new = rabilondon.pauli_decompose(A2_mat_TLS_new)
+print(f"Order is identity, sigma_x, sigma_y, sigma_z")
+print(f"A_1 Decomposed: {A1_mat_TLS_decomposed_new}")
+print(f"A_2 Decomposed: {A2_mat_TLS_decomposed_new}")
+a1_off_diag_max_new , a2_off_diag_max_new = np.max(np.abs(A1_mat_TLS_new - np.diag(np.diag(A1_mat_TLS_new)))), np.max(np.abs(A2_mat_TLS_new - np.diag(np.diag(A2_mat_TLS_new))))     
+detuning_max_new = max(np.abs(A1_mat_TLS_decomposed_new[3]), np.abs(A2_mat_TLS_decomposed_new[3]))
+a2z_detuning_new = np.abs(A2_mat_TLS_decomposed_new[3])
+print(f"A1 Off Diagonal Max: {a1_off_diag_max_new}")
+print(f"A2 Off Diagonal Max: {a2_off_diag_max_new}\n")
+print(f"Check that A1 off diagonal max is much much larger for Rabi Oscillations!! It is {a1_off_diag_max_new/a2_off_diag_max_new} times larger.")
+print(f"Check that detuning is much lower too! Off diagonal of A1 is {a1_off_diag_max_new/detuning_max_new} times larger than the detuning (A1z and A2z).\n\n")
+
+
+# Check at t=0, ground to excited state is exactly the new omega_d_nondim_new
+H0 = H_of_t_new(0)
+# find first and second eigenvalues and difference  
+eigenvalues = np.linalg.eigvalsh(H0)
+ground_excited_diff = np.abs(eigenvalues[0] - eigenvalues[1])
+print(f"Ground to excited state at t=0: {ground_excited_diff}")
+print(f"New omega_d_nondim_new: {omega_d_nondim_new}")
+print(f"Old detuning: {ground_excited_diff - omega_d_nondim} | 2A2Z is: {2*a2z_detuning}")
+print(f"New detuning: {ground_excited_diff - omega_d_nondim_new}")
+
+# Check at t=0, ground to excited state is exactly the new omega_d_nondim_new
+
+
+
+
+
 print("========Step 3 Finished =========\n\n")
 time_end3 = time.time()
 print(f"Time Taken 3: {time_end3 - time_end2}")

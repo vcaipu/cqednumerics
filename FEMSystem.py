@@ -763,7 +763,7 @@ class FEMSystem:
         # The final result is v1^T @ x
         return v1 @ x
 
-    def _linear_solve_cg(self, A, b):
+    def _linear_solve_cg(self, A, b, tol=1e-9, maxiter=1000):
         """Solve Ax = b using CG with a custom VJP to speed up JIT compilation and differentiation."""
         
         def _solve(A_mat, b_vec):
@@ -772,7 +772,7 @@ class FEMSystem:
             b_vec = jnp.asarray(b_vec).ravel()
             def matvec(x):
                 return A_mat @ x
-            solution, _ = cg(matvec, b_vec, tol=1e-7, maxiter=1000)
+            solution, _ = cg(matvec, b_vec, tol=tol, maxiter=maxiter)
             return solution
 
         @jax.custom_vjp
@@ -808,9 +808,9 @@ class FEMSystem:
 
         @BilinearForm
         def screened_poisson(u, v, w):
-            return dot(grad(u), grad(v)) + k_tf_sq * (u * v)
+            return dot(grad(u), grad(v)) # + k_tf_sq * (u * v)
 
-        print(f"********** USING TF SCREENING WITH k_tf_sq = {k_tf_sq} **********")
+        #print(f"********** USING TF SCREENING WITH k_tf_sq = {k_tf_sq} **********")
         
         # Assemble the Laplacian stiffness matrix
         A = fem.asm(screened_poisson, self.basis)
@@ -914,6 +914,31 @@ class FEMSystem:
         u_even = jnp.where(u_even_norm > 0, u_even / jnp.sqrt(safe_even_norm),u_even)
         u_odd = jnp.where(u_odd_norm > 0, u_odd / jnp.sqrt(safe_odd_norm),u_odd)
         
+        return u_even,u_odd
+    
+    # Strictly ZERO for left side of right mode, and right side of left mode. 
+    def separate_even_odd_apply_by_and_norm_strict_zero(self,u_interior,cutoff_x=0.0):
+        u_full = jnp.ones(self.dofs) * self.boundary_condition
+        u_full = u_full.at[self.interior_dofs].set(u_interior) 
+        u_full_flipped = u_full[self.flip_map] # Literally just reindexes
+
+        u_even = u_full + u_full_flipped
+        u_odd = u_full - u_full_flipped
+
+        u_left,u_right = (u_even + u_odd) / jnp.sqrt(2.0), (u_even - u_odd) / jnp.sqrt(2.0)
+        left_norm = self.integrate(lambda u,a,b: u**2,u_left)
+        right_norm = self.integrate(lambda u,a,b: u**2,u_right)
+        safe_left_norm = jnp.where(left_norm > 0, left_norm, 1.0)
+        safe_right_norm = jnp.where(right_norm > 0, right_norm, 1.0)
+        u_left = jnp.where(left_norm > 0, u_left / jnp.sqrt(safe_left_norm),u_left)
+        u_right = jnp.where(right_norm > 0, u_right / jnp.sqrt(safe_right_norm),u_right)
+
+        # Now ENFORCE that left mode has zero at all points <0, and right has zero at all points >0
+        u_left = jnp.where(self.doflocs[0,:] < -1*cutoff_x, 0.0, u_left)
+        u_right = jnp.where(self.doflocs[0,:] > cutoff_x, 0.0, u_right)
+
+        u_even,u_odd = (u_left + u_right) / jnp.sqrt(2.0), (u_left - u_right) / jnp.sqrt(2.0)
+
         return u_even,u_odd
 
     def get_even_odd_modes(self, u_right_interior):

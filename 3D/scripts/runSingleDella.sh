@@ -1,9 +1,9 @@
 #!/bin/bash
 #!/bin/bash
 
-SCALE=1
+SCALE=4
 
-DIRNAME="rabilondon/rl12"   
+DIRNAME="rabilondon/rl23"   
 SEPARATION=$((20 * SCALE))
 SIDELLENX=$((20 * SCALE))
 SIDELLENY=$((20 * SCALE))
@@ -12,7 +12,6 @@ PADDING=$((40 * SCALE))
 LC_SMALL=$((2 * SCALE))
 LC_LARGE=$((5 * SCALE))
 ELEMENT_ORDER=2
-
 
 echo "Running with the following parameters:"
 echo "DIRNAME: ${DIRNAME}"
@@ -31,6 +30,8 @@ cd ./3D
 
 mkdir -p "./allplots/${DIRNAME}/"
 
+export JAX_ENABLE_X64=1
+
 python3 -u 3DTwoModesOpt.py \
     --material=0.0033784 \
     --plotdir="./allplots/${DIRNAME}/" \
@@ -41,6 +42,6 @@ python3 -u 3DTwoModesOpt.py \
     --sidelenY=${SIDELLENY} \
     --sidelenZ=${SIDELLENZ} \
     --element_order=${ELEMENT_ORDER} \
-    --opt_tol=0.001 \
+    --opt_tol=0.000001 \
     --opt_maxiter=500 \
     --lc_large=${LC_LARGE} > "./allplots/${DIRNAME}/output.txt" 2>&1

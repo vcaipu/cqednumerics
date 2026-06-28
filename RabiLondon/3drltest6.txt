@@ -1,0 +1,109 @@
+DOFs: 152596
+---- Successfully initialed RabiLondon2D Object ----
+Integrated Volume: 128067.0 | Volume: 128000.0 | Error: 0.05%
+EJ: 0.013203782960772514 | EC: 1.5674006938934326 | EJ/EC: 0.008423999883234501
+Qubit Frequency: 0.013203710317611694 (non-dimensional energy units)
+[minres] config: rtol=1e-08, maxiter=50000, shift=0.0, check_convergence=True, verbose=True
+{'material': 0.0033784, 'separation': 40.0, 'sidelenX': 40.0, 'sidelenY': 40.0, 'sidelenZ': 40.0, 'padding': 80.0, 'gridlenX': 280.0, 'gridlenY': 200.0, 'gridlenZ': 200.0, 'lc_large': 10.0, 'lc_small': 4.0}
+Effective mass: 1.8039348117357895e-32 kg | 0.00991172973481203 times (2m_e)
+Computed kappa: 4.000000000000001, c_bar: 7.686986102564269e+18
+
+
+
+Using xi = 0.39 A
+Units check: Plasma frequencies must be equal (in rad/s): 1.9217465256410673e+18 | 1.9217465256410673e+18
+kappa: 4, c_bar: 7.686986102564269e+18
+n_s = 5.746147418752259e+30 | n_s xi^3: 0.3408557187329653
+lambda_L: 1.5600000000000003e-10
+0.0008252318948507309
+Qubit Frequency (in nondim units): 0.013203710317611694 | (in rad/s):6343546107110347.0
+Expected effective london penetration depth: 4.000021792423858
+[solver] Starting Helmholtz solve | dim=3D | use_coulomb_gauge=True
+[solver] Initial RSS: 1.08 GB
+[timing] input coercion                  0.000 s | total    0.000 s | RSS   1.08 GB
+[timing] coefficient setup               0.000 s | total    0.000 s | RSS   1.08 GB
+[solver] edge basis dofs: 133124
+[timing] edge basis build                3.630 s | total    3.630 s | RSS   1.64 GB
+[timing] psi field prep                  0.419 s | total    4.048 s | RSS   1.71 GB
+[matrix] A_matrix: shape=133124x133124, nnz=2136182, density=1.205e-04, storage~24.95 MiB
+[timing] assemble A_matrix               1.862 s | total    5.911 s | RSS   1.82 GB
+[vector] b_vector: shape=(133124,), n=133124, storage~1.02 MiB
+[timing] assemble b_vector               0.895 s | total    6.805 s | RSS   1.84 GB
+[solver] lambda basis dofs: 19472
+[timing] lambda basis build              1.060 s | total    7.865 s | RSS   1.91 GB
+[matrix] Gmat: shape=19472x133124, nnz=937492, density=3.617e-04, storage~11.24 MiB
+[timing] assemble Gmat                   0.897 s | total    8.762 s | RSS   1.99 GB
+[matrix] A_int: shape=122450x122450, nnz=1964670, density=1.310e-04, storage~22.95 MiB
+[matrix] G_int: shape=19472x122450, nnz=878091, density=3.683e-04, storage~10.52 MiB
+[vector] b_int: shape=(122450,), n=122450, storage~0.93 MiB
+[solver] Interior unknowns: 122450 (boundary fixed: 10674)
+[timing] indexing/slicing                0.032 s | total    8.794 s | RSS   1.99 GB
+[matrix] Gir: shape=19471x122450, nnz=878088, density=3.683e-04, storage~10.52 MiB
+[timing] build Gir                       0.007 s | total    8.801 s | RSS   1.99 GB
+[matrix] S saddle system: shape=141921x141921, nnz=3720846, density=1.847e-04, storage~43.12 MiB
+[vector] rhs: shape=(141921,), n=141921, storage~1.08 MiB
+[timing] assemble saddle system          0.095 s | total    8.897 s | RSS   2.09 GB
+[minres] helmholtz saddle system: info=0
+[timing] solve saddle system           111.269 s | total  120.166 s | RSS   2.09 GB
+saddle residual A: 0.0014707970427303005 gauge residual: 0.0010176731993099641
+[timing] post-check                      0.010 s | total  120.176 s | RSS   2.09 GB
+[solver] Helmholtz solve complete in 120.176 s
+[timing-main] helmholtz solve                         120.182 s | total  120.182 s
+Checkpoint 1
+[minres] project Nedelec -> vector P1: info=0
+[minres] project Nedelec -> vector P1: info=0
+[minres] project Nedelec -> vector P1: info=0
+[minres] project Nedelec -> vector P1: info=0
+Checkpoint 2
+[timing-main] build first time-dependent Hamiltonian  130.580 s | total  250.762 s
+A1_mat_TLS: [[0.+5.8399630e-05j 0.-4.8876745e-06j]
+ [0.-4.8866445e-06j 0.+5.8399630e-05j]]
+A2_mat_TLS: [[ 1.22907935e-02+0.j -7.03023318e-07+0.j]
+ [-7.03016667e-07+0.j  1.22907935e-02+0.j]]
+[timing-main] first TLS projection/decomposition prep    0.135 s | total  250.897 s
+Order is identity, sigma_x, sigma_y, sigma_z
+A_1 Decomposed: [0.000000e+00+5.839963e-05j 0.000000e+00-4.887160e-06j
+ 5.150014e-10+0.000000e+00j 0.000000e+00+0.000000e+00j]
+A_2 Decomposed: [ 1.22907935e-02+0.00000e+00j -7.03019964e-07+0.00000e+00j
+  0.00000000e+00-3.32534e-12j  0.00000000e+00+0.00000e+00j]
+A1 Off Diagonal Max: 4.887674549536314e-06
+A2 Off Diagonal Max: 7.030233177829359e-07
+
+Check that A1 off diagonal max is much much larger for Rabi Oscillations!! It is 6.952364921569824 times larger.
+Check that detuning is much lower too! Detuning proxy (max of A1z/A2z) is exactly zero in this run, so the ratio is undefined/infinite.
+
+
+Approx Rabi Frequency (Assuming x and y components of A2 are trivial): 4.88715977553511e-06
+Rabi Period (nondim): 1285651.75 s
+Drive Period (nondim): 475.8651285160956 s
+Iterations: 81051.43703274199
+
+
+Direct Detuning from A2Z Only (Since A2 has DC term): 0.0 | Fixing Drive Frequency by Adding Detuning
+[minres] project Nedelec -> vector P1: info=0
+[minres] project Nedelec -> vector P1: info=0
+[minres] project Nedelec -> vector P1: info=0
+[minres] project Nedelec -> vector P1: info=0
+[timing-main] build detuning-corrected Hamiltonian    129.338 s | total  380.236 s
+A1_mat_TLS: [[0.+5.8399630e-05j 0.-4.8876745e-06j]
+ [0.-4.8866445e-06j 0.+5.8399630e-05j]]
+A2_mat_TLS: [[ 1.22907935e-02+0.j -7.03023318e-07+0.j]
+ [-7.03016667e-07+0.j  1.22907935e-02+0.j]]
+Order is identity, sigma_x, sigma_y, sigma_z
+A_1 Decomposed: [0.000000e+00+5.839963e-05j 0.000000e+00-4.887160e-06j
+ 5.150014e-10+0.000000e+00j 0.000000e+00+0.000000e+00j]
+A_2 Decomposed: [ 1.22907935e-02+0.00000e+00j -7.03019964e-07+0.00000e+00j
+  0.00000000e+00-3.32534e-12j  0.00000000e+00+0.00000e+00j]
+A1 Off Diagonal Max: 4.887674549536314e-06
+A2 Off Diagonal Max: 7.030233177829359e-07
+
+Check that A1 off diagonal max is much much larger for Rabi Oscillations!! It is 6.952364921569824 times larger.
+Check that detuning is much lower too! Detuning proxy (max of A1z/A2z) is exactly zero in this run, so the ratio is undefined/infinite.
+
+
+Ground to excited state at t=0: 0.013203710317611694
+New omega_d_nondim_new: 0.013203710317611694
+Old detuning: 0.0 | 2A2Z is: 0.0
+New detuning: 0.0
+[timing-main] checkpoint pickle save                    1.311 s | total  381.547 s
+[timing-main] total script time so far: 381.547 s

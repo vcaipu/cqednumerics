@@ -42,6 +42,12 @@ class RabiLondonSystem:
     eigenvalues:jnp.ndarray = None
     charge_imbalance_eigenvalues:jnp.ndarray = None
 
+    # Constants: 
+    I2 = jnp.array([[1, 0], [0, 1]], dtype=jnp.complex64)
+    sigma_x = jnp.array([[0, 1], [1, 0]], dtype=jnp.complex64)
+    sigma_y = jnp.array([[0, -1j], [1j, 0]], dtype=jnp.complex64)
+    sigma_z = jnp.array([[1, 0], [0, -1]], dtype=jnp.complex64)
+
     def __init__(self, pickled_obj, minres_rtol=1e-8, minres_maxiter=50000, minres_shift=0.0, minres_check_convergence=True, minres_verbose=True):
         # Get Modes, Coefficients, and EJ/EC, and n/N + FEMSystem
         femsystem:FEMSystem = pickled_obj["femsystem"]
@@ -626,6 +632,37 @@ class RabiLondonSystem:
                 A2_mat += epsilon_funcs[i][j][2] * raising_lowering_mats[i][j]
         
         return res, A1_mat, A2_mat
+    
+    def rabi_hamiltonian_tls_decomposition(self,basis_edge,A_sol,omega_d):
+        H_of_t, A1_mat, A2_mat = self.rabi_hamiltonian(basis_edge,A_sol,omega_d)
+        A1_mat_TLS = self.TLS_matrix(A1_mat)
+        A2_mat_TLS = self.TLS_matrix(A2_mat)
+        A1_mat_TLS_decomposed = self.pauli_decompose(A1_mat_TLS)
+        A2_mat_TLS_decomposed = self.pauli_decompose(A2_mat_TLS)
+
+        return H_of_t, A1_mat_TLS_decomposed, A2_mat_TLS_decomposed
+    
+    def rabi_hamiltonian_tls_interaction_picture(self,basis_edge,A_sol,omega_d):
+        H_of_t, A1_mat_TLS_decomposed, A2_mat_TLS_decomposed = self.rabi_hamiltonian_tls_decomposition(basis_edge,A_sol,omega_d)
+        omega_q = self.omega_q
+        A1i,A1x,A1y,A1z = A1_mat_TLS_decomposed
+        A2i,A2x,A2y,A2z = A2_mat_TLS_decomposed
+
+        def res(t):
+            A1term = (A1x*self.sigma_x + A1y*self.sigma_y) * jnp.cos(omega_q*t)
+            A1term += (A1x*self.sigma_y - A1y*self.sigma_x) * jnp.sin(omega_q*t)
+            A1term += A1z*self.sigma_z
+            A1term *= jnp.sin(omega_d*t)
+
+            A2term = (A2x*self.sigma_x + A2y*self.sigma_y) * jnp.cos(omega_q*t)
+            A2term += (A2x*self.sigma_y - A2y*self.sigma_x) * jnp.sin(omega_q*t)
+            A2term += A2z*self.sigma_z
+            A2term *= (1-jnp.cos(2*omega_d*t))
+
+            return A1term + A2term
+        
+        return res
+            
 
     def correction_matrix(self,basis_edge,A_sol,omega_d):
         rabi_hamiltonian = self.rabi_hamiltonian(basis_edge,A_sol,omega_d)
@@ -651,15 +688,11 @@ class RabiLondonSystem:
     def pauli_decompose(self,mat):
         # Force complex dtype so sigma_y can be represented even if input is real.
         mat_c = jnp.asarray(mat, dtype=jnp.complex64)
-        I = jnp.array([[1, 0], [0, 1]], dtype=mat_c.dtype)
-        sx = jnp.array([[0, 1], [1, 0]], dtype=mat_c.dtype)
-        sy = jnp.array([[0, -1j], [1j, 0]], dtype=mat_c.dtype)
-        sz = jnp.array([[1, 0], [0, -1]], dtype=mat_c.dtype)
         # Calculate coefficients
-        c0 = 0.5 * jnp.trace(mat_c @ I)
-        c1 = 0.5 * jnp.trace(mat_c @ sx)
-        c2 = 0.5 * jnp.trace(mat_c @ sy)
-        c3 = 0.5 * jnp.trace(mat_c @ sz)
+        c0 = 0.5 * jnp.trace(mat_c @ self.I2)
+        c1 = 0.5 * jnp.trace(mat_c @ self.sigma_x)
+        c2 = 0.5 * jnp.trace(mat_c @ self.sigma_y)
+        c3 = 0.5 * jnp.trace(mat_c @ self.sigma_z)
         # Stack to a vector
         return jnp.array([c0, c1, c2, c3], dtype=mat_c.dtype)
         

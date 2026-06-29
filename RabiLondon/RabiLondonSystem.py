@@ -644,22 +644,25 @@ class RabiLondonSystem:
     
     def rabi_hamiltonian_tls_interaction_picture(self,basis_edge,A_sol,omega_d):
         H_of_t, A1_mat_TLS_decomposed, A2_mat_TLS_decomposed = self.rabi_hamiltonian_tls_decomposition(basis_edge,A_sol,omega_d)
-        omega_q = self.omega_q
+
+
         A1i,A1x,A1y,A1z = A1_mat_TLS_decomposed
         A2i,A2x,A2y,A2z = A2_mat_TLS_decomposed
 
         def res(t):
-            A1term = (A1x*self.sigma_x + A1y*self.sigma_y) * jnp.cos(omega_q*t)
-            A1term += (A1x*self.sigma_y - A1y*self.sigma_x) * jnp.sin(omega_q*t)
+            A1term = (A1x*self.sigma_x + A1y*self.sigma_y) * jnp.cos(omega_d*t)
+            A1term += (A1x*self.sigma_y - A1y*self.sigma_x) * jnp.sin(omega_d*t)
             A1term += A1z*self.sigma_z
             A1term *= jnp.sin(omega_d*t)
 
-            A2term = (A2x*self.sigma_x + A2y*self.sigma_y) * jnp.cos(omega_q*t)
-            A2term += (A2x*self.sigma_y - A2y*self.sigma_x) * jnp.sin(omega_q*t)
+            A2term = (A2x*self.sigma_x + A2y*self.sigma_y) * jnp.cos(omega_d*t)
+            A2term += (A2x*self.sigma_y - A2y*self.sigma_x) * jnp.sin(omega_d*t)
             A2term += A2z*self.sigma_z
             A2term *= (1-jnp.cos(2*omega_d*t))
 
-            return A1term + A2term
+            correction = - (omega_d - self.omega_q) * self.sigma_z / 2
+
+            return A1term + A2term + correction
         
         return res
             
@@ -697,7 +700,7 @@ class RabiLondonSystem:
         return jnp.array([c0, c1, c2, c3], dtype=mat_c.dtype)
         
     
-    def evolve_piecewise_progress(self, c0, t_grid, H_of_t, schrodinger=True):
+    def evolve_piecewise_progress(self, c0, t_grid, H_of_t, schrodinger=True,getMat=False):
         # Time evolution only: use JAX+GPU if a GPU is visible; otherwise SciPy on CPU.
         use_gpu = len(jax.devices("gpu")) > 0
         total_steps = len(t_grid) - 1
@@ -708,40 +711,26 @@ class RabiLondonSystem:
 
             print("*****************************************Using JAX/GPU for time evolution*****************************************\n\n")
             from jax.scipy.linalg import expm as jax_expm
-
-            # One JIT compile per process for this matrix shape (not per time step).
             expm_jit = jax.jit(jax_expm)
+            to_backend = lambda x: jnp.asarray(x, dtype=jnp.complex128)
+            norm_fn = jnp.linalg.norm
+        else:
+            to_backend = lambda x: np.asarray(x, dtype=np.complex128)
+            norm_fn = np.linalg.norm
 
-            c = jnp.asarray(c0, dtype=jnp.complex128)
-            if schrodinger:
-                c = c / jnp.linalg.norm(c)
-
-            # Append (n,) states then stack once — avoids O(steps) full (T,n) .at updates.
-            states = [c]
-            for k in tqdm(
-                range(total_steps),
-                desc="Time evolution (JAX/GPU)",
-                miniters=progress_step,
-            ):
-                dt = t_grid[k + 1] - t_grid[k]
-                tm = 0.5 * (t_grid[k] + t_grid[k + 1])
-                Hm = jnp.asarray(H_of_t(tm), dtype=jnp.complex128)
-                A = (-1j * dt) * Hm if schrodinger else (dt * Hm)
-                U = expm_jit(A)
-                c = U @ c
-                if schrodinger:
-                    c = c / jnp.linalg.norm(c)
-                states.append(c)
-
-            out = jnp.stack(states, axis=0)
-            return np.asarray(out)
-
-        c = np.asarray(c0, dtype=np.complex128)
+        c = to_backend(c0)
         if schrodinger:
-            c = c / np.linalg.norm(c)
+            c = c / norm_fn(c)
 
-        out = np.zeros((len(t_grid), len(c0)), dtype=np.complex128)
-        out[0] = c
+        # The time evolution matrix
+        if getMat:
+            if use_gpu:
+                mat = jnp.eye(len(c0), dtype=jnp.complex128)
+            else:
+                mat = np.eye(len(c0), dtype=np.complex128)
+        else:
+            out = np.zeros((len(t_grid), len(c0)), dtype=np.complex128)
+            out[0] = np.asarray(c)
 
         for k in tqdm(
             range(total_steps),
@@ -750,14 +739,76 @@ class RabiLondonSystem:
         ):
             dt = t_grid[k + 1] - t_grid[k]
             tm = 0.5 * (t_grid[k] + t_grid[k + 1])
-            Hm = np.asarray(H_of_t(tm), dtype=np.complex128)
+            Hm = to_backend(H_of_t(tm))
             A = (-1j * dt) * Hm if schrodinger else (dt * Hm)
-            U = expm(A)
-            c = U @ c
-            if schrodinger:
-                c = c / np.linalg.norm(c)
-            out[k + 1] = c
+
+            if use_gpu:
+                U = expm_jit(A)
+            else:
+                U = expm(A)
+
+            if getMat:
+                mat = U @ mat
+            else:
+                c = U @ c
+                if schrodinger:
+                    c = c / norm_fn(c)
+                out[k + 1] = np.asarray(c)
+        if getMat:
+            return np.asarray(mat)
         return out
+    
+    def evolve_period(self, H_of_t, period, steps, schrodinger=True):
+        period = float(period)
+        steps = int(steps)
+        if steps < 2:
+            raise ValueError("steps must be >= 2")
+
+        t_grid = np.linspace(0.0, period, steps, dtype=np.float64)
+        n = int(np.asarray(H_of_t(0.0)).shape[0])
+        c_ref = np.zeros(n, dtype=np.complex128)
+        c_ref[0] = 1.0 + 0.0j
+        U_period = self.evolve_piecewise_progress(
+            c_ref,
+            t_grid,
+            H_of_t,
+            schrodinger=schrodinger,
+            getMat=True,
+        )
+        return U_period, t_grid
+
+    def evolve_stroboscopic_periods(self, c0, U_period, n_periods, schrodinger=True, use_eigendecomp=True):
+        c0 = np.asarray(c0, dtype=np.complex128)
+        U_period = np.asarray(U_period, dtype=np.complex128)
+        n_periods = int(n_periods)
+        if n_periods < 0:
+            raise ValueError("n_periods must be >= 0")
+
+        states = np.zeros((n_periods + 1, c0.size), dtype=np.complex128)
+        c = c0.copy()
+        if schrodinger:
+            c = c / np.linalg.norm(c)
+        states[0] = c
+
+        if n_periods == 0:
+            return states
+
+        if use_eigendecomp:
+            evals, evecs = np.linalg.eig(U_period)
+            evecs_inv = np.linalg.inv(evecs)
+            coeff0 = evecs_inv @ c
+            for n in range(1, n_periods + 1):
+                c_n = evecs @ ((evals ** n) * coeff0)
+                if schrodinger:
+                    c_n = c_n / np.linalg.norm(c_n)
+                states[n] = c_n
+        else:
+            for n in range(1, n_periods + 1):
+                c = U_period @ c
+                if schrodinger:
+                    c = c / np.linalg.norm(c)
+                states[n] = c
+
 
     def check_hermiticity_and_norm(
         self,

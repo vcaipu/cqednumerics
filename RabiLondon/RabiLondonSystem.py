@@ -702,7 +702,9 @@ class RabiLondonSystem:
     
     def evolve_piecewise_progress(self, c0, t_grid, H_of_t, schrodinger=True,getMat=False):
         # Time evolution only: use JAX+GPU if a GPU is visible; otherwise SciPy on CPU.
-        use_gpu = len(jax.devices("gpu")) > 0
+        # Requesting `jax.devices("gpu")` raises if no GPU backend is installed.
+        # Check all visible devices and enable GPU path only when present.
+        use_gpu = any(getattr(dev, "platform", None) == "gpu" for dev in jax.devices())
         total_steps = len(t_grid) - 1
         # Limit progress updates to ~1% increments to avoid noisy logs when redirected.
         progress_step = max(1, total_steps // 100)
@@ -777,14 +779,18 @@ class RabiLondonSystem:
         )
         return U_period, t_grid
 
-    def evolve_stroboscopic_periods(self, c0, U_period, n_periods, schrodinger=True, use_eigendecomp=True):
+    def evolve_stroboscopic_periods(self, c0, U_period, n_periods, period_step, schrodinger=True):
         c0 = np.asarray(c0, dtype=np.complex128)
         U_period = np.asarray(U_period, dtype=np.complex128)
         n_periods = int(n_periods)
+        period_step = int(period_step)
         if n_periods < 0:
             raise ValueError("n_periods must be >= 0")
+        if period_step < 1:
+            raise ValueError("period_step must be >= 1")
 
-        states = np.zeros((n_periods + 1, c0.size), dtype=np.complex128)
+        sampled_periods = np.arange(0, n_periods + 1, period_step, dtype=np.int64)
+        states = np.zeros((len(sampled_periods), c0.size), dtype=np.complex128)
         c = c0.copy()
         if schrodinger:
             c = c / np.linalg.norm(c)
@@ -793,22 +799,31 @@ class RabiLondonSystem:
         if n_periods == 0:
             return states
 
-        if use_eigendecomp:
-            evals, evecs = np.linalg.eig(U_period)
-            evecs_inv = np.linalg.inv(evecs)
-            coeff0 = evecs_inv @ c
-            for n in range(1, n_periods + 1):
-                c_n = evecs @ ((evals ** n) * coeff0)
-                if schrodinger:
-                    c_n = c_n / np.linalg.norm(c_n)
-                states[n] = c_n
-        else:
-            for n in range(1, n_periods + 1):
-                c = U_period @ c
-                if schrodinger:
-                    c = c / np.linalg.norm(c)
-                states[n] = c
+        evals, evecs = np.linalg.eig(U_period)
+        evecs_inv = np.linalg.inv(evecs)
+        coeff0 = evecs_inv @ c
+        for i, n in enumerate(sampled_periods[1:], start=1):
+            c_n = evecs @ ((evals ** n) * coeff0)
+            if schrodinger:
+                c_n = c_n / np.linalg.norm(c_n)
+            states[i] = c_n
 
+        return states
+    
+    def rabi_efficient(self,H_tls_interaction,drive_period,single_period_steps,total_time,sample_points,c0=jnp.array([0,1])):
+
+        # Step 1: Evolve for the single period
+        U_period, t_period = self.evolve_period(H_tls_interaction, drive_period, steps=single_period_steps)
+
+        # Step 2: Evolve for full time, over many periods
+        n_periods = int(np.round(total_time / drive_period))
+        period_step = int(n_periods / sample_points)
+        states = self.evolve_stroboscopic_periods(
+            c0, U_period, n_periods, period_step, schrodinger=True,
+        )
+
+        t_strob = np.arange(0, n_periods + 1, period_step) * drive_period
+        return states, t_strob
 
     def check_hermiticity_and_norm(
         self,

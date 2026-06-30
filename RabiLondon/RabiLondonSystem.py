@@ -76,6 +76,9 @@ class RabiLondonSystem:
             self.integrated_volume = pickled_obj["integrated_volume"]
             self.volume = pickled_obj["parameters"]["sidelenX"] * pickled_obj["parameters"]["sidelenY"] * pickled_obj["parameters"]["sidelenZ"] * 2
             self.material = pickled_obj["parameters"]["material"]
+
+            # TODO: Should we trunct this??
+            print(f"N: {self.material * self.volume}")
             self.N = self.material * self.volume
         
 

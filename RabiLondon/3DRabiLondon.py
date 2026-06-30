@@ -14,8 +14,12 @@ To set cpu.
 
 # Import the FEMSystem Class from directory above
 import sys
+from pathlib import Path
 from VisualizeVF import VisualizeVF
-sys.path.append('..')
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.append(str(REPO_ROOT))
 from FEMSystem import FEMSystem
 
 import jax.numpy as jnp
@@ -44,17 +48,68 @@ try:
 except ImportError:
     psutil = None
 
+
+### TRUNCATE COEFF Vector such that N is less than density * volume
+def truncate_charge_basis_center(pickled_obj, n_keep):
+    n0 = int(pickled_obj["n"])
+    n_keep = int(n_keep)
+    if n_keep <= 0 or n_keep > n0:
+        raise ValueError(f"n_keep must be in [1, {n0}]")
+
+    # center window
+    start = (n0 - n_keep) // 2
+    end = start + n_keep
+
+    # update basis size
+    pickled_obj["n"] = n_keep
+
+    # keep coeffs consistent if present
+    coeffs = np.asarray(pickled_obj["coeffs"])
+    if coeffs.shape[0] == n0:
+        pickled_obj["coeffs"] = coeffs[start:end]
+    else:
+        # if coeffs has unexpected shape, don't silently mismatch
+        raise ValueError(f"coeffs length {coeffs.shape[0]} != n ({n0})")
+    
+    print(f"**** Truncated Coeffs Vector to {len(pickled_obj['coeffs'])} elements!!!! ******")
+
+    return pickled_obj
+
+
 pickled_obj = {}
-with open('./../3D/allplots/rabilondon/rl20/results.pkl', 'rb') as f:
+results_path = REPO_ROOT / "3D" / "allplots" / "sepsweep3" / "sep15" / "results.pkl"
+with open(results_path, 'rb') as f:
 # with open('./../2D/allplots/rabilondonfine11/results.pkl', 'rb') as f:
 #with open('./../2D/allplots/square20sep20num100/results.pkl', 'rb') as f:
     pickled_obj = pickle.load(f)
-rabilondon = RabiLondonSystem(pickled_obj)
+
+
+# Do the Truncation of the Coeffs Vector
+pickled_obj = truncate_charge_basis_center(pickled_obj, 20)
+
+# Solver knobs for harder 3D datasets (e.g., sepsweep3/sep1).
+MINRES_RTOL = 1e-9
+MINRES_MAXITER = 1000000
+HELMHOLTZ_EPSILON = 1e-3
+
+rabilondon = RabiLondonSystem(
+    pickled_obj,
+    minres_rtol=MINRES_RTOL,
+    minres_maxiter=MINRES_MAXITER,
+    minres_shift=0.0,
+    minres_check_convergence=True,
+    minres_verbose=True,
+)
 print(pickled_obj["parameters"])
+print(
+    f"[run-config] results_path={results_path} | "
+    f"minres_rtol={MINRES_RTOL} | minres_maxiter={MINRES_MAXITER} | "
+    f"helmholtz_epsilon={HELMHOLTZ_EPSILON}"
+)
 
 # Now define all physical and material parameters. Only need \xi and desired kapp
 xi = .39e-10 * 1
-kappa = 4
+kappa = 0.1
 units2d = Units2D(xi,kappa)
 # Check units, if transition frequency in nondim units is 4, then must equal plasma frequency
 kappa_computed,c_bar = units2d.kappa_cbar_from_xi(xi)
@@ -83,13 +138,15 @@ print(omega_d_rad_s/c_bar)
 print(f"Qubit Frequency (in nondim units): {omega_d_nondim} | (in rad/s):{omega_d_rad_s}")
 
 # Compute expected effective london penetration depth
-wavevec_mag = np.sqrt(1/kappa**2-omega_d_rad_s**2/c_bar**2)
+radicand = 1 / kappa**2 - omega_d_rad_s**2 / c_bar**2
+# Allow evanescent regime (negative radicand) by using complex sqrt.
+wavevec_mag = np.lib.scimath.sqrt(radicand)
 lambda_eff = 1/wavevec_mag
 print(f"Expected effective london penetration depth: {lambda_eff}")
 
-source_coord = (0,60,0)
-sigma = 50
-m = .1 # Magnitude of drive.
+source_coord = (0,15,0)
+sigma = 15
+m = 1 # Magnitude of drive.
 source_obj = {
     "source_coord": source_coord,
     "sigma": sigma,
@@ -107,7 +164,18 @@ def log_stage_timing(label):
     timers["prev"] = now
 
 # Run Solver
-A_sol, basis_edge = rabilondon.helmholtz_solver(omega_d_rad_s,c_bar,kappa,source_obj)
+A_sol, basis_edge = rabilondon.helmholtz_solver(
+    omega_d_rad_s,
+    c_bar,
+    kappa,
+    source_obj,
+    epsilon=HELMHOLTZ_EPSILON,
+)
+if not np.all(np.isfinite(A_sol)):
+    raise RuntimeError(
+        "Helmholtz solve returned non-finite values in A_sol. "
+        "Try increasing HELMHOLTZ_EPSILON and/or loosening MINRES_RTOL."
+    )
 log_stage_timing("helmholtz solve")
 
 # Get Rabi Hamiltonian
@@ -166,7 +234,7 @@ print(f"New omega_d_nondim_new: {omega_d_nondim_new}")
 print(f"Old detuning: {ground_excited_diff - omega_d_nondim} | 2A2Z is: {2*a2z_detuning}")
 print(f"New detuning: {ground_excited_diff - omega_d_nondim_new}")
 
-with open('3DRLcheckpoint10.pkl', 'wb') as f:
+with open('3DRL7.pkl', 'wb') as f:
     pickle_obj = {
         "A_sol": A_sol,
         "rabilondon": rabilondon,

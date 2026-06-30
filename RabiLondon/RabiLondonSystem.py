@@ -5,7 +5,7 @@ import numpy as np
 from FEMSystem import FEMSystem
 import jax
 import jax.numpy as jnp
-from scipy.linalg import expm
+from scipy.linalg import expm, polar
 from tqdm.auto import tqdm
 from scipy.sparse import bmat
 import time
@@ -48,7 +48,7 @@ class RabiLondonSystem:
     sigma_y = jnp.array([[0, -1j], [1j, 0]], dtype=jnp.complex64)
     sigma_z = jnp.array([[1, 0], [0, -1]], dtype=jnp.complex64)
 
-    def __init__(self, pickled_obj, minres_rtol=1e-8, minres_maxiter=50000, minres_shift=0.0, minres_check_convergence=True, minres_verbose=True):
+    def __init__(self, pickled_obj, minres_rtol=1e-9, minres_maxiter=500000, minres_shift=0.0, minres_check_convergence=True, minres_verbose=True):
         # Get Modes, Coefficients, and EJ/EC, and n/N + FEMSystem
         femsystem:FEMSystem = pickled_obj["femsystem"]
 
@@ -317,6 +317,14 @@ class RabiLondonSystem:
 
             # Solve 
             A_sol[I], info = self._solve_minres(A_int, b_int, "helmholtz (no gauge)")
+            r_no_gauge = np.linalg.norm(A_int @ A_sol[I] - b_int)
+            r_no_gauge_rel = r_no_gauge / max(np.linalg.norm(b_int), 1e-30)
+            print(
+                "helmholtz residual (no gauge):",
+                r_no_gauge,
+                "| relative:",
+                r_no_gauge_rel,
+            )
             _stage_done("solve A_int x = b_int")
             print(f"[solver] Helmholtz solve complete in {time.perf_counter() - t_start:.3f} s")
             return A_sol, basis_edge
@@ -378,7 +386,20 @@ class RabiLondonSystem:
             lam = sol[IA.size:]
             rA = np.linalg.norm(A_int @ A_i + Gir.T @ lam - b_int)
             rG = np.linalg.norm(Gir @ A_i)
-            print("saddle residual A:", rA, "gauge residual:", rG)
+            rA_rel = rA / max(np.linalg.norm(b_int), 1e-30)
+            # Gauge equation RHS is zero; normalize by |A_i| to track relative constraint violation.
+            rG_rel = rG / max(np.linalg.norm(A_i), 1e-30)
+            print(
+                "saddle residual A:",
+                rA,
+                "(relative:",
+                rA_rel,
+                ") gauge residual:",
+                rG,
+                "(relative-to-|A|:",
+                rG_rel,
+                ")",
+            )
             _stage_done("post-check")
             print(f"[solver] Helmholtz solve complete in {time.perf_counter() - t_start:.3f} s")
 
@@ -452,11 +473,11 @@ class RabiLondonSystem:
     def divergence_report(self, basis_edge, A_sol):
         """Return L2-like RMS of div(A) before/after div-free cleanup on vector-P1."""
         # Raw projection
-        _, _, div_raw, _ = self._project_nedelec_to_vector_p1(
+        _, div_raw, _ = self._project_nedelec_to_vector_p1(
             self.femsystem, basis_edge, A_sol, enforce_divfree=False
         )
         # Cleaned projection
-        _, _, div_clean, _ = self._project_nedelec_to_vector_p1(
+        _, div_clean, _ = self._project_nedelec_to_vector_p1(
             self.femsystem, basis_edge, A_sol, enforce_divfree=True
         )
 
@@ -475,7 +496,7 @@ class RabiLondonSystem:
         """L² project Nédélec A onto vector P1.
 
         If enforce_divfree=True, apply a Coulomb-gauge cleanup A <- A - grad(phi)
-        before extracting Ax, Ay, divA, and |A|^2.
+        before extracting vector components, divA, and |A|^2.
         """
         if enforce_divfree:
             coeffs, basis_vec_p1 = self._project_to_coulomb_gauge_p1(femsystem, basis_edge, A_sol)
@@ -501,11 +522,13 @@ class RabiLondonSystem:
             A_p1_disc = basis_vec_p1.interpolate(coeffs)
 
         val = np.asarray(A_p1_disc.value)
-        Ax = jnp.asarray(val[0])
-        Ay = jnp.asarray(val[1])
+        # Keep all spatial components (2D: x,y; 3D: x,y,z).
+        A_components = tuple(jnp.asarray(val[k]) for k in range(val.shape[0]))
         divA = jnp.asarray(div(A_p1_disc))
-        a2 = Ax * Ax + Ay * Ay
-        return Ax, Ay, divA, a2
+        a2 = jnp.zeros_like(A_components[0])
+        for comp in A_components:
+            a2 = a2 + comp * comp
+        return A_components, divA, a2
 
     def _epsilon_four_terms(self,femsystem,basis_edge,A_sol,phi_i,phi_j):
         def T_nabla2(u1, g1, u2, g2, x):
@@ -513,7 +536,9 @@ class RabiLondonSystem:
             del u1, u2, x
             return -jnp.sum(jnp.conj(g1) * g2, axis=0)
 
-        Ax, Ay, divA, a2 = self._project_nedelec_to_vector_p1(femsystem, basis_edge, A_sol)
+        A_components, divA, a2 = self._project_nedelec_to_vector_p1(
+            femsystem, basis_edge, A_sol, enforce_divfree=True
+        )
 
         def T_divA(u1, g1, u2, g2, x):
             del g1, g2, x
@@ -521,26 +546,45 @@ class RabiLondonSystem:
 
         def T_Adot_grad(u1, g1, u2, g2, x):
             del g1, x
-            adot = Ax * g2[0] + Ay * g2[1]
+            # Dimension-aware A·grad(u2): 2D uses x,y; 3D uses x,y,z.
+            adot = jnp.zeros_like(g2[0])
+            for k, comp in enumerate(A_components):
+                adot = adot + comp * g2[k]
             return 1j*jnp.conj(u1) * adot
 
         def T_A2(u1, g1, u2, g2, x):
             del g1, g2, x
             return jnp.conj(u1) * a2 * u2
+        
+        def T_A1_herm(u1, g1, u2, g2, x):
+            del x
+            # Dimension-aware A·grad(u): 2D uses x,y; 3D uses x,y,z.
+            adot2 = jnp.zeros_like(g2[0])
+            adot1 = jnp.zeros_like(g1[0])
+            for k, comp in enumerate(A_components):
+                adot2 = adot2 + comp * g2[k]
+                adot1 = adot1 + comp * g1[k]
+
+            # Hermitian-by-construction linear-in-A form:
+            # (i/2)(<u1, A·∇u2> - <A·∇u1, u2>) + (i/2)<u1, (∇·A)u2>
+            return 0.5j * (jnp.conj(u1) * adot2 - jnp.conj(adot1) * u2) 
+
+
+        herm_cross_term = femsystem.integrate_two(T_A1_herm, phi_i, phi_j)
 
         laplacian_term = femsystem.integrate_two(T_nabla2, phi_i, phi_j)
         first_cross_term = femsystem.integrate_two(T_divA, phi_i, phi_j)
         second_cross_term = femsystem.integrate_two(T_Adot_grad, phi_i, phi_j)
         a2_term = femsystem.integrate_two(T_A2, phi_i, phi_j)
 
-        return laplacian_term, first_cross_term, second_cross_term, a2_term
+        return laplacian_term, first_cross_term, second_cross_term, a2_term, herm_cross_term
     
     def get_corrections(self,basis_edge,A_sol,u1,u2,omega_d):
-        laplacian_term, first_cross_term, second_cross_term, a2_term = self._epsilon_four_terms(
+        laplacian_term, first_cross_term, second_cross_term, a2_term, herm_cross_term = self._epsilon_four_terms(
             self.femsystem, basis_edge, A_sol, u1, u2
         )
 
-        A1_coeff = (first_cross_term+second_cross_term)
+        A1_coeff = herm_cross_term
         A2_coeff = a2_term / 2
         # A2_coeff = 0
 
@@ -631,20 +675,47 @@ class RabiLondonSystem:
                 A1_mat += epsilon_funcs[i][j][1] * raising_lowering_mats[i][j]
                 A2_mat += epsilon_funcs[i][j][2] * raising_lowering_mats[i][j]
         
+        # ## ENFORCE HERMITICITY
+        # A1_mat = 0.5 * (A1_mat + jnp.conj(A1_mat.T))
+
+        # Report non-Hermiticity in full charge-imbalance basis.
+        A1_np = np.asarray(A1_mat, dtype=np.complex128)
+        A2_np = np.asarray(A2_mat, dtype=np.complex128)
+        A1_anti = A1_np - A1_np.conj().T
+        A2_anti = A2_np - A2_np.conj().T
+        A1_nonherm_rel = np.linalg.norm(A1_anti) / max(np.linalg.norm(A1_np), 1e-30)
+        A2_nonherm_rel = np.linalg.norm(A2_anti) / max(np.linalg.norm(A2_np), 1e-30)
+        print(
+            f"[hermiticity] full-space A1 nonherm rel={A1_nonherm_rel:.3e}, "
+            f"A2 nonherm rel={A2_nonherm_rel:.3e}"
+        )
+        
         return res, A1_mat, A2_mat
     
     def rabi_hamiltonian_tls_decomposition(self,basis_edge,A_sol,omega_d):
         H_of_t, A1_mat, A2_mat = self.rabi_hamiltonian(basis_edge,A_sol,omega_d)
         A1_mat_TLS = self.TLS_matrix(A1_mat)
         A2_mat_TLS = self.TLS_matrix(A2_mat)
+        A1_tls_np = np.asarray(A1_mat_TLS, dtype=np.complex128)
+        A2_tls_np = np.asarray(A2_mat_TLS, dtype=np.complex128)
+        A1_tls_anti = A1_tls_np - A1_tls_np.conj().T
+        A2_tls_anti = A2_tls_np - A2_tls_np.conj().T
+        A1_tls_nonherm_rel = np.linalg.norm(A1_tls_anti) / max(np.linalg.norm(A1_tls_np), 1e-30)
+        A2_tls_nonherm_rel = np.linalg.norm(A2_tls_anti) / max(np.linalg.norm(A2_tls_np), 1e-30)
+        print(
+            f"[hermiticity] TLS A1 nonherm rel={A1_tls_nonherm_rel:.3e}, "
+            f"A2 nonherm rel={A2_tls_nonherm_rel:.3e}"
+        )
         A1_mat_TLS_decomposed = self.pauli_decompose(A1_mat_TLS)
         A2_mat_TLS_decomposed = self.pauli_decompose(A2_mat_TLS)
 
         return H_of_t, A1_mat_TLS_decomposed, A2_mat_TLS_decomposed
     
-    def rabi_hamiltonian_tls_interaction_picture(self,basis_edge,A_sol,omega_d):
-        H_of_t, A1_mat_TLS_decomposed, A2_mat_TLS_decomposed = self.rabi_hamiltonian_tls_decomposition(basis_edge,A_sol,omega_d)
+    def rabi_hamiltonian_tls_interaction_picture(self,basis_edge,A_sol,omega_d,A1_mat_TLS_decomposed=None,A2_mat_TLS_decomposed=None):
 
+        # Get Decomposed Matrices if not provided
+        if A1_mat_TLS_decomposed is None or A2_mat_TLS_decomposed is None:
+           H_of_t, A1_mat_TLS_decomposed, A2_mat_TLS_decomposed = self.rabi_hamiltonian_tls_decomposition(basis_edge,A_sol,omega_d)
 
         A1i,A1x,A1y,A1z = A1_mat_TLS_decomposed
         A2i,A2x,A2y,A2z = A2_mat_TLS_decomposed
@@ -798,11 +869,17 @@ class RabiLondonSystem:
 
         if n_periods == 0:
             return states
+        
+        # Do a polar decomposition, in case non-unitary
+        U_period_unitary, _ = polar(U_period)
 
-        evals, evecs = np.linalg.eig(U_period)
+        evals, evecs = np.linalg.eig(U_period_unitary)
         evecs_inv = np.linalg.inv(evecs)
         coeff0 = evecs_inv @ c
+
         for i, n in enumerate(sampled_periods[1:], start=1):
+
+
             c_n = evecs @ ((evals ** n) * coeff0)
             if schrodinger:
                 c_n = c_n / np.linalg.norm(c_n)

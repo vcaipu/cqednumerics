@@ -11,3 +11,6 @@ test*
 currentoutput.txt
 currenterror.txt
 *.pkl
+
+.DS_Store
+3D/.DS_Store

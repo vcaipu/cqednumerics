@@ -1,13 +1,7 @@
 ''''
 This script is used to run the 3D Rabi London solver.
-
-
 Use: 
-
-
 export JAX_PLATFORMS=cpu 
-
-
 To set cpu. 
 '''
 
@@ -49,6 +43,35 @@ except ImportError:
     psutil = None
 
 
+
+
+
+
+
+'''
+######### ----- IMPORTANT: INPUT AND OUTPUT FILES ------- ############
+'''
+
+# INPUT PICKLE (FROM 3D FEM SOLVER)
+input_pickle_file = REPO_ROOT / "3D" / "allplots" / "rl1" / "results.pkl"
+
+# OUTPUT PICKLE
+output_pickle_file = "3DRLfinal.pkl" # Same dir 
+
+'''
+######### ----- IMPORTANT: INPUT AND OUTPUT FILES ------- ############
+'''
+
+
+
+
+
+
+
+
+
+
+
 ### TRUNCATE COEFF Vector such that N is less than density * volume
 def truncate_charge_basis_center(pickled_obj, n_keep):
     n0 = int(pickled_obj["n"])
@@ -77,8 +100,7 @@ def truncate_charge_basis_center(pickled_obj, n_keep):
 
 
 pickled_obj = {}
-results_path = REPO_ROOT / "3D" / "allplots" / "sepsweep3" / "sep15" / "results.pkl"
-with open(results_path, 'rb') as f:
+with open(input_pickle_file, 'rb') as f:
 # with open('./../2D/allplots/rabilondonfine11/results.pkl', 'rb') as f:
 #with open('./../2D/allplots/square20sep20num100/results.pkl', 'rb') as f:
     pickled_obj = pickle.load(f)
@@ -102,7 +124,7 @@ rabilondon = RabiLondonSystem(
 )
 print(pickled_obj["parameters"])
 print(
-    f"[run-config] results_path={results_path} | "
+    f"[run-config] input_pickle_file={input_pickle_file} | "
     f"minres_rtol={MINRES_RTOL} | minres_maxiter={MINRES_MAXITER} | "
     f"helmholtz_epsilon={HELMHOLTZ_EPSILON}"
 )
@@ -234,7 +256,7 @@ print(f"New omega_d_nondim_new: {omega_d_nondim_new}")
 print(f"Old detuning: {ground_excited_diff - omega_d_nondim} | 2A2Z is: {2*a2z_detuning}")
 print(f"New detuning: {ground_excited_diff - omega_d_nondim_new}")
 
-with open('3DRL7.pkl', 'wb') as f:
+with open(output_pickle_file, 'wb') as f:
     pickle_obj = {
         "A_sol": A_sol,
         "rabilondon": rabilondon,
@@ -251,6 +273,8 @@ with open('3DRL7.pkl', 'wb') as f:
             "A1_mat": np.asarray(A1_mat),
             "A2_mat": np.asarray(A2_mat),
         },
+        'input_pickle_file': input_pickle_file,
+        'parameters': pickled_obj["parameters"],
     }
     pickle.dump(pickle_obj, f)
 log_stage_timing("checkpoint pickle save")

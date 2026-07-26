@@ -392,7 +392,17 @@ class VisualizeVF:
         
         return fig, ax
 
-    def visualize_bz_slice_z0_3d(self, z0=0.0, tol=1.0, bz_symmetric_percentile=99.0, cmap="magma"):
+    def visualize_bz_slice_z0_3d(
+        self,
+        z0=0.0,
+        tol=1.0,
+        bz_symmetric_percentile=99.0,
+        cmap="magma",
+        source_xy=None,
+        ax=None,
+        show=True,
+        return_slice=False,
+    ):
         """Plot a 2D heatmap of B_z from a 3D solve on a slice near z=z0.
 
         This is intentionally simple: project B_z to scalar P1 nodes in 3D, keep
@@ -434,7 +444,12 @@ class VisualizeVF:
         ys = y[mask]
         bs = Bz_nodes[mask]
 
-        fig, ax = plt.subplots(figsize=(8, 6))
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            owns_axes = True
+        else:
+            fig = ax.figure
+            owns_axes = False
         try:
             tri = Triangulation(xs, ys)
             kw = dict(shading="gouraud", cmap=cmap)
@@ -451,10 +466,27 @@ class VisualizeVF:
             tpc = ax.scatter(xs, ys, c=bs, s=10, cmap=cmap)
 
         plt.colorbar(tpc, ax=ax, label=r"$B_z$")
+        if source_xy is not None:
+            ax.plot(float(source_xy[0]), float(source_xy[1]), marker="o", color="white", markersize=8, markeredgecolor="black", markeredgewidth=0.8, zorder=10)
+            ax.text(
+                float(source_xy[0]) + 1.0,
+                float(source_xy[1]) + 1.0,
+                f"({float(source_xy[0]):.3g}, {float(source_xy[1]):.3g}, {float(z0):.3g})",
+                color="white",
+                fontsize=10,
+                ha="left",
+                va="bottom",
+                zorder=11,
+                bbox=dict(facecolor="black", edgecolor="none", alpha=0.45, pad=1.5),
+            )
         ax.set_title(rf"3D slice heatmap of $B_z$ at $z={z0}$ (|z-z0|<={tol})")
         ax.set_xlabel(r"$x/\xi$")
         ax.set_ylabel(r"$y/\xi$")
         ax.set_aspect("equal")
-        plt.tight_layout()
-        plt.show()
+        if owns_axes:
+            plt.tight_layout()
+        if show:
+            plt.show()
+        if return_slice:
+            return fig, ax, (xs, ys, bs)
         return fig, ax

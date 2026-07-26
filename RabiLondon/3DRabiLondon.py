@@ -53,10 +53,10 @@ except ImportError:
 '''
 
 # INPUT PICKLE (FROM 3D FEM SOLVER)
-input_pickle_file = REPO_ROOT / "3D" / "allplots" / "rl1" / "results.pkl"
+input_pickle_file = REPO_ROOT / "3D" / "allplots" / "sepsweep3" / "sep15" / "results.pkl"
 
 # OUTPUT PICKLE
-output_pickle_file = "3DRLfinal.pkl" # Same dir 
+output_pickle_file = REPO_ROOT / "RabiLondon" / "allplots" / "fig1-2.pkl" # Same dir 
 
 '''
 ######### ----- IMPORTANT: INPUT AND OUTPUT FILES ------- ############
@@ -114,6 +114,16 @@ MINRES_RTOL = 1e-9
 MINRES_MAXITER = 1000000
 HELMHOLTZ_EPSILON = 1e-3
 
+'''
+NEW MESH:
+'''
+femsystem = pickled_obj["femsystem"]
+dim_x,dim_y,dim_z = RabiLondonSystem.mesh_dimensions(femsystem)
+dx,dy,dz = 2,2,2 # Set length of a single mesh cell
+nx,ny,nz = int(dim_x/dx),int(dim_y/dy),int(dim_z/dz)
+print(f"New Mesh: {nx} x {ny} x {nz}")
+newMesh = RabiLondonSystem.generate_mesh_rabilondon(dim_x,nx,dim_y,ny,dim_z,nz)
+
 rabilondon = RabiLondonSystem(
     pickled_obj,
     minres_rtol=MINRES_RTOL,
@@ -121,6 +131,7 @@ rabilondon = RabiLondonSystem(
     minres_shift=0.0,
     minres_check_convergence=True,
     minres_verbose=True,
+    newMesh=newMesh,
 )
 print(pickled_obj["parameters"])
 print(
@@ -193,6 +204,7 @@ A_sol, basis_edge = rabilondon.helmholtz_solver(
     source_obj,
     epsilon=HELMHOLTZ_EPSILON,
 )
+
 if not np.all(np.isfinite(A_sol)):
     raise RuntimeError(
         "Helmholtz solve returned non-finite values in A_sol. "

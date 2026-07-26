@@ -1,5 +1,5 @@
 from scipy.sparse.linalg import minres
-from skfem import  ElementTriN1, ElementTriP1, ElementTetN1, ElementTetP1, Basis, BilinearForm, LinearForm, asm, condense, ElementVector
+from skfem import  ElementTriN1, ElementTriP1, ElementTetN1, ElementTetP1, Basis, BilinearForm, LinearForm, asm, condense, ElementVector, MeshTri, MeshTet
 from skfem.helpers import curl, dot, div, grad
 import numpy as np
 from FEMSystem import FEMSystem
@@ -9,6 +9,7 @@ from scipy.linalg import expm, polar
 from tqdm.auto import tqdm
 from scipy.sparse import bmat
 import time
+from scipy.interpolate import LinearNDInterpolator, NearestNDInterpolator
 
 try:
     import psutil
@@ -48,9 +49,16 @@ class RabiLondonSystem:
     sigma_y = jnp.array([[0, -1j], [1j, 0]], dtype=jnp.complex64)
     sigma_z = jnp.array([[1, 0], [0, -1]], dtype=jnp.complex64)
 
-    def __init__(self, pickled_obj, minres_rtol=1e-9, minres_maxiter=500000, minres_shift=0.0, minres_check_convergence=True, minres_verbose=True):
+    def __init__(self, pickled_obj, minres_rtol=1e-9, minres_maxiter=500000, minres_shift=0.0, minres_check_convergence=True, minres_verbose=True, newMesh = None):
         # Get Modes, Coefficients, and EJ/EC, and n/N + FEMSystem
         femsystem:FEMSystem = pickled_obj["femsystem"]
+
+        # If using a new mesh for RabiLondon, regenerate a new FEMSystem object (need to create new mesh AND basis)
+        if newMesh is not None:
+            print("Starting new mesh")
+            femsystemOld = femsystem
+            femsystem:FEMSystem = FEMSystem(newMesh, femsystem.element, femsystem.intorder)
+            print(f"********* Using new mesh for RabiLondon ********* \n\n DOFs of New Mesh: {femsystem.dofs} \n\n")
 
         print(f"DOFs: {femsystem.dofs}")
 
@@ -63,6 +71,12 @@ class RabiLondonSystem:
         self.femsystem = femsystem
         self.mesh = femsystem.mesh
         self.u_even,self.u_odd = pickled_obj["u_even"],pickled_obj["u_odd"]
+        
+        ## Interpolate if new mesh is provided:
+        if newMesh is not None:
+            self.u_even = RabiLondonSystem.interpolate_between_meshes(femsystemOld,femsystem,self.u_even)
+            self.u_odd = RabiLondonSystem.interpolate_between_meshes(femsystemOld,femsystem,self.u_odd)
+
         self.u_left,self.u_right = 1/jnp.sqrt(2)*(self.u_even - self.u_odd), 1/jnp.sqrt(2)* (self.u_even + self.u_odd)
         self.u_even_interior,self.u_odd_interior = self.u_even[femsystem.interior_dofs],self.u_odd[femsystem.interior_dofs]
         self.n,self.coeffs = pickled_obj["n"],pickled_obj["coeffs"]
@@ -112,6 +126,71 @@ class RabiLondonSystem:
             f" check_convergence={self.minres_check_convergence},"
             f" verbose={self.minres_verbose}"
         )
+    
+    @staticmethod
+    def generate_mesh_rabilondon(totalX,Nx,totalY,Ny,totalZ=None,Nz=None):
+        x_nodes = np.linspace(-0.5 * totalX, 0.5 * totalX, Nx + 1)
+        y_nodes = np.linspace(-0.5 * totalY, 0.5 * totalY, Ny + 1)
+        if totalZ is not None:
+            z_nodes = np.linspace(-0.5 * totalZ, 0.5 * totalZ, Nz + 1)
+            mesh_3d = MeshTet.init_tensor(x_nodes, y_nodes, z_nodes)
+            return mesh_3d
+        else:
+            mesh_2d = MeshTri.init_tensor(x_nodes, y_nodes)
+            return mesh_2d
+
+    @staticmethod
+    def mesh_dimensions(femsystem):
+        coords = femsystem.doflocs # shape: (spatial_dim, n_dofs)
+
+        x_max, x_min = np.max(coords[0]), np.min(coords[0])
+        y_max, y_min = np.max(coords[1]), np.min(coords[1])
+
+        L_x = x_max - x_min
+        L_y = y_max - y_min
+        if coords.shape[0] == 3:
+            z_max, z_min = np.max(coords[2]), np.min(coords[2])
+            L_z = z_max - z_min
+            return L_x, L_y, L_z
+        else: return L_x, L_y
+    
+    @staticmethod
+    def interpolate_between_meshes(fem1, fem2, u1, fill_outside=True):
+        """
+        Interpolates a scalar array u1 defined on the degrees of freedom of fem1 
+        onto the degrees of freedom of fem2.
+        
+        Parameters:
+        - fem1: FEMSystem object for the source mesh.
+        - fem2: FEMSystem object for the target mesh.
+        - u1: Array of shape (N1,) containing scalar values at fem1 DOFs.
+        - fill_outside: Boolean. If True, extrapolates points outside fem1's 
+                        domain using nearest-neighbor values. If False, sets them to 0.
+                        
+        Returns:
+        - u2: jax.numpy array of shape (N2,) containing interpolated values at fem2 DOFs.
+        """
+        # 1. Extract and transpose coordinates to shape (N, 3) expected by scipy
+        pts1 = np.array(fem1.doflocs).T  
+        pts2 = np.array(fem2.doflocs).T  
+        vals1 = np.array(u1)             
+        
+        # 2. Construct the piecewise linear interpolant over the source mesh
+        lin_interp = LinearNDInterpolator(pts1, vals1)
+        
+        # 3. Evaluate at the target mesh coordinates
+        u2 = lin_interp(pts2)
+        
+        # 4. Handle boundary/domain mismatch (points in fem2 outside fem1)
+        nan_mask = np.isnan(u2)
+        if np.any(nan_mask):
+            if fill_outside:
+                near_interp = NearestNDInterpolator(pts1, vals1)
+                u2[nan_mask] = near_interp(pts2[nan_mask])
+            else:
+                u2[nan_mask] = 0.0
+                
+        return jnp.array(u2)
 
     def set_minres_params(self, *, rtol=None, maxiter=None, shift=None, check_convergence=None, verbose=None):
         """Update global MINRES settings used in this class."""

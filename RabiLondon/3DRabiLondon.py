@@ -8,6 +8,7 @@ To set cpu.
 
 # Import the FEMSystem Class from directory above
 import sys
+import argparse
 from pathlib import Path
 from VisualizeVF import VisualizeVF
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -52,16 +53,43 @@ except ImportError:
 ######### ----- IMPORTANT: INPUT AND OUTPUT FILES ------- ############
 '''
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run the 3D Rabi London solver.")
+    parser.add_argument(
+        "--input-pickle-file",
+        type=Path,
+        default=REPO_ROOT / "3D" / "allplots" / "sepsweep3" / "sep15" / "results.pkl",
+        help="Input pickle from the 3D FEM solver.",
+    )
+    parser.add_argument(
+        "--output-pickle-file",
+        type=Path,
+        default=REPO_ROOT / "RabiLondon" / "allplots" / "fig1-2.pkl",
+        help="Output pickle path for postprocessed 3D Rabi London results.",
+    )
+    parser.add_argument(
+        "--detuning-mult",
+        type=float,
+        default=1e-8,
+        help="Relative detuning multiplier for omega_d_nondim = omega_q * (1 + detuning_mult).",
+    )
+    return parser.parse_args()
+
+
+args = parse_args()
+
 # INPUT PICKLE (FROM 3D FEM SOLVER)
-input_pickle_file = REPO_ROOT / "3D" / "allplots" / "sepsweep3" / "sep15" / "results.pkl"
+input_pickle_file = args.input_pickle_file
 
 # OUTPUT PICKLE
-output_pickle_file = REPO_ROOT / "RabiLondon" / "allplots" / "fig1-2.pkl" # Same dir 
+output_pickle_file = args.output_pickle_file
+
+# DETUNING
+detuning_mult = args.detuning_mult
 
 '''
 ######### ----- IMPORTANT: INPUT AND OUTPUT FILES ------- ############
 '''
-
 
 
 
@@ -117,12 +145,16 @@ HELMHOLTZ_EPSILON = 1e-3
 '''
 NEW MESH:
 '''
-femsystem = pickled_obj["femsystem"]
-dim_x,dim_y,dim_z = RabiLondonSystem.mesh_dimensions(femsystem)
-dx,dy,dz = 2,2,2 # Set length of a single mesh cell
-nx,ny,nz = int(dim_x/dx),int(dim_y/dy),int(dim_z/dz)
-print(f"New Mesh: {nx} x {ny} x {nz}")
-newMesh = RabiLondonSystem.generate_mesh_rabilondon(dim_x,nx,dim_y,ny,dim_z,nz)
+# femsystem = pickled_obj["femsystem"]
+# dim_x,dim_y,dim_z = RabiLondonSystem.mesh_dimensions(femsystem)
+# dx,dy,dz = 2,2,2 # Set length of a single mesh cell
+# nx,ny,nz = int(dim_x/dx),int(dim_y/dy),int(dim_z/dz)
+# print(f"New Mesh: {nx} x {ny} x {nz}")
+# newMesh = RabiLondonSystem.generate_mesh_rabilondon(dim_x,nx,dim_y,ny,dim_z,nz)
+parameter_overrides = {
+    #"lc_small": 0.5,
+}
+newMesh = RabiLondonSystem.generate_mesh_rabilondon(pickled_obj, source_coord=(0,15,0), parameter_overrides=parameter_overrides)
 
 rabilondon = RabiLondonSystem(
     pickled_obj,
@@ -165,7 +197,8 @@ print(f"lambda_L: {lambda_L}")
 
 
 # Define all Parameters
-omega_d_nondim = rabilondon.omega_q # on resonance drive
+omega_d_nondim = rabilondon.omega_q * (1 + detuning_mult) # on resonance drive + detuning
+
 omega_d_rad_s = units2d.convert_energy_to_rad_s(omega_d_nondim,xi)   #convert to rad/s
 print(omega_d_rad_s/c_bar)
 print(f"Qubit Frequency (in nondim units): {omega_d_nondim} | (in rad/s):{omega_d_rad_s}")
@@ -270,6 +303,10 @@ print(f"New detuning: {ground_excited_diff - omega_d_nondim_new}")
 
 with open(output_pickle_file, 'wb') as f:
     pickle_obj = {
+        "config": {
+            "detuning_mult": detuning_mult,
+            "input_pickle_file": str(input_pickle_file),
+        },
         "A_sol": A_sol,
         "rabilondon": rabilondon,
         "basis_edge": basis_edge,
@@ -277,6 +314,7 @@ with open(output_pickle_file, 'wb') as f:
         "omega_d_rad_s": omega_d_rad_s,
         "c_bar": c_bar,
         "kappa": kappa,
+        "xi": xi,
         # Don't pickle H_of_t_new directly: it is a local closure and not picklable.
         # Save reconstructable ingredients instead.
         "hamiltonian_time_data": {
@@ -285,8 +323,10 @@ with open(output_pickle_file, 'wb') as f:
             "A1_mat": np.asarray(A1_mat),
             "A2_mat": np.asarray(A2_mat),
         },
-        'input_pickle_file': input_pickle_file,
         'parameters': pickled_obj["parameters"],
+        'newMeshGenParams': {
+            "parameter_overrides": parameter_overrides,
+        }
     }
     pickle.dump(pickle_obj, f)
 log_stage_timing("checkpoint pickle save")

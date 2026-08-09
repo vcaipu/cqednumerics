@@ -107,6 +107,13 @@ class Units2D:
         E_in_rad_s = E_in_joules / hbar
         return E_in_rad_s
     
+    def convert_rad_s_to_energy(self,omega_rad_s,xi):
+        m,q,mu_0,epsilon_0,hbar = self.fco["M_CP"],self.fco["Q_CP"],self.fco["mu_0"],self.fco["epsilon_0"],self.fco["h_bar"]
+        n_s = self.n_sfromxi(xi)
+        E_in_joules = hbar * omega_rad_s
+        E_in_nondim = E_in_joules / (q**2 * n_s * (xi**2) / (2*epsilon_0))
+        return E_in_nondim
+    
     def kappa_cbar_from_xi(self,xi):
         m,q,mu_0,epsilon_0,hbar = self.fco["M_CP"],self.fco["Q_CP"],self.fco["mu_0"],self.fco["epsilon_0"],self.fco["h_bar"]
         c = 1/np.sqrt(mu_0*epsilon_0)

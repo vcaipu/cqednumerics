@@ -55,6 +55,7 @@ class FEMSystem:
 
     # Constructor - Preprocess Basis
     def __init__(self,mesh,element,intorder,boundary_condition=0,saveFigsDir=None):
+        print(f"Starting FEMSystem with mesh: {mesh.dofs} DOFs")
 
         self.saveFigsDir = saveFigsDir
 
@@ -89,7 +90,7 @@ class FEMSystem:
         phi_val = jnp.array(jnp.stack(val_list)).transpose(1, 2, 0) # eth index is interpolation matrix for element e
         phi_grad = jnp.array(jnp.stack(grad_list)).transpose(2, 1, 3, 0) #eth index, array at dth index, is interpolation matrix for element e 
         self.phi_val,self.phi_grad = phi_val,phi_grad
-
+        
         # Step 4: Get Miscellanous Things
         self.dof_map = self.basis.element_dofs.T # (elements, dofs per element) matrix, maps to a global dof index        
         self.node_coords_global = jnp.array(mesh.doflocs.T)
@@ -99,8 +100,10 @@ class FEMSystem:
         self.doflocs = self.basis.doflocs # arrays of x,y and z coordinates of the ith DOF
         self.X_ref,self.W_ref = X_ref,W_ref
 
+        
         # Step 5: Get Flipping Mapping
         self.flip_map = self._generate_flip_mapping()
+        print(f"Ending")
 
     def _save_fig(self,fig,plot_title):
         if not self.saveFigsDir: return

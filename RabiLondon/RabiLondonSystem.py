@@ -61,6 +61,7 @@ class RabiLondonSystem:
             print(f"********* Using new mesh for RabiLondon ********* \n\n DOFs of New Mesh: {femsystem.dofs} \n\n")
 
         print(f"DOFs: {femsystem.dofs}")
+        self.pickled_obj = pickled_obj
 
         # FEMSystem stores DOF coordinates as (spatial_dim, n_dofs).
         # This is the reliable source of spatial dimension in this codebase.
@@ -106,7 +107,6 @@ class RabiLondonSystem:
         # Now run eigensolver
         self.hamiltonian, self.eigenvectors, self.eigenvalues, self.charge_imbalance_eigenvalues = self.eigensolver()
 
-
         # Keep scalar as plain float for downstream scipy/skfem assembly code.
         self.omega_q = float(self.eigenvalues[1] - self.eigenvalues[0])
         print(f"Qubit Frequency: {self.omega_q} (non-dimensional energy units)")
@@ -128,7 +128,7 @@ class RabiLondonSystem:
         )
     
     @staticmethod
-    def generate_mesh_rabilondon(totalX,Nx,totalY,Ny,totalZ=None,Nz=None):
+    def generate_uniform_mesh_rabilondon(totalX,Nx,totalY,Ny,totalZ=None,Nz=None):
         x_nodes = np.linspace(-0.5 * totalX, 0.5 * totalX, Nx + 1)
         y_nodes = np.linspace(-0.5 * totalY, 0.5 * totalY, Ny + 1)
         if totalZ is not None:
@@ -138,6 +138,100 @@ class RabiLondonSystem:
         else:
             mesh_2d = MeshTri.init_tensor(x_nodes, y_nodes)
             return mesh_2d
+    
+    @staticmethod
+    def generate_mesh_rabilondon(
+        pickled_obj,
+        source_coord,
+        *,
+        parameter_overrides=None,
+        lc_z0=None,
+        z0_half_thickness=2.0,
+        lc_source=1.0,
+        source_radius=5.0,
+        inner_dims=None,
+        output_file=None,
+        element_order=2,
+    ):
+        """
+        Generate a custom 3D mesh using pickled geometry parameters, then load it
+        into scikit-fem and return MeshTet.
+
+        Geometry + baseline mesh params are read from:
+          self.pickled_obj["parameters"].
+        You can override them with:
+          - parameter_overrides (pickle-style keys like "gridlenX", "lc_small", ...)
+        Extra local-refinement controls are passed as function arguments.
+        """
+
+        femsystem = pickled_obj["femsystem"]
+        spatial_dim = int(femsystem.doflocs.shape[0])
+        is2D = (spatial_dim == 2)
+
+        if is2D:
+            raise ValueError("generate_mesh_rabilondon is only supported for 3D pickles.")
+
+        params = dict(pickled_obj["parameters"])
+        if parameter_overrides is not None:
+            params.update(parameter_overrides)
+        required = (
+            "gridlenX",
+            "gridlenY",
+            "gridlenZ",
+            "sidelenX",
+            "sidelenY",
+            "sidelenZ",
+            "separation",
+            "lc_large",
+            "lc_small",
+        )
+        missing = [k for k in required if k not in params]
+        if missing:
+            raise KeyError(f"Missing required parameter keys in pickle_obj['parameters']: {missing}")
+
+        gridlens_final = (
+            float(params["gridlenX"]),
+            float(params["gridlenY"]),
+            float(params["gridlenZ"]),
+        )
+        sidelens_final = (
+            float(params["sidelenX"]),
+            float(params["sidelenY"]),
+            float(params["sidelenZ"]),
+        )
+        sep = float(params["separation"])
+        lc_large_final = float(params["lc_large"])
+        lc_small_final = float(params["lc_small"])
+
+        # If not provided, keep slab refinement level aligned with the original
+        # island fine level from the pickle.
+        if lc_z0 is None:
+            lc_z0 = lc_small_final
+
+        if output_file is None:
+            output_file = os.path.join(os.path.dirname(__file__), "custommesh_rabilondon.msh")
+
+        from gmshgen3d_rabilondon import generate_mesh
+
+        generate_mesh(
+            gridlens=gridlens_final,
+            sidelens=sidelens_final,
+            inner_dims=inner_dims,
+            separation=sep,
+            lc_large=lc_large_final,
+            lc_small=lc_small_final,
+            lc_z0=float(lc_z0),
+            z0_half_thickness=float(z0_half_thickness),
+            source_coord=tuple(float(v) for v in source_coord),
+            lc_source=float(lc_source),
+            source_radius=float(source_radius),
+            output_file=output_file,
+            element_order=int(element_order),
+        )
+
+        mesh = MeshTet.load(output_file)
+        return mesh
+
 
     @staticmethod
     def mesh_dimensions(femsystem):
